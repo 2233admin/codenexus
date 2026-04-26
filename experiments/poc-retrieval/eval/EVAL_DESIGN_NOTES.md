@@ -51,6 +51,24 @@ Eval matcher MUST normalize:
 
 A single character mismatch silently scores 0. Discovered in R4 when `mcp-server\src\adapters\obsidian.test.ts` failed to match expected `adapters/obsidian` — the backslash-vs-slash gap had been hidden in earlier rounds because R3's top-1 had a name match that bypassed the path check.
 
+### Rule 6 — LLM-judge graded 0-3 is primary metric, hand-annotation is cross-check (R5 finding)
+
+After R5 spike (3-run LLM-judge over R4 retrieval output via okaoi MiniMax-M2.7 pool, see `round_5_results.md`), the eval primary metric is:
+
+- **Primary**: LLM-judge graded 0-3 (NIST TREC scale), with mean (κ@t2, Spearman ρ, std) reported over **N≥3 stochastic seeds**
+- **Cross-check**: hand-annotated `expected_paths` kept for cold-start, audit, and reproducibility — not for headline numbers
+
+**Why graded > binary**: R5 found arm A (binary 0/1) and arm B@t2 (graded thresholded ≥2) tied within noise on Cohen κ (Δ = +0.069 ± 0.120 across 3 runs). The load-bearing win for graded is **Spearman ρ = 0.38 ± 0.07** — graded scores carry monotone rank information binary discards. Reranker config tuning needs rank signal, not hit/miss. Graded also catches Rule-2 fuzzy-negative cases consistently (A9 `parseYAMLFrontmatter` across all 3 runs).
+
+**External backing** (Arize AI binary-vs-score study, 2026): "Binary judgments outperform direct numeric scoring on stability. Multi-categorical rubrics reduce variance while preserving more signal than binary." 0-3 graded sits in their "multi-categorical" sweet spot — more granularity than binary, more stability than free-form numeric.
+
+**Reporting discipline**:
+- Always report mean ± std over N≥3 seeds (LLM stochasticity at temp=0.0 still ±0.07 single-run κ noise)
+- Report both κ@t2 (binary alignment) and Spearman ρ (rank correlation) — they answer different questions
+- **Exclude axis-3 call-relation queries from headline metric** until static-analysis-augmented eval lands (REQ-02 CALLS edge graph, Phase 2/3) — both binary and graded LLM judges are blind to data-flow / call-graph relationships
+
+**Raw judgment retention**: per-run `round_N_results.json` + `round_N_summary*.json` are committed (not gitignored) starting from R5 — they accumulate as future training data for a fine-tuned code-retrieval judge (Phase 4+ candidate, Prometheus / JudgeLM route).
+
 ## Known Eval Limitations
 
 ### Single-truth ground truth cannot measure reranker lift

@@ -515,6 +515,45 @@ Until this exists, retrieval changes that involve reranking, embedder swaps, or 
 
 `experiments/poc-retrieval/src/reranker.rs` and the `--rerank` CLI flag remain in the POC for future re-activation. Reranker uses `JINA_API_KEY` from environment (never hardcoded, per security feedback rule #35). When LLM-judge eval is in place (Phase 3+), Path B can be re-evaluated with confidence.
 
+**Phase 3 reranker candidates** (in priority order, do not pick blindly — measure all under Rule 6 LLM-judge eval):
+
+1. **Qwen3-Reranker-4B** *(primary candidate)* — instruction-tuned cross-encoder. Accepts custom task instruction, e.g. *"This is code symbol retrieval. Prioritize function definitions over comment/docstring matches."* Quantized 4B is locally runnable with acceptable latency. Strong fit for code-retrieval queries, where R4 jina-reranker-v2 verbose-bias (Cause A) suggests instruction-tuned would behave better. **Test first.**
+2. **jina-reranker-v2-base-multilingual** — R4 baseline, retained as control. Free tier quota viable for eval batches; verbose-bias documented (R4 Cause A).
+3. **bge-reranker-v2-m3** — fallback if both above lose.
+
+Selection lands in Phase 3 as a measured pick, not pre-decided here. R4 reranker.rs scaffolding is generic over endpoint — only the request shape and model header change per candidate.
+
+### 9.7 CALLS edge graph traversal (REQ-02 implementation spec)
+
+REQ-02 is locked at requirement level (`.planning/REQUIREMENTS.md`). The traversal spec for Phase 2/3 build, copied from GitNexus' production tuning (proven on multi-million-LOC repos):
+
+| Parameter | Value | Source / rationale |
+|-----------|-------|---------------------|
+| `calls_edge.confidence_min` | `0.5` | GitNexus default — filters dynamic-dispatch / unresolved-import edges with low static-analysis confidence |
+| `calls_edge.bfs_depth_limit` | `10` | GitNexus default — covers typical query horizon ("who calls X 5 hops away"), prevents pathological full-graph walks |
+| `calls_edge.bfs_branching_limit` | `4` per node | GitNexus default — caps fan-out at popular call-sites (e.g. `register()`, `log()`); first 4 per node is empirically the high-signal slice |
+| `calls_edge.terminal_kinds` | `[file_root, exported_api, test_function]` | stops at semantically-meaningful boundaries |
+| `calls_edge.cycle_detection` | visited-set per traversal | prevents recursive-call infinite loops |
+
+Algorithm: BFS from entry symbol → follow CALLS edges where `confidence ≥ 0.5` → at each node take first 4 outgoing edges → halt at `bfs_depth_limit` or terminal kind. Identical traversal serves both `list_callers` (reverse direction) and "what does X call" forward queries.
+
+**Why these specific numbers**: GitNexus tuned them across multi-million-LOC repos and surfaced them in their docs. Adopting their default avoids re-tuning from scratch and lets us focus Phase 2/3 measurement on CodeNexus-specific deviations. Re-tune only when an axis-3 query empirically fails on a CodeNexus corpus that GitNexus' params can't handle.
+
+### 9.8 Embedder version lock (D-W8)
+
+The embedder model is **pinned in config**. Changing the model requires a **full re-index** — partial migration is forbidden, no incremental embedding swap.
+
+| Field | Behavior |
+|-------|----------|
+| `retrieval.embedder.model` | Pinned in `config.toml`; loaded at startup |
+| `retrieval.embedder.version_hash` | SHA-256 of `(model_id, dim, prefix_strings)` stored in index metadata at build time |
+| Drift detection | At query time, compare config's `version_hash` against index's stored hash. Mismatch → refuse to serve, log explicit error, require full reindex |
+| Re-index trigger | Any change to model_id, dimensionality, or instruction prefix → full corpus reindex (~10 min for 2000 symbols, scales linearly) |
+
+**Rationale**: embedding spaces are not interpolable across models — vectors from `qwen3-embedding:0.6b` (1024d) and `jina-embeddings-v5-text-small` (768d) cannot be mixed in fusion, even after dimensionality projection. Phase 3 jina-v5 swap (per §9.3 Known Limits option (b)) WILL require full reindex. The version-hash gate makes this explicit instead of silently producing nonsense scores.
+
+Reference: this is a documented failure mode in production RAG systems (`embedding version drift` posts on r/MachineLearning, summer 2025). Catching it at startup beats debugging mysterious recall regressions later.
+
 ### 9.6 Pending storage backend pick (Phase 2 Spike)
 
 The storage trait shape is locked (D-R2). The implementation choice between `redb` (pure KV) and `rusqlite + sqlite-vec` (SQL + vector + FTS5 in one file) is a Phase 2 Spike output, not a Phase 1 decision. POC currently uses rusqlite + FTS5 + Rust-side cosine (no sqlite-vec extension); Phase 2 bench will determine the production pick. The trait abstraction allows either to land without re-architecting downstream code.

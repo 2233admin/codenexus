@@ -138,7 +138,25 @@ arm B catches more cases where hand-annotation is the source of error, exactly w
 
 ## Followups (not in this round)
 
-- Run N=3+ seeds with mean ± std reporting before any reranker decision
-- Consider running same eval against R3 (rerank-off) outputs to establish "headline number under graded judge" — if R3 graded κ is comparable to R4 graded κ, supports Path A as MVP
-- Add `concept_absent` flag distinct from `negative` in queries.json (R4 Cause B mitigation, surfaces clean in this report's NEG analysis)
-- Investigate whether axis-3 call-relation queries can be answered via GitNexus + gitnexus_query in a second-stage pipeline
+### R6 — Pairwise judge (next session, primary)
+
+Pivot from pointwise (judge each (query, hit) pair independently) to **pairwise** (judge two retrieval configs head-to-head per query). Direct fix for κ-tied-within-noise + 10× cost reduction.
+
+```
+Pairwise prompt: (query, candidates_A from rerank-off, candidates_B from rerank-on)
+LLM verdict: "Which top-5 better answers the query? A / B / tie"
+```
+
+- 30 queries × 1 pairwise call = **30 LLM calls / round** (vs current 300)
+- Compare R3 (RRF-only, α=0.6) vs R4 (RRF + jina-rerank, α=0.6 pool=50 threshold=0.30)
+- Report: A wins / B wins / tie counts per axis, plus pooled chi-square test for significance
+- Pairwise inter-rater agreement with humans is documented at >80% in RAG eval literature; that's the Phase 3 Gate-grade comparison method
+- Reuses ragas_spike.py scaffolding (async client, semaphore, prompt registry); add `--mode pairwise` flag
+
+### R7+ (deferred backlog)
+
+- **Chunk size sweep** (axis-2 lever) — currently snippet is whole-symbol body. Sweep `[128, 256, 512, 1024]` chars and measure axis-2 graded κ. 30-min experiment, possible 47.5% → 55%+ on axis 2.
+- **Static-graph augmented eval for axis-3** — once REQ-02 CALLS edge graph builds, route axis-3 queries through traversal not retrieval, then re-judge.
+- **`concept_absent` flag in queries.json** — R4 Cause B mitigation, distinguish "exact name absent / concept exists" from "concept absent". Currently mixed under one `negative` flag.
+- **R3 graded re-judge** — same arm B@t2 prompt over R3 results to establish rerank-off baseline under Rule 6 metric. Feeds R6 pairwise validity check.
+- **Fine-tuned judge (Phase 4+)** — Prometheus / JudgeLM route. R5+ raw judgments are now committed (per Rule 6 retention policy) to accumulate training data starting from this round.

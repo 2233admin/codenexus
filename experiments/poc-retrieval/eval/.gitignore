@@ -6,10 +6,10 @@ __pycache__/
 .ruff_cache/
 uv.lock.bak
 
-# Raw eval outputs — large + per-run noise. Narrative .md is canonical.
-round_*_results.json
-round_*_results_run*.json
-round_*_summary.json
-round_*_summary_run*.json
+# R5+ raw judgment files are committed (Rule 6 retention policy — fine-tune training data).
+# Pre-R5 results_round*.json remain untracked (existing convention).
+results_round*.json
+
+# Throwaway diagnostic files only
 _smoke*.json
 _probe_*.py

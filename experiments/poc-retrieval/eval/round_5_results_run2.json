@@ -1,0 +1,4082 @@
+[
+  {
+    "qid": "A1",
+    "axis": 1,
+    "query": "ObsidianAdapter",
+    "expected_paths": [
+      "ObsidianAdapter",
+      "adapters/obsidian"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\adapters\\obsidian.test.ts:adapter",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\obsidian.test.ts",
+      "name": "adapter",
+      "kind": "lexical_declaration",
+      "snippet": "const adapter = new ObsidianAdapter({ portFile: TMP_PORT_FILE });"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Code instantiates ObsidianAdapter class directly"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "Shows ObsidianAdapter instantiation in test file"
+    }
+  },
+  {
+    "qid": "A1",
+    "axis": 1,
+    "query": "ObsidianAdapter",
+    "expected_paths": [
+      "ObsidianAdapter",
+      "adapters/obsidian"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\adapters\\obsidian.test.ts:adapter",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\obsidian.test.ts",
+      "name": "adapter",
+      "kind": "lexical_declaration",
+      "snippet": "const adapter = new ObsidianAdapter({ portFile: TMP_PORT_FILE });"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Instantiates ObsidianAdapter class directly"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "Shows ObsidianAdapter instantiation in test file"
+    }
+  },
+  {
+    "qid": "A1",
+    "axis": 1,
+    "query": "ObsidianAdapter",
+    "expected_paths": [
+      "ObsidianAdapter",
+      "adapters/obsidian"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "mcp-server\\src\\adapters\\obsidian.test.ts:adapter",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\obsidian.test.ts",
+      "name": "adapter",
+      "kind": "lexical_declaration",
+      "snippet": "const adapter = new ObsidianAdapter({ portFile: TMP_PORT_FILE });"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Direct usage of ObsidianAdapter class"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "Shows ObsidianAdapter instantiation usage"
+    }
+  },
+  {
+    "qid": "A1",
+    "axis": 1,
+    "query": "ObsidianAdapter",
+    "expected_paths": [
+      "ObsidianAdapter",
+      "adapters/obsidian"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\adapters\\obsidian.test.ts:adapter",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\obsidian.test.ts",
+      "name": "adapter",
+      "kind": "lexical_declaration",
+      "snippet": "const adapter = new ObsidianAdapter({ portFile: TMP_PORT_FILE });"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Direct reference to ObsidianAdapter class"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "ObsidianAdapter instantiation shown directly"
+    }
+  },
+  {
+    "qid": "A1",
+    "axis": 1,
+    "query": "ObsidianAdapter",
+    "expected_paths": [
+      "ObsidianAdapter",
+      "adapters/obsidian"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "mcp-server\\src\\adapters\\obsidian.test.ts:adapter",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\obsidian.test.ts",
+      "name": "adapter",
+      "kind": "lexical_declaration",
+      "snippet": "const adapter = new ObsidianAdapter({ portFile: TMP_PORT_FILE });"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Directly references ObsidianAdapter class in code"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "Shows ObsidianAdapter instantiation in test file"
+    }
+  },
+  {
+    "qid": "A2",
+    "axis": 1,
+    "query": "VaultBrainAdapter",
+    "expected_paths": [
+      "VaultBrainAdapter",
+      "vault_brain",
+      "vault-brain",
+      "vaultbrain"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\adapters\\vaultbrain\\index.ts:VaultBrainAdapter",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\vaultbrain\\index.ts",
+      "name": "VaultBrainAdapter",
+      "kind": "class_declaration",
+      "snippet": "class VaultBrainAdapter implements VaultMindAdapter {\n  readonly name = \"vaultbrain\";\n  readonly capabilities: readonly AdapterCapability[] = [\"search\", \"embeddings\"];\n\n  private engine: VaultBrainEngine | null = null;\n\n  constructor(private readonly dataDir?: string) {}\n\n  async init(): Promise<void> {\n    const dir = this.dataDir ?? join(homedir(), \".vault-mind\", \"vaultbrain\");\n    try {\n      const engine = new PGliteEngine(dir);\n      await engine.connect();\n      await engine.initSchema();\n..."
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Exact class match for query"
+    },
+    "arm_b": {
+      "grade": 3,
+      "reason": "Exact class definition for VaultBrainAdapter"
+    }
+  },
+  {
+    "qid": "A2",
+    "axis": 1,
+    "query": "VaultBrainAdapter",
+    "expected_paths": [
+      "VaultBrainAdapter",
+      "vault_brain",
+      "vault-brain",
+      "vaultbrain"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\tests\\vaultbrain.test.ts:adapter",
+    "snip": {
+      "path": "mcp-server\\tests\\vaultbrain.test.ts",
+      "name": "adapter",
+      "kind": "lexical_declaration",
+      "snippet": "let adapter: VaultBrainAdapter;"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Declares variable typed VaultBrainAdapter"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Type declaration uses VaultBrainAdapter but isn't definition"
+    }
+  },
+  {
+    "qid": "A2",
+    "axis": 1,
+    "query": "VaultBrainAdapter",
+    "expected_paths": [
+      "VaultBrainAdapter",
+      "vault_brain",
+      "vault-brain",
+      "vaultbrain"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "mcp-server\\tests\\vaultbrain.test.ts:adapter",
+    "snip": {
+      "path": "mcp-server\\tests\\vaultbrain.test.ts",
+      "name": "adapter",
+      "kind": "lexical_declaration",
+      "snippet": "let adapter: VaultBrainAdapter;"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Code directly declares VaultBrainAdapter type variable"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "Directly references VaultBrainAdapter type in code"
+    }
+  },
+  {
+    "qid": "A2",
+    "axis": 1,
+    "query": "VaultBrainAdapter",
+    "expected_paths": [
+      "VaultBrainAdapter",
+      "vault_brain",
+      "vault-brain",
+      "vaultbrain"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\index.ts:vbAdapter",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "vbAdapter",
+      "kind": "lexical_declaration",
+      "snippet": "const vbAdapter = new VaultBrainAdapter();"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Code instantiates VaultBrainAdapter, directly matches query"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "Shows VaultBrainAdapter instantiation"
+    }
+  },
+  {
+    "qid": "A2",
+    "axis": 1,
+    "query": "VaultBrainAdapter",
+    "expected_paths": [
+      "VaultBrainAdapter",
+      "vault_brain",
+      "vault-brain",
+      "vaultbrain"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "mcp-server\\src\\index.ts:vaultBrainAdapter",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "vaultBrainAdapter",
+      "kind": "lexical_declaration",
+      "snippet": "let vaultBrainAdapter: VaultBrainAdapter | null = null;"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Variable declaration references VaultBrainAdapter type"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Declares variable but doesn't show adapter definition/implementation"
+    }
+  },
+  {
+    "qid": "A3",
+    "axis": 1,
+    "query": "assertRealPathInsideVault",
+    "expected_paths": [
+      "assertRealPathInsideVault"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\index.ts:assertRealPathInsideVault",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "assertRealPathInsideVault",
+      "kind": "method_definition",
+      "snippet": "private assertRealPathInsideVault(full: string): void {\n    const realTarget = existsSync(full)\n      ? realpathSync(full)\n      : this.realpathExistingAncestor(dirname(full));\n    const rel = relative(this.realVault, realTarget);\n    if (rel.startsWith(\"..\") || pathIsAbsolute(rel)) throw err(-32602, \"path traversal blocked\");\n  }"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Exact symbol name match with relevant implementation"
+    },
+    "arm_b": {
+      "grade": 3,
+      "reason": "Exact method definition match for query"
+    }
+  },
+  {
+    "qid": "A3",
+    "axis": 1,
+    "query": "assertRealPathInsideVault",
+    "expected_paths": [
+      "assertRealPathInsideVault"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\connector\\fs-transport.ts:assertRealPathInsideVault",
+    "snip": {
+      "path": "mcp-server\\src\\connector\\fs-transport.ts",
+      "name": "assertRealPathInsideVault",
+      "kind": "method_definition",
+      "snippet": "private assertRealPathInsideVault(full: string): void {\n    const realTarget = fs.existsSync(full)\n      ? fs.realpathSync(full)\n      : this.realpathExistingAncestor(path.dirname(full));\n    const rel = path.relative(this.realVault, realTarget);\n    if (rel.startsWith('..') || path.isAbsolute(rel))\n      throw { code: -32602, message: 'path traversal blocked' };\n  }"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Exact method name match with path traversal validation logic"
+    },
+    "arm_b": {
+      "grade": 3,
+      "reason": "Exact method name match, canonical implementation"
+    }
+  },
+  {
+    "qid": "A3",
+    "axis": 1,
+    "query": "assertRealPathInsideVault",
+    "expected_paths": [
+      "assertRealPathInsideVault"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "mcp-server\\src\\connector\\fs-transport.ts:resolve",
+    "snip": {
+      "path": "mcp-server\\src\\connector\\fs-transport.ts",
+      "name": "resolve",
+      "kind": "method_definition",
+      "snippet": "resolve(p: string, opts: { allowRoot?: boolean } = {}): string {\n    const normalized = this.normalizeVaultPath(p, opts);\n    const full = path.resolve(this.vault, normalized);\n    const rel = path.relative(this.vault, full);\n    if (rel.startsWith('..') || path.isAbsolute(rel))\n      throw { code: -32602, message: 'path escapes vault' };\n    this.assertRealPathInsideVault(full);\n    return full;\n  }"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Code calls assertRealPathInsideVault method"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "Shows function call in context but not definition"
+    }
+  },
+  {
+    "qid": "A3",
+    "axis": 1,
+    "query": "assertRealPathInsideVault",
+    "expected_paths": [
+      "assertRealPathInsideVault"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\index.ts:resolve",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "resolve",
+      "kind": "method_definition",
+      "snippet": "resolve(p: string, opts: { allowRoot?: boolean } = {}): string {\n    const normalized = this.normalizeVaultPath(p, opts);\n    const full = resolve(this.vault, normalized);\n    const rel = relative(this.vault, full);\n    if (rel.startsWith(\"..\") || pathIsAbsolute(rel)) throw err(-32602, \"path escapes vault\");\n    this.assertRealPathInsideVault(full);\n    return full;\n  }"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Code directly calls assertRealPathInsideVault method"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Only calls the method, doesn't show its implementation"
+    }
+  },
+  {
+    "qid": "A3",
+    "axis": 1,
+    "query": "assertRealPathInsideVault",
+    "expected_paths": [
+      "assertRealPathInsideVault"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "mcp-server\\src\\index.ts:VaultFs",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "VaultFs",
+      "kind": "class_declaration",
+      "snippet": "class VaultFs {\n  private readonly vault: string;\n  private readonly realVault: string;\n  constructor(vaultPath: string) {\n    this.vault = resolve(vaultPath);\n    this.realVault = realpathSync(this.vault);\n  }\n\n  normalizeVaultPath(p: string, opts: { allowRoot?: boolean } = {}): string {\n    if (typeof p !== \"string\") throw err(-32602, \"path required\");\n    const raw = p.trim();\n    if (opts.allowRoot && (raw === \"\" || raw === \".\" || raw === \"/\" || raw === \"./\" || raw === \".\\\\\")) {\n      return..."
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "No assertRealPathInsideVault function found"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Related vault path handling with realpathSync, but missing the specific assertRealPathInsideVault function"
+    }
+  },
+  {
+    "qid": "A4",
+    "axis": 1,
+    "query": "PROTECTED_DIRS",
+    "expected_paths": [
+      "PROTECTED_DIRS"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\core\\operations.ts:PROTECTED_DIRS",
+    "snip": {
+      "path": "mcp-server\\src\\core\\operations.ts",
+      "name": "PROTECTED_DIRS",
+      "kind": "lexical_declaration",
+      "snippet": "const PROTECTED_DIRS = new Set(['.obsidian', '.trash', '.git', 'node_modules']);"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "PROTECTED_DIRS constant directly matches the query"
+    },
+    "arm_b": {
+      "grade": 3,
+      "reason": "Exact symbol match defines PROTECTED_DIRS"
+    }
+  },
+  {
+    "qid": "A4",
+    "axis": 1,
+    "query": "PROTECTED_DIRS",
+    "expected_paths": [
+      "PROTECTED_DIRS"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\connector\\fs-transport.ts:PROTECTED_DIRS",
+    "snip": {
+      "path": "mcp-server\\src\\connector\\fs-transport.ts",
+      "name": "PROTECTED_DIRS",
+      "kind": "lexical_declaration",
+      "snippet": "const PROTECTED_DIRS = new Set(['.obsidian', '.trash', '.git', 'node_modules']);"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Exact match for PROTECTED_DIRS constant declaration"
+    },
+    "arm_b": {
+      "grade": 3,
+      "reason": "Exact symbol match for PROTECTED_DIRS definition"
+    }
+  },
+  {
+    "qid": "A4",
+    "axis": 1,
+    "query": "PROTECTED_DIRS",
+    "expected_paths": [
+      "PROTECTED_DIRS"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "mcp-server\\src\\index.ts:PROTECTED_DIRS",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "PROTECTED_DIRS",
+      "kind": "lexical_declaration",
+      "snippet": "const PROTECTED_DIRS = new Set([\".obsidian\", \".trash\", \".git\", \"node_modules\"]);"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Exact match for PROTECTED_DIRS constant definition"
+    },
+    "arm_b": {
+      "grade": 3,
+      "reason": "Exact match for PROTECTED_DIRS symbol definition"
+    }
+  },
+  {
+    "qid": "A4",
+    "axis": 1,
+    "query": "PROTECTED_DIRS",
+    "expected_paths": [
+      "PROTECTED_DIRS"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\index.ts:subDirs",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "subDirs",
+      "kind": "lexical_declaration",
+      "snippet": "const subDirs = entries.filter(\n            (e) => e.isDirectory() && !PROTECTED_DIRS.has(e.name) && !extraSkip.has(e.name),\n          ).map((e) => e.name).sort();"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Code directly references and uses PROTECTED_DIRS constant"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "Uses PROTECTED_DIRS in filter but doesn't show definition"
+    }
+  },
+  {
+    "qid": "A4",
+    "axis": 1,
+    "query": "PROTECTED_DIRS",
+    "expected_paths": [
+      "PROTECTED_DIRS"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "mcp-server\\src\\core\\operations.ts:walk",
+    "snip": {
+      "path": "mcp-server\\src\\core\\operations.ts",
+      "name": "walk",
+      "kind": "lexical_declaration",
+      "snippet": "const walk = (dir: string): void => {\r\n          for (const entry of readdirSync(dir, { withFileTypes: true })) {\r\n            if (entry.isDirectory()) {\r\n              if (!PROTECTED_DIRS.has(entry.name)) walk(join(dir, entry.name));\r\n            } else if (entry.isFile() && entry.name.endsWith('.md')) {\r\n              files.push(join(dir, entry.name));\r\n            }\r\n          }\r\n        };"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Code shows usage of PROTECTED_DIRS within a walk function, but the retrieved symbol is 'lexical_declaration walk', not PROTECTED_DIRS itself. The query seeks PROTECTED_DIRS definition/declaration, not its usage."
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Shows usage of PROTECTED_DIRS but not its definition"
+    }
+  },
+  {
+    "qid": "A5",
+    "axis": 1,
+    "query": "concept_graph run function",
+    "expected_paths": [
+      "concept_graph"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\compile-trigger.ts:run",
+    "snip": {
+      "path": "mcp-server\\src\\compile-trigger.ts",
+      "name": "run",
+      "kind": "method_definition",
+      "snippet": "async run(topic?: string): Promise<CompileResult> {\n    if (this.running) {\n      return {\n        ok: false,\n        topic: topic ?? \"unknown\",\n        sourcesCompiled: 0,\n        conceptsCreated: 0,\n        contradictions: 0,\n        error: \"Compilation already running\",\n        timestamp: new Date().toISOString(),\n      };\n    }\n\n    const targetTopic = topic ?? this.detectTopic();\n    if (!targetTopic) {\n      return {\n        ok: false,\n        topic: \"\",\n        sourcesCompiled: 0,\n       ..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Unrelated: compile-trigger run method, not concept_graph related"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Run method exists but handles compilation triggering, not concept_graph function specifically"
+    }
+  },
+  {
+    "qid": "A5",
+    "axis": 1,
+    "query": "concept_graph run function",
+    "expected_paths": [
+      "concept_graph"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\scripts\\memu-perf.ts:runWarm",
+    "snip": {
+      "path": "mcp-server\\src\\scripts\\memu-perf.ts",
+      "name": "runWarm",
+      "kind": "function_declaration",
+      "snippet": "async function runWarm(args: Args): Promise<number[]> {\n  const adapter = new MemUAdapter({ dsn: args.dsn, userId: args.userId });\n  await adapter.init();\n  if (!adapter.isAvailable) {\n    await adapter.dispose();\n    throw new Error(\"adapter unavailable during warm run\");\n  }\n  const samples: number[] = [];\n  try {\n    // Throwaway query to prime PG query planner -- first call includes parse/plan.\n    await adapter.search(args.query);\n    for (let i = 0; i < args.iters; i++) {\n      const t0 = ..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "No connection to concept_graph"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Mentions run in function name but unrelated to concept_graph"
+    }
+  },
+  {
+    "qid": "A5",
+    "axis": 1,
+    "query": "concept_graph run function",
+    "expected_paths": [
+      "concept_graph"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "mcp-server\\src\\scripts\\memu-perf.ts:runCold",
+    "snip": {
+      "path": "mcp-server\\src\\scripts\\memu-perf.ts",
+      "name": "runCold",
+      "kind": "function_declaration",
+      "snippet": "async function runCold(args: Args): Promise<number[]> {\n  const samples: number[] = [];\n  for (let i = 0; i < args.iters; i++) {\n    const adapter = new MemUAdapter({ dsn: args.dsn, userId: args.userId });\n    await adapter.init();\n    if (!adapter.isAvailable) {\n      await adapter.dispose();\n      throw new Error(\n        \"adapter unavailable during cold run -- check MEMU_DSN / PG reachable\",\n      );\n    }\n    const t0 = performance.now();\n    await adapter.search(args.query);\n    samples.pus..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "No concept_graph references found; unrelated adapter perf test"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "No concept_graph relevance; unrelated perf test code"
+    }
+  },
+  {
+    "qid": "A5",
+    "axis": 1,
+    "query": "concept_graph run function",
+    "expected_paths": [
+      "concept_graph"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\scripts\\generate-tools-doc.ts:renderDoc",
+    "snip": {
+      "path": "mcp-server\\src\\scripts\\generate-tools-doc.ts",
+      "name": "renderDoc",
+      "kind": "function_declaration",
+      "snippet": "function renderDoc(ops: Operation[]): string {\r\n  const byNs = new Map<string, Operation[]>();\r\n  for (const op of ops) {\r\n    if (!byNs.has(op.namespace)) byNs.set(op.namespace, []);\r\n    byNs.get(op.namespace)!.push(op);\r\n  }\r\n\r\n  const header = [\r\n    '# MCP Tools Reference',\r\n    '',\r\n    '> Auto-generated from `mcp-server/src/core/operations.ts`.',\r\n    '> Run `npm run generate-tools-doc` to regenerate. Do not edit by hand.',\r\n    '',\r\n    `Total: **${ops.length}** operations across **${byN..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Unrelated to concept_graph run function"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "Documentation generation script unrelated to concept_graph"
+    }
+  },
+  {
+    "qid": "A5",
+    "axis": 1,
+    "query": "concept_graph run function",
+    "expected_paths": [
+      "concept_graph"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "recipes\\collectors\\wechatmsg-collector.ts:fetchChatHistory",
+    "snip": {
+      "path": "recipes\\collectors\\wechatmsg-collector.ts",
+      "name": "fetchChatHistory",
+      "kind": "function_declaration",
+      "snippet": "async function fetchChatHistory(\n  username: string,\n  sinceTime: number,\n  isFirstRun: boolean,\n): Promise<WeChatMessage[]> {\n  const path = `/api/getChatHistory/${encodeURIComponent(username)}?page=1&pageSize=100`;\n  const r = await apiGet<{ code: number; data: { data: WeChatMessage[]; total: number } }>(path);\n\n  if (r.code !== 200) {\n    process.stderr.write(`[wechatmsg-collector] WARN: getChatHistory ${username} code=${r.code}, skipping\\n`);\n    return [];\n  }\n\n  const all: WeChatMessage[] ..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "WeChat collector unrelated to concept_graph query"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "WeChat chat fetch unrelated to concept_graph run"
+    }
+  },
+  {
+    "qid": "A6",
+    "axis": 1,
+    "query": "validatedArgs",
+    "expected_paths": [
+      "validatedArgs"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\connector\\connector.ts:validatedArgs",
+    "snip": {
+      "path": "mcp-server\\src\\connector\\connector.ts",
+      "name": "validatedArgs",
+      "kind": "lexical_declaration",
+      "snippet": "const validatedArgs = validateParams(op.params, toolArgs as Record<string, unknown>);"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Code declares validatedArgs variable directly matching query"
+    },
+    "arm_b": {
+      "grade": 3,
+      "reason": "Exact symbol declaration for validatedArgs"
+    }
+  },
+  {
+    "qid": "A6",
+    "axis": 1,
+    "query": "validatedArgs",
+    "expected_paths": [
+      "validatedArgs"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\index.ts:validatedArgs",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "validatedArgs",
+      "kind": "lexical_declaration",
+      "snippet": "const validatedArgs = validateParams(op.params, toolArgs);"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Exact match for validatedArgs variable declaration"
+    },
+    "arm_b": {
+      "grade": 3,
+      "reason": "Directly declares validatedArgs variable definition"
+    }
+  },
+  {
+    "qid": "A6",
+    "axis": 1,
+    "query": "validatedArgs",
+    "expected_paths": [
+      "validatedArgs"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "mcp-server\\src\\connector\\connector.ts:result",
+    "snip": {
+      "path": "mcp-server\\src\\connector\\connector.ts",
+      "name": "result",
+      "kind": "lexical_declaration",
+      "snippet": "const result = await op.handler(ctx, validatedArgs);"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Code explicitly uses validatedArgs as parameter"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "Shows validatedArgs passed to handler function"
+    }
+  },
+  {
+    "qid": "A6",
+    "axis": 1,
+    "query": "validatedArgs",
+    "expected_paths": [
+      "validatedArgs"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\index.ts:result",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "result",
+      "kind": "lexical_declaration",
+      "snippet": "const result: Record<string, string> = {};"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Symbol name is 'result', not validatedArgs; unrelated code"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "Snippet shows unrelated 'result' variable declaration"
+    }
+  },
+  {
+    "qid": "A6",
+    "axis": 1,
+    "query": "validatedArgs",
+    "expected_paths": [
+      "validatedArgs"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "mcp-server\\src\\core\\validate.ts:validateParams",
+    "snip": {
+      "path": "mcp-server\\src\\core\\validate.ts",
+      "name": "validateParams",
+      "kind": "function_declaration",
+      "snippet": "function validateParams(\r\n  schema: Record<string, ParamDef>,\r\n  raw: Record<string, unknown>,\r\n): Record<string, unknown> {\r\n  const result: Record<string, unknown> = {};\r\n\r\n  for (const [key, def] of Object.entries(schema)) {\r\n    let val = raw[key];\r\n\r\n    if (val === undefined || val === null) {\r\n      if (def.required) {\r\n        throw new ValidationError(`Missing required param: ${key}`);\r\n      }\r\n      if (def.default !== undefined) {\r\n        result[key] = def.default;\r\n      }\r\n      c..."
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "validateParams deals with validating arguments against schema"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "validateParams validates arguments against schema"
+    }
+  },
+  {
+    "qid": "A7",
+    "axis": 1,
+    "query": "kb_meta",
+    "expected_paths": [
+      "kb_meta"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\compile-trigger.ts:kbMeta",
+    "snip": {
+      "path": "mcp-server\\src\\compile-trigger.ts",
+      "name": "kbMeta",
+      "kind": "lexical_declaration",
+      "snippet": "const kbMeta = resolve(this.compilerPath, \"kb_meta.py\");"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Directly references kb_meta.py file"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "References kb_meta.py file but only as path resolution, not actual implementation"
+    }
+  },
+  {
+    "qid": "A7",
+    "axis": 1,
+    "query": "kb_meta",
+    "expected_paths": [
+      "kb_meta"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\compile-trigger.ts:loadInitialDirty",
+    "snip": {
+      "path": "mcp-server\\src\\compile-trigger.ts",
+      "name": "loadInitialDirty",
+      "kind": "method_definition",
+      "snippet": "async loadInitialDirty(): Promise<void> {\n    if (!this.vaultPath) return;\n    const kbMeta = resolve(this.compilerPath, \"kb_meta.py\");\n    if (!existsSync(kbMeta)) return;\n\n    let topics: string[];\n    try {\n      topics = readdirSync(this.vaultPath, { withFileTypes: true })\n        .filter((d) => d.isDirectory() && existsSync(resolve(this.vaultPath, d.name, \"_meta.json\")))\n        .map((d) => d.name);\n    } catch {\n      return;\n    }\n\n    for (const topic of topics) {\n      try {\n        con..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Code explicitly references kb_meta.py file path"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "mentions kb_meta.py file, tangential"
+    }
+  },
+  {
+    "qid": "A7",
+    "axis": 1,
+    "query": "kb_meta",
+    "expected_paths": [
+      "kb_meta"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "recipes\\collectors\\wechatmsg-collector.ts:extractText",
+    "snip": {
+      "path": "recipes\\collectors\\wechatmsg-collector.ts",
+      "name": "extractText",
+      "kind": "function_declaration",
+      "snippet": "function extractText(msg: WeChatMessage): string {\n  const raw = msg.DisplayFullContent ?? '';\n  switch (msg.Type) {\n    case 1:    return raw.replace(/\\n/g, ' ').slice(0, 120);\n    case 3:    return '[图片]';\n    case 34:   return '[语音]';\n    case 43:   return '[视频]';\n    case 47:   return '[表情包]';\n    case 49: {\n      // Usually \"type:title\" or just a title\n      const colonIdx = raw.indexOf(':');\n      if (colonIdx > 0 && colonIdx < 20) {\n        const title = raw.slice(colonI..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "WeChat message extractor unrelated to kb_meta"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "No mention of kb_meta, unrelated WeChat text extraction code"
+    }
+  },
+  {
+    "qid": "A7",
+    "axis": 1,
+    "query": "kb_meta",
+    "expected_paths": [
+      "kb_meta"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\adapters\\interface.ts:SearchResult",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\interface.ts",
+      "name": "SearchResult",
+      "kind": "interface_declaration",
+      "snippet": "interface SearchResult {\n  /** Source adapter name */\n  source: string;\n  /** Path or identifier within the adapter */\n  path: string;\n  /** Matched content snippet */\n  content: string;\n  /** Relevance score 0-1 (adapter-specific) */\n  score: number;\n  /** Optional metadata */\n  metadata?: Record<string, unknown>;\n}"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Generic search result interface, not kb_meta related"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Generic metadata field only"
+    }
+  },
+  {
+    "qid": "A7",
+    "axis": 1,
+    "query": "kb_meta",
+    "expected_paths": [
+      "kb_meta"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "recipes\\collectors\\weflow-collector.ts:extractText",
+    "snip": {
+      "path": "recipes\\collectors\\weflow-collector.ts",
+      "name": "extractText",
+      "kind": "function_declaration",
+      "snippet": "function extractText(msg: WeFlowMessage): string {\n  switch (msg.type) {\n    case 'image': return '[图片]';\n    case 'voice': return '[语音]';\n    case 'video': return '[视频]';\n    case 'text':\n      return (msg.content ?? '').replace(/\\n/g, ' ').slice(0, 120);\n    default: {\n      const content = (msg.content ?? '').trim();\n      if (content) return content.replace(/\\n/g, ' ').slice(0, 120);\n      return `[${msg.type}]`;\n    }\n  }\n}"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "unrelated functionality no kb_meta connection"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "No relationship to kb_meta"
+    }
+  },
+  {
+    "qid": "A8",
+    "axis": 1,
+    "query": "Node tags field",
+    "expected_paths": [
+      "Node"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\connector\\fs-transport.ts:orphans",
+    "snip": {
+      "path": "mcp-server\\src\\connector\\fs-transport.ts",
+      "name": "orphans",
+      "kind": "lexical_declaration",
+      "snippet": "const orphans = type === 'resolved' || type === 'both'\r\n          ? nodes.filter(n => n.exists && n.path.endsWith('.md') && !inbound.has(n.path)).map(n => n.path)\r\n          : [];"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Code is about orphan file detection, not node tags field"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "Code filters markdown files, unrelated to node tags"
+    }
+  },
+  {
+    "qid": "A8",
+    "axis": 1,
+    "query": "Node tags field",
+    "expected_paths": [
+      "Node"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\adapters\\vaultbrain\\index.ts:extractTags",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\vaultbrain\\index.ts",
+      "name": "extractTags",
+      "kind": "function_declaration",
+      "snippet": "function extractTags(content: string): string[] {\n  const frontmatter = content.match(/^---\\n([\\s\\S]*?)\\n---/);\n  if (!frontmatter) return [];\n  const inlineTags = frontmatter[1].match(/^tags:\\s*\\[([^\\]]+)\\]/m);\n  const blockTags = frontmatter[1].match(/^tags:\\s*\\n((?:\\s*-\\s*.+\\n?)+)/m);\n  const tagSource = inlineTags?.[1] ?? blockTags?.[1];\n  if (!tagSource) return [];\n  return tagSource\n    .split(/[\\n,]/)\n    .map((t) => t.replace(/^-\\s*/, \"\").replace(/['\"]/g, \"\").trim())\n    .filter(Boolean)..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "extracts and parses tags field"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Parses frontmatter tags, not Node tags field"
+    }
+  },
+  {
+    "qid": "A8",
+    "axis": 1,
+    "query": "Node tags field",
+    "expected_paths": [
+      "Node"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "recipes\\collectors\\circleback-collector.ts:formatNote",
+    "snip": {
+      "path": "recipes\\collectors\\circleback-collector.ts",
+      "name": "formatNote",
+      "kind": "function_declaration",
+      "snippet": "function formatNote(note: CirclebackNote): string {\n  const parts: string[] = [`### ${note.title}`];\n  parts.push(`> ${datePart(note.date)}\\n`);\n\n  const attendees = formatAttendees(note.attendees);\n  if (attendees) parts.push(attendees);\n\n  if (note.summary) {\n    parts.push(`**Summary:**\\n${note.summary}\\n`);\n  }\n\n  if (note.next_steps) {\n    parts.push(`**Next Steps:**\\n${note.next_steps}\\n`);\n  }\n\n  const actionItems = formatActionItems(note.action_items);\n  if (actionItems) parts.push(actio..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Code formats meeting notes, unrelated to node tags"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "No mention of node tags in snippet"
+    }
+  },
+  {
+    "qid": "A8",
+    "axis": 1,
+    "query": "Node tags field",
+    "expected_paths": [
+      "Node"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\adapters\\vaultbrain\\pglite-engine.ts:upsertTag",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\vaultbrain\\pglite-engine.ts",
+      "name": "upsertTag",
+      "kind": "method_definition",
+      "snippet": "async upsertTag(slug: string, tag: string): Promise<void> {\n    await this.requireDb().query(\n      `INSERT INTO tags (slug, tag)\n       VALUES ($1, $2)\n       ON CONFLICT (slug, tag) DO NOTHING`,\n      [slug, tag],\n    );\n  }"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Generic tag insert method, not node tag field"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Deals with tags but in database adapter context, not node field"
+    }
+  },
+  {
+    "qid": "A8",
+    "axis": 1,
+    "query": "Node tags field",
+    "expected_paths": [
+      "Node"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "mcp-server\\src\\recipes\\recipes.test.ts:content",
+    "snip": {
+      "path": "mcp-server\\src\\recipes\\recipes.test.ts",
+      "name": "content",
+      "kind": "lexical_declaration",
+      "snippet": "const content = `---\nid: ver-num\nname: Version Number Test\nversion: 1\ndescription: version is integer\ncategory: infra\n---\n\nBody.\n`;"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Recipe metadata fields unrelated to node tags"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "No mention of tags or nodes"
+    }
+  },
+  {
+    "qid": "A9",
+    "axis": 1,
+    "query": "parseYAMLFrontmatter",
+    "expected_paths": [],
+    "negative": true,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\connector\\fs-transport.ts:parseFrontmatter",
+    "snip": {
+      "path": "mcp-server\\src\\connector\\fs-transport.ts",
+      "name": "parseFrontmatter",
+      "kind": "method_definition",
+      "snippet": "parseFrontmatter(content: string): FrontmatterValue | null {\r\n    if (!content.startsWith('---')) return null;\r\n    const end = content.indexOf('\\n---', 3);\r\n    if (end === -1) return null;\r\n    const block = content.slice(4, end);\r\n    const fm: FrontmatterValue = {};\r\n    let currentKey: string | null = null;\r\n    let inArray = false;\r\n    let arrayItems: unknown[] = [];\r\n    for (const line of block.split('\\n')) {\r\n      const trimmed = line.trim();\r\n      if (!trimmed || trimmed.startsWith(..."
+    },
+    "hand_p_at_5": -0.25,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "parseFrontmatter method parses YAML frontmatter"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "Directly parses YAML frontmatter blocks"
+    }
+  },
+  {
+    "qid": "A9",
+    "axis": 1,
+    "query": "parseYAMLFrontmatter",
+    "expected_paths": [],
+    "negative": true,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\recipes\\_framework.ts:parseRecipe",
+    "snip": {
+      "path": "mcp-server\\src\\recipes\\_framework.ts",
+      "name": "parseRecipe",
+      "kind": "function_declaration",
+      "snippet": "function parseRecipe(filePath: string): Recipe {\r\n  const content = readFileSync(filePath, 'utf8');\r\n\r\n  const fmMatch = content.match(/^---\\r?\\n([\\s\\S]*?)\\r?\\n---\\r?\\n([\\s\\S]*)/);\r\n  if (!fmMatch) {\r\n    throw new Error(`Recipe file has no valid frontmatter: ${filePath}`);\r\n  }\r\n\r\n  const yamlText = fmMatch[1];\r\n  const body = fmMatch[2];\r\n\r\n  const raw = parseYaml(yamlText);\r\n\r\n  // Validate required fields\r\n  const required = ['id', 'name', 'version', 'description', 'category'] as const;\r\n  f..."
+    },
+    "hand_p_at_5": -0.25,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Code parses YAML frontmatter from files using regex pattern matching and parseYaml function"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "Parses YAML frontmatter using regex and parseYaml"
+    }
+  },
+  {
+    "qid": "A9",
+    "axis": 1,
+    "query": "parseYAMLFrontmatter",
+    "expected_paths": [],
+    "negative": true,
+    "hit_idx": 2,
+    "hit_str": "mcp-server\\src\\index.ts:parseFrontmatter",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "parseFrontmatter",
+      "kind": "method_definition",
+      "snippet": "parseFrontmatter(content: string): Record<string, unknown> | null {\n    if (!content.startsWith(\"---\")) return null;\n    const end = content.indexOf(\"\\n---\", 3);\n    if (end === -1) return null;\n    const block = content.slice(4, end);\n    const fm: Record<string, unknown> = {};\n    let currentKey: string | null = null;\n    let inArray = false;\n    let arrayItems: unknown[] = [];\n    for (const line of block.split(\"\\n\")) {\n      const trimmed = line.trim();\n      if (!trimmed || trimmed.startsWi..."
+    },
+    "hand_p_at_5": -0.25,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "parseFrontmatter method directly parses YAML-style frontmatter delimiters"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "parseFrontmatter method directly implements frontmatter parsing functionality"
+    }
+  },
+  {
+    "qid": "A9",
+    "axis": 1,
+    "query": "parseYAMLFrontmatter",
+    "expected_paths": [],
+    "negative": true,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\recipes\\_framework.ts:parseYaml",
+    "snip": {
+      "path": "mcp-server\\src\\recipes\\_framework.ts",
+      "name": "parseYaml",
+      "kind": "function_declaration",
+      "snippet": "function parseYaml(text: string): Record<string, unknown> {\r\n  const result: Record<string, unknown> = {};\r\n  const lines = text.split('\\n');\r\n  let i = 0;\r\n\r\n  while (i < lines.length) {\r\n    const line = lines[i];\r\n    // Skip blank lines and comments\r\n    if (line.trim() === '' || line.trim().startsWith('#')) { i++; continue; }\r\n\r\n    const topMatch = line.match(/^([a-zA-Z_][a-zA-Z0-9_]*):\\s*(.*)/);\r\n    if (!topMatch) { i++; continue; }\r\n\r\n    const key = topMatch[1];\r\n    const rest = topMa..."
+    },
+    "hand_p_at_5": -0.25,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Function parses YAML but lacks frontmatter delimiters"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "Parses YAML directly, may handle frontmatter"
+    }
+  },
+  {
+    "qid": "A9",
+    "axis": 1,
+    "query": "parseYAMLFrontmatter",
+    "expected_paths": [],
+    "negative": true,
+    "hit_idx": 4,
+    "hit_str": "mcp-server\\src\\index.ts:fm",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "fm",
+      "kind": "lexical_declaration",
+      "snippet": "const fm: Record<string, unknown> = {};"
+    },
+    "hand_p_at_5": -0.25,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Empty object declaration unrelated to YAML parsing"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "Empty variable declaration unrelated to YAML parsing"
+    }
+  },
+  {
+    "qid": "A10",
+    "axis": 1,
+    "query": "OAuth2Provider",
+    "expected_paths": [],
+    "negative": true,
+    "hit_idx": 0,
+    "hit_str": "recipes\\collectors\\gmail-setup.ts:tokenRes",
+    "snip": {
+      "path": "recipes\\collectors\\gmail-setup.ts",
+      "name": "tokenRes",
+      "kind": "lexical_declaration",
+      "snippet": "const tokenRes = await fetch('https://oauth2.googleapis.com/token', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },\n  body: new URLSearchParams({\n    code,\n    client_id: CLIENT_ID,\n    client_secret: CLIENT_SECRET,\n    redirect_uri: REDIRECT_URI,\n    grant_type: 'authorization_code',\n  }),\n});"
+    },
+    "hand_p_at_5": -0.25,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Code performs OAuth2 token exchange but does not implement or define an OAuth2Provider"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Partial OAuth2 usage, not provider definition"
+    }
+  },
+  {
+    "qid": "A10",
+    "axis": 1,
+    "query": "OAuth2Provider",
+    "expected_paths": [],
+    "negative": true,
+    "hit_idx": 1,
+    "hit_str": "recipes\\collectors\\gmail-collector.ts:TOKEN_URL",
+    "snip": {
+      "path": "recipes\\collectors\\gmail-collector.ts",
+      "name": "TOKEN_URL",
+      "kind": "lexical_declaration",
+      "snippet": "const TOKEN_URL = 'https://oauth2.googleapis.com/token';"
+    },
+    "hand_p_at_5": -0.25,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "OAuth token URL constant, not a provider"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "URL constant mentions oauth2 but lacks provider functionality"
+    }
+  },
+  {
+    "qid": "A10",
+    "axis": 1,
+    "query": "OAuth2Provider",
+    "expected_paths": [],
+    "negative": true,
+    "hit_idx": 2,
+    "hit_str": "recipes\\collectors\\gmail-setup.ts:authUrl",
+    "snip": {
+      "path": "recipes\\collectors\\gmail-setup.ts",
+      "name": "authUrl",
+      "kind": "lexical_declaration",
+      "snippet": "const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');"
+    },
+    "hand_p_at_5": -0.25,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "URL construction unrelated to provider implementation"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "OAuth2 context, not a Provider definition"
+    }
+  },
+  {
+    "qid": "A10",
+    "axis": 1,
+    "query": "OAuth2Provider",
+    "expected_paths": [],
+    "negative": true,
+    "hit_idx": 3,
+    "hit_str": "recipes\\collectors\\gmail-setup.ts:server",
+    "snip": {
+      "path": "recipes\\collectors\\gmail-setup.ts",
+      "name": "server",
+      "kind": "lexical_declaration",
+      "snippet": "const server = createServer((req, res) => {\n    const url = new URL(req.url ?? '/', `http://localhost:${PORT}`);\n    if (url.pathname !== '/callback') {\n      res.writeHead(404);\n      res.end('Not found');\n      return;\n    }\n\n    const error = url.searchParams.get('error');\n    if (error) {\n      res.writeHead(400, { 'Content-Type': 'text/html' });\n      res.end(`<h2>OAuth error: ${error}</h2><p>You can close this tab.</p>`);\n      server.close();\n      reject(new Error(`OAuth error: ${error}`..."
+    },
+    "hand_p_at_5": -0.25,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "handles OAuth callback, not OAuth2Provider"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "OAuth callback handling, not provider definition"
+    }
+  },
+  {
+    "qid": "A10",
+    "axis": 1,
+    "query": "OAuth2Provider",
+    "expected_paths": [],
+    "negative": true,
+    "hit_idx": 4,
+    "hit_str": "recipes\\collectors\\gmail-setup.ts:code",
+    "snip": {
+      "path": "recipes\\collectors\\gmail-setup.ts",
+      "name": "code",
+      "kind": "lexical_declaration",
+      "snippet": "const code = await new Promise<string>((resolve, reject) => {\n  const server = createServer((req, res) => {\n    const url = new URL(req.url ?? '/', `http://localhost:${PORT}`);\n    if (url.pathname !== '/callback') {\n      res.writeHead(404);\n      res.end('Not found');\n      return;\n    }\n\n    const error = url.searchParams.get('error');\n    if (error) {\n      res.writeHead(400, { 'Content-Type': 'text/html' });\n      res.end(`<h2>OAuth error: ${error}</h2><p>You can close this tab.</p>`);\n    ..."
+    },
+    "hand_p_at_5": -0.25,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "OAuth callback server, not OAuth2Provider"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "OAuth callback handling, not OAuth2Provider"
+    }
+  },
+  {
+    "qid": "B1",
+    "axis": 2,
+    "query": "filesystem fallback when obsidian not running",
+    "expected_paths": [
+      "FilesystemAdapter",
+      "ObsidianAdapter",
+      "fallback",
+      "filesystem"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\adapters\\obsidian.ts:write",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\obsidian.ts",
+      "name": "write",
+      "kind": "method_definition",
+      "snippet": "async write(path: string, content: string, dryRun = false): Promise<void> {\n    if (!this.available) throw new Error(\"Obsidian not available\");\n    // Try modify first; if file doesn't exist, fall through to create\n    try {\n      await this.call(\"vault.modify\", { path, content, dryRun });\n    } catch (e) {\n      const msg = (e as Error).message;\n      if (\n        msg.includes(\"-32001\") ||          // RPC_FILE_NOT_FOUND\n        msg.includes(\"not found\") ||\n        msg.includes(\"FILE_NOT_FOUND\")..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Throws error instead of filesystem fallback"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "Addresses Obsidian unavailability but throws error"
+    }
+  },
+  {
+    "qid": "B1",
+    "axis": 2,
+    "query": "filesystem fallback when obsidian not running",
+    "expected_paths": [
+      "FilesystemAdapter",
+      "ObsidianAdapter",
+      "fallback",
+      "filesystem"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\index.ts:enabledAdapters",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "enabledAdapters",
+      "kind": "lexical_declaration",
+      "snippet": "const enabledAdapters = new Set(config.adapters ?? [\"filesystem\", \"memu\", \"gitnexus\", \"obsidian\", \"qmd\", \"vaultbrain\"]);"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Mentions both adapters but lacks fallback logic"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Mentions both adapters tangentially without fallback logic"
+    }
+  },
+  {
+    "qid": "B1",
+    "axis": 2,
+    "query": "filesystem fallback when obsidian not running",
+    "expected_paths": [
+      "FilesystemAdapter",
+      "ObsidianAdapter",
+      "fallback",
+      "filesystem"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "mcp-server\\src\\adapters\\obsidian.ts:read",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\obsidian.ts",
+      "name": "read",
+      "kind": "method_definition",
+      "snippet": "async read(path: string): Promise<string> {\n    if (!this.available) throw new Error(\"Obsidian not available\");\n    const raw = await this.call(\"vault.read\", { path });\n    return (raw as { content: string }).content;\n  }"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Throws error instead of filesystem fallback"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Shows error handling for unavailable Obsidian, but no filesystem fallback logic"
+    }
+  },
+  {
+    "qid": "B1",
+    "axis": 2,
+    "query": "filesystem fallback when obsidian not running",
+    "expected_paths": [
+      "FilesystemAdapter",
+      "ObsidianAdapter",
+      "fallback",
+      "filesystem"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\connector\\connector.ts:main",
+    "snip": {
+      "path": "mcp-server\\src\\connector\\connector.ts",
+      "name": "main",
+      "kind": "function_declaration",
+      "snippet": "async function main(): Promise<void> {\r\n  const info = readPortFile();\r\n  let transport: WsTransport | FsTransport;\r\n\r\n  if (info) {\r\n    try {\r\n      const ws = new WsTransport(info);\r\n      await ws.connect();\r\n      transport = ws;\r\n      process.stderr.write(`vault-mind connector: WS on port ${info.port}\\n`);\r\n    } catch (e: unknown) {\r\n      const msg = (e as Error).message;\r\n      process.stderr.write(`vault-mind connector: WS failed (${msg}), filesystem fallback\\n`);\r\n      transport = n..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Explicit filesystem fallback on WS failure"
+    },
+    "arm_b": {
+      "grade": 3,
+      "reason": "Explicit filesystem fallback on WS failure"
+    }
+  },
+  {
+    "qid": "B1",
+    "axis": 2,
+    "query": "filesystem fallback when obsidian not running",
+    "expected_paths": [
+      "FilesystemAdapter",
+      "ObsidianAdapter",
+      "fallback",
+      "filesystem"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "mcp-server\\src\\index.ts:main",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "main",
+      "kind": "function_declaration",
+      "snippet": "async function main(): Promise<void> {\n  const config = loadConfig();\n\n  // --- Adapter registry ---\n  const registry = new AdapterRegistry();\n\n  if (config.vault_path) {\n    const fsAdapter = new FilesystemAdapter(config.vault_path);\n    await fsAdapter.init();\n    registry.register(fsAdapter);\n  }\n\n  // Optional adapters -- init gracefully, don't block if unavailable\n  const enabledAdapters = new Set(config.adapters ?? [\"filesystem\", \"memu\", \"gitnexus\", \"obsidian\", \"qmd\", \"vaultbrain\"]);\n\n  if..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Shows filesystem adapter and obsidian adapter registration, relevant context for fallback logic"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "Shows filesystem adapter registration with graceful obsidian fallback handling"
+    }
+  },
+  {
+    "qid": "B2",
+    "axis": 2,
+    "query": "preflight check for protected directories",
+    "expected_paths": [
+      "assertRealPathInsideVault",
+      "PROTECTED_DIRS",
+      "preflight"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\core\\operations.ts:PROTECTED_DIRS",
+    "snip": {
+      "path": "mcp-server\\src\\core\\operations.ts",
+      "name": "PROTECTED_DIRS",
+      "kind": "lexical_declaration",
+      "snippet": "const PROTECTED_DIRS = new Set(['.obsidian', '.trash', '.git', 'node_modules']);"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Defines protected directories set for preflight checks"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "Defines protected directories directly used in preflight checks"
+    }
+  },
+  {
+    "qid": "B2",
+    "axis": 2,
+    "query": "preflight check for protected directories",
+    "expected_paths": [
+      "assertRealPathInsideVault",
+      "PROTECTED_DIRS",
+      "preflight"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\connector\\fs-transport.ts:PROTECTED_DIRS",
+    "snip": {
+      "path": "mcp-server\\src\\connector\\fs-transport.ts",
+      "name": "PROTECTED_DIRS",
+      "kind": "lexical_declaration",
+      "snippet": "const PROTECTED_DIRS = new Set(['.obsidian', '.trash', '.git', 'node_modules']);"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Defines protected directories set used in preflight checks"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Defines protected directories but shows no preflight check logic"
+    }
+  },
+  {
+    "qid": "B2",
+    "axis": 2,
+    "query": "preflight check for protected directories",
+    "expected_paths": [
+      "assertRealPathInsideVault",
+      "PROTECTED_DIRS",
+      "preflight"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "mcp-server\\src\\index.ts:PROTECTED_DIRS",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "PROTECTED_DIRS",
+      "kind": "lexical_declaration",
+      "snippet": "const PROTECTED_DIRS = new Set([\".obsidian\", \".trash\", \".git\", \"node_modules\"]);"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Data definition only, not the preflight check function itself"
+    },
+    "arm_b": {
+      "grade": 3,
+      "reason": "Defines protected directories for preflight checks"
+    }
+  },
+  {
+    "qid": "B2",
+    "axis": 2,
+    "query": "preflight check for protected directories",
+    "expected_paths": [
+      "assertRealPathInsideVault",
+      "PROTECTED_DIRS",
+      "preflight"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\index.ts:walkSubtree",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "walkSubtree",
+      "kind": "lexical_declaration",
+      "snippet": "const walkSubtree = (d: string): void => {\n          if (!existsSync(d)) return;\n          for (const ent of readdirSync(d, { withFileTypes: true })) {\n            const full = join(d, ent.name);\n            if (ent.isDirectory() && !PROTECTED_DIRS.has(ent.name)) walkSubtree(full);\n            else if (ent.isFile() && ent.name.endsWith(\".md\")) {\n              const content = readFileSync(full, \"utf-8\");\n              const fm = this.parseFrontmatter(content);\n              if (!fm) continue;\n   ..."
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Code checks PROTECTED_DIRS during directory traversal"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "Uses PROTECTED_DIRS set to skip protected directories during traversal"
+    }
+  },
+  {
+    "qid": "B2",
+    "axis": 2,
+    "query": "preflight check for protected directories",
+    "expected_paths": [
+      "assertRealPathInsideVault",
+      "PROTECTED_DIRS",
+      "preflight"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "mcp-server\\src\\index.ts:subDirs",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "subDirs",
+      "kind": "lexical_declaration",
+      "snippet": "const subDirs = entries.filter(\n            (e) => e.isDirectory() && !PROTECTED_DIRS.has(e.name) && !extraSkip.has(e.name),\n          ).map((e) => e.name).sort();"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Filters directories excluding protected ones"
+    },
+    "arm_b": {
+      "grade": 3,
+      "reason": "directly implements preflight check for protected directories"
+    }
+  },
+  {
+    "qid": "B3",
+    "axis": 2,
+    "query": "search files by tag",
+    "expected_paths": [
+      "searchByTag",
+      "vault_searchByTag",
+      "tags"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\adapters\\filesystem.ts:search",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\filesystem.ts",
+      "name": "search",
+      "kind": "method_definition",
+      "snippet": "async search(query: string, opts?: SearchOpts): Promise<SearchResult[]> {\n    const maxResults = opts?.maxResults ?? 20;\n    const args = [\n      \"--json\",\n      \"--fixed-strings\",   // treat query as literal, not regex (ReDoS protection)\n      \"--max-count\", \"3\",  // per-file cap (--max-count is per-file, not total)\n      \"--no-heading\",\n    ];\n\n    if (!opts?.caseSensitive) args.push(\"-i\");\n    if (opts?.glob) args.push(\"--glob\", opts.glob);\n    if (opts?.context) args.push(\"-C\", String(opts.c..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Text search method, not tag-based search"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Text search method, not tag-based"
+    }
+  },
+  {
+    "qid": "B3",
+    "axis": 2,
+    "query": "search files by tag",
+    "expected_paths": [
+      "searchByTag",
+      "vault_searchByTag",
+      "tags"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\adapters\\gitnexus.ts:search",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\gitnexus.ts",
+      "name": "search",
+      "kind": "method_definition",
+      "snippet": "async search(query: string, opts?: SearchOpts): Promise<SearchResult[]> {\n    if (!this.available) return [];\n    const limit = opts?.maxResults ?? 20;\n    const args = [\"query\", \"--json\", \"--limit\", String(limit), \"--\", query];\n\n    if (this.repos.length > 0) {\n      for (const repo of this.repos) {\n        args.push(\"--repo\", repo);\n      }\n    }\n\n    try {\n      const { stdout } = await exec(this.binary, args, {\n        timeout: this.timeout,\n        maxBuffer: 10 * 1024 * 1024,\n      });\n\n  ..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Generic query search, not tag-specific"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Search method but no tag functionality"
+    }
+  },
+  {
+    "qid": "B3",
+    "axis": 2,
+    "query": "search files by tag",
+    "expected_paths": [
+      "searchByTag",
+      "vault_searchByTag",
+      "tags"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "mcp-server\\src\\adapters\\vaultbrain\\pglite-engine.ts:searchKeyword",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\vaultbrain\\pglite-engine.ts",
+      "name": "searchKeyword",
+      "kind": "method_definition",
+      "snippet": "async searchKeyword(query: string, limit: number): Promise<ChunkResult[]> {\n    const { rows } = await this.requireDb().query<{\n      slug: string;\n      chunk_index: number;\n      chunk_text: string;\n      score: number;\n    }>(\n      `SELECT slug, chunk_index, chunk_text,\n              similarity(chunk_text, $1) AS score\n       FROM content_chunks\n       WHERE chunk_text % $1\n       ORDER BY score DESC\n       LIMIT $2`,\n      [query, limit],\n    );\n    return rows.map((r) => ({\n      slug: r.s..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Text similarity search, not tag-based file search"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Similarity search not tag search"
+    }
+  },
+  {
+    "qid": "B3",
+    "axis": 2,
+    "query": "search files by tag",
+    "expected_paths": [
+      "searchByTag",
+      "vault_searchByTag",
+      "tags"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\unified-query.ts:vectorAdapters",
+    "snip": {
+      "path": "mcp-server\\src\\unified-query.ts",
+      "name": "vectorAdapters",
+      "kind": "lexical_declaration",
+      "snippet": "const vectorAdapters = registry\n    .getByCapability(\"embeddings\")\n    .filter((a) => typeof a.searchByVector === \"function\");"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Code filters adapters by embeddings capability for vector search, not tag-based file search"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Searching by capability not tag"
+    }
+  },
+  {
+    "qid": "B3",
+    "axis": 2,
+    "query": "search files by tag",
+    "expected_paths": [
+      "searchByTag",
+      "vault_searchByTag",
+      "tags"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "mcp-server\\src\\adapters\\filesystem.ts:fallbackSearch",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\filesystem.ts",
+      "name": "fallbackSearch",
+      "kind": "method_definition",
+      "snippet": "private async fallbackSearch(query: string, opts?: SearchOpts): Promise<SearchResult[]> {\n    const args = [\"-r\", \"-l\", \"-i\", \"-F\", \"--\", query, this.vaultPath];  // -F = fixed string\n    try {\n      const { stdout } = await exec(\"grep\", args, { maxBuffer: 5 * 1024 * 1024 });\n      return stdout.split(\"\\n\").filter(Boolean).slice(0, opts?.maxResults ?? 20).map(p => ({\n        source: this.name,\n        path: relative(this.vaultPath, p),\n        content: \"\",\n        score: 1.0,\n      }));\n    } ca..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "grep text search, no tag functionality"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Text search method, not tag-specific"
+    }
+  },
+  {
+    "qid": "B4",
+    "axis": 2,
+    "query": "build concept graph from notes",
+    "expected_paths": [
+      "concept_graph",
+      "compile"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "recipes\\collectors\\circleback-collector.ts:buildDigest",
+    "snip": {
+      "path": "recipes\\collectors\\circleback-collector.ts",
+      "name": "buildDigest",
+      "kind": "function_declaration",
+      "snippet": "function buildDigest(notes: CirclebackNote[]): string {\n  const date = todayStr();\n\n  // Group by meeting date\n  const byDate = new Map<string, CirclebackNote[]>();\n  for (const note of notes) {\n    const d = datePart(note.date);\n    const group = byDate.get(d) ?? [];\n    group.push(note);\n    byDate.set(d, group);\n  }\n\n  const frontmatter = [\n    '---',\n    `date: ${date}`,\n    `source: circleback-to-vault`,\n    `type: digest`,\n    `meetings: ${notes.length}`,\n    '---',\n    '',\n    `# Meeting ..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Creates text digest, not graph"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Processes notes but creates digest, not graph"
+    }
+  },
+  {
+    "qid": "B4",
+    "axis": 2,
+    "query": "build concept graph from notes",
+    "expected_paths": [
+      "concept_graph",
+      "compile"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "recipes\\collectors\\circleback-collector.ts:digest",
+    "snip": {
+      "path": "recipes\\collectors\\circleback-collector.ts",
+      "name": "digest",
+      "kind": "lexical_declaration",
+      "snippet": "const digest = buildDigest(notes);"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Shows only a digest function call, no graph building logic"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Processes notes but no graph structure"
+    }
+  },
+  {
+    "qid": "B4",
+    "axis": 2,
+    "query": "build concept graph from notes",
+    "expected_paths": [
+      "concept_graph",
+      "compile"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "recipes\\collectors\\circleback-collector.ts:formatNote",
+    "snip": {
+      "path": "recipes\\collectors\\circleback-collector.ts",
+      "name": "formatNote",
+      "kind": "function_declaration",
+      "snippet": "function formatNote(note: CirclebackNote): string {\n  const parts: string[] = [`### ${note.title}`];\n  parts.push(`> ${datePart(note.date)}\\n`);\n\n  const attendees = formatAttendees(note.attendees);\n  if (attendees) parts.push(attendees);\n\n  if (note.summary) {\n    parts.push(`**Summary:**\\n${note.summary}\\n`);\n  }\n\n  if (note.next_steps) {\n    parts.push(`**Next Steps:**\\n${note.next_steps}\\n`);\n  }\n\n  const actionItems = formatActionItems(note.action_items);\n  if (actionItems) parts.push(actio..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "formats notes to markdown not graph"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "formats notes to markdown, not graph construction"
+    }
+  },
+  {
+    "qid": "B4",
+    "axis": 2,
+    "query": "build concept graph from notes",
+    "expected_paths": [
+      "concept_graph",
+      "compile"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "recipes\\collectors\\linear-collector.ts:buildIssueBlock",
+    "snip": {
+      "path": "recipes\\collectors\\linear-collector.ts",
+      "name": "buildIssueBlock",
+      "kind": "function_declaration",
+      "snippet": "function buildIssueBlock(group: StateGroup, issues: LinearIssue[]): string {\n  if (issues.length === 0) return '';\n  const label = STATE_LABELS[group];\n  const lines = issues.map(issue => {\n    const assignee = issue.assignee ? issue.assignee.name : 'unassigned';\n    const prio = formatPriority(issue.priority);\n    return `- [${issue.identifier}] ${issue.title} (${assignee}) -- ${prio} | ${issue.url}`;\n  });\n  return [`## ${label} (${issues.length})`, ...lines, ''].join('\\n');\n}"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Unrelated: formats issue blocks, not concept graphs"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "Irrelevant; builds issue blocks not concept graphs"
+    }
+  },
+  {
+    "qid": "B4",
+    "axis": 2,
+    "query": "build concept graph from notes",
+    "expected_paths": [
+      "concept_graph",
+      "compile"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "recipes\\collectors\\gmail-collector.ts:buildDigestEntry",
+    "snip": {
+      "path": "recipes\\collectors\\gmail-collector.ts",
+      "name": "buildDigestEntry",
+      "kind": "function_declaration",
+      "snippet": "function buildDigestEntry(msg: FullMessage): EmailDigestEntry {\n  const subject = header(msg, 'Subject') || '(no subject)';\n  const from = header(msg, 'From') || '(unknown sender)';\n  const date = header(msg, 'Date')\n    ? new Date(header(msg, 'Date')).toISOString().slice(0, 16).replace('T', ' ')\n    : msg.internalDate\n      ? new Date(parseInt(msg.internalDate)).toISOString().slice(0, 16).replace('T', ' ')\n      : '(unknown date)';\n  const snippet = (msg.snippet ?? '').replace(/\\s+/g, ' ').slic..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Email digest function unrelated to concept graph"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "email digestion unrelated to concept graphs"
+    }
+  },
+  {
+    "qid": "B5",
+    "axis": 2,
+    "query": "rate limiting middleware",
+    "expected_paths": [],
+    "negative": true,
+    "hit_idx": 0,
+    "hit_str": "recipes\\collectors\\x-collector.ts:xGet",
+    "snip": {
+      "path": "recipes\\collectors\\x-collector.ts",
+      "name": "xGet",
+      "kind": "function_declaration",
+      "snippet": "async function xGet(path: string, params: Record<string, string> = {}, attempt = 0): Promise<unknown> {\r\n  const url = new URL(`https://api.x.com/2${path}`);\r\n  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);\r\n\r\n  const resp = await fetch(url.toString(), {\r\n    headers: { Authorization: `Bearer ${BEARER_TOKEN}` },\r\n  });\r\n\r\n  if (resp.status === 429 && attempt < 3) {\r\n    const resetEpoch = resp.headers.get('x-rate-limit-reset');\r\n    const retryAfterSec = resp.headers.g..."
+    },
+    "hand_p_at_5": -0.25,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Contains rate limiting logic"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "Handles API rate limits but specific to X API, not general middleware"
+    }
+  },
+  {
+    "qid": "B5",
+    "axis": 2,
+    "query": "rate limiting middleware",
+    "expected_paths": [],
+    "negative": true,
+    "hit_idx": 1,
+    "hit_str": "recipes\\collectors\\x-collector.ts:resetEpoch",
+    "snip": {
+      "path": "recipes\\collectors\\x-collector.ts",
+      "name": "resetEpoch",
+      "kind": "lexical_declaration",
+      "snippet": "const resetEpoch = resp.headers.get('x-rate-limit-reset');"
+    },
+    "hand_p_at_5": -0.25,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Header extraction unrelated to middleware implementation"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "reads rate limit headers, not middleware"
+    }
+  },
+  {
+    "qid": "B5",
+    "axis": 2,
+    "query": "rate limiting middleware",
+    "expected_paths": [],
+    "negative": true,
+    "hit_idx": 2,
+    "hit_str": "recipes\\collectors\\x-collector.ts:main",
+    "snip": {
+      "path": "recipes\\collectors\\x-collector.ts",
+      "name": "main",
+      "kind": "function_declaration",
+      "snippet": "async function main(): Promise<void> {\r\n  ensureDirs();\r\n  const state = loadState();\r\n  const stats: CollectorStats = { fetched: 0, new: 0, skipped: 0 };\r\n\r\n  // Check monthly rate limit tracking\r\n  const monthKey = currentMonthKey();\r\n  if (state.month_key !== monthKey) {\r\n    state.monthly_tweet_count = 0;\r\n    state.month_key = monthKey;\r\n  }\r\n  const monthlyCount = state.monthly_tweet_count ?? 0;\r\n  if (monthlyCount >= MONTHLY_LIMIT) {\r\n    process.stderr.write(`[x-collector] Monthly limit ..."
+    },
+    "hand_p_at_5": -0.25,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "rate limit logic but not middleware"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Rate limit tracking exists but unrelated middleware context"
+    }
+  },
+  {
+    "qid": "B5",
+    "axis": 2,
+    "query": "rate limiting middleware",
+    "expected_paths": [],
+    "negative": true,
+    "hit_idx": 3,
+    "hit_str": "recipes\\collectors\\weflow-collector.ts:fetchMessages",
+    "snip": {
+      "path": "recipes\\collectors\\weflow-collector.ts",
+      "name": "fetchMessages",
+      "kind": "function_declaration",
+      "snippet": "async function fetchMessages(roomId: string, sinceTime: number): Promise<WeFlowMessage[]> {\n  // Primary: GET /api/messages?room_id={id}&since={unix_seconds}&limit=100\n  // Fallback: GET /api/messages/{room_id}?page=1&pageSize=100\n  const primaryPath = '/api/messages';\n  const fallbackPath = `/api/messages/${encodeURIComponent(roomId)}`;\n\n  let msgs: WeFlowMessage[];\n\n  try {\n    const [body, usedPath] = await tryGet<MessagesPageResponse | MessagesAltResponse>(\n      primaryPath,\n      fallbackP..."
+    },
+    "hand_p_at_5": -0.25,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Fetch function unrelated to rate limiting"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "Message fetching API; no rate limiting"
+    }
+  },
+  {
+    "qid": "B5",
+    "axis": 2,
+    "query": "rate limiting middleware",
+    "expected_paths": [],
+    "negative": true,
+    "hit_idx": 4,
+    "hit_str": "recipes\\collectors\\napcat-collector.ts:oneBotPost",
+    "snip": {
+      "path": "recipes\\collectors\\napcat-collector.ts",
+      "name": "oneBotPost",
+      "kind": "function_declaration",
+      "snippet": "async function oneBotPost<T>(path: string, body: Record<string, unknown>): Promise<OneBotResponse<T>> {\n  const res = await fetch(`${NAPCAT_URL}${path}`, {\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json',\n      Authorization: `Bearer ${NAPCAT_TOKEN}`,\n    },\n    body: JSON.stringify(body),\n  });\n  if (!res.ok) {\n    throw new Error(`HTTP ${res.status} ${res.statusText} from ${path}`);\n  }\n  return res.json() as Promise<OneBotResponse<T>>;\n}"
+    },
+    "hand_p_at_5": -0.25,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "HTTP POST function lacks rate limiting"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "generic HTTP POST function unrelated to rate limiting"
+    }
+  },
+  {
+    "qid": "B6",
+    "axis": 2,
+    "query": "safe file deletion with dry run",
+    "expected_paths": [
+      "dryRun",
+      "vault_delete",
+      "delete"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\ai-output.test.ts:report",
+    "snip": {
+      "path": "mcp-server\\src\\ai-output.test.ts",
+      "name": "report",
+      "kind": "lexical_declaration",
+      "snippet": "const report = vaultFs.dispatch('vault.sweepAIOutput', {\r\n      dry_run: true,\r\n      now: futureNow,\r\n    }) as SweepReport;"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "demonstrates dry_run for file deletion"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Shows dry_run test usage but no safe deletion logic"
+    }
+  },
+  {
+    "qid": "B6",
+    "axis": 2,
+    "query": "safe file deletion with dry run",
+    "expected_paths": [
+      "dryRun",
+      "vault_delete",
+      "delete"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\ai-output.test.ts:report",
+    "snip": {
+      "path": "mcp-server\\src\\ai-output.test.ts",
+      "name": "report",
+      "kind": "lexical_declaration",
+      "snippet": "const report = vaultFs.dispatch('vault.sweepAIOutput', {\r\n      dry_run: true,\r\n      now: futureNow,\r\n    }) as SweepReport;"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "demonstrates dry_run parameter for file sweep deletion"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "Dry run parameter used in test code, but lacks implementation details"
+    }
+  },
+  {
+    "qid": "B6",
+    "axis": 2,
+    "query": "safe file deletion with dry run",
+    "expected_paths": [
+      "dryRun",
+      "vault_delete",
+      "delete"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "mcp-server\\src\\ai-output.test.ts:report",
+    "snip": {
+      "path": "mcp-server\\src\\ai-output.test.ts",
+      "name": "report",
+      "kind": "lexical_declaration",
+      "snippet": "const report = vaultFs.dispatch('vault.sweepAIOutput', {\r\n      dry_run: true,\r\n      now: futureNow,\r\n    }) as SweepReport;"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Contains dry_run parameter for vault file sweep operation"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Shows dry_run param usage but lacks safe deletion implementation"
+    }
+  },
+  {
+    "qid": "B6",
+    "axis": 2,
+    "query": "safe file deletion with dry run",
+    "expected_paths": [
+      "dryRun",
+      "vault_delete",
+      "delete"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\ai-output.test.ts:report",
+    "snip": {
+      "path": "mcp-server\\src\\ai-output.test.ts",
+      "name": "report",
+      "kind": "lexical_declaration",
+      "snippet": "const report = vaultFs.dispatch('vault.sweepAIOutput', {\r\n      dry_run: true,\r\n      now: futureNow,\r\n    }) as SweepReport;"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Vault sweep operation unrelated to safe file deletion"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Tests dry_run flag but doesn't implement safe deletion"
+    }
+  },
+  {
+    "qid": "B6",
+    "axis": 2,
+    "query": "safe file deletion with dry run",
+    "expected_paths": [
+      "dryRun",
+      "vault_delete",
+      "delete"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "mcp-server\\src\\ai-output.test.ts:report",
+    "snip": {
+      "path": "mcp-server\\src\\ai-output.test.ts",
+      "name": "report",
+      "kind": "lexical_declaration",
+      "snippet": "const report = vaultFs.dispatch('vault.sweepAIOutput', {\r\n      dry_run: true,\r\n      now: futureNow,\r\n    }) as SweepReport;"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "demonstrates dry_run pattern for safe file deletion/cleanup operation"
+    },
+    "arm_b": {
+      "_parse_error": true,
+      "raw": ""
+    }
+  },
+  {
+    "qid": "B7",
+    "axis": 2,
+    "query": "register MCP tool handler",
+    "expected_paths": [
+      "toolName",
+      "validatedArgs",
+      "registerTool",
+      "register"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\scripts\\generate-tools-doc.ts:renderDoc",
+    "snip": {
+      "path": "mcp-server\\src\\scripts\\generate-tools-doc.ts",
+      "name": "renderDoc",
+      "kind": "function_declaration",
+      "snippet": "function renderDoc(ops: Operation[]): string {\r\n  const byNs = new Map<string, Operation[]>();\r\n  for (const op of ops) {\r\n    if (!byNs.has(op.namespace)) byNs.set(op.namespace, []);\r\n    byNs.get(op.namespace)!.push(op);\r\n  }\r\n\r\n  const header = [\r\n    '# MCP Tools Reference',\r\n    '',\r\n    '> Auto-generated from `mcp-server/src/core/operations.ts`.',\r\n    '> Run `npm run generate-tools-doc` to regenerate. Do not edit by hand.',\r\n    '',\r\n    `Total: **${ops.length}** operations across **${byN..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "docs generation unrelated to tool registration"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "MCP tools area but doc generation, not handler registration"
+    }
+  },
+  {
+    "qid": "B7",
+    "axis": 2,
+    "query": "register MCP tool handler",
+    "expected_paths": [
+      "toolName",
+      "validatedArgs",
+      "registerTool",
+      "register"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\scripts\\generate-tools-doc.ts:header",
+    "snip": {
+      "path": "mcp-server\\src\\scripts\\generate-tools-doc.ts",
+      "name": "header",
+      "kind": "lexical_declaration",
+      "snippet": "const header = [\r\n    '# MCP Tools Reference',\r\n    '',\r\n    '> Auto-generated from `mcp-server/src/core/operations.ts`.',\r\n    '> Run `npm run generate-tools-doc` to regenerate. Do not edit by hand.',\r\n    '',\r\n    `Total: **${ops.length}** operations across **${byNs.size}** namespaces.`,\r\n    '',\r\n  ].join('\\n');"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Documentation generation script, not handler registration code"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Tangential: docs generation for MCP tools, not registration code"
+    }
+  },
+  {
+    "qid": "B7",
+    "axis": 2,
+    "query": "register MCP tool handler",
+    "expected_paths": [
+      "toolName",
+      "validatedArgs",
+      "registerTool",
+      "register"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "mcp-server\\src\\scripts\\generate-tools-doc.ts:OUTPUT_PATH",
+    "snip": {
+      "path": "mcp-server\\src\\scripts\\generate-tools-doc.ts",
+      "name": "OUTPUT_PATH",
+      "kind": "lexical_declaration",
+      "snippet": "const OUTPUT_PATH = join(_repoRoot, 'docs', 'mcp-tools-reference.md');"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "config constant only, not handler registration"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "File path constant for docs, unrelated to handler registration"
+    }
+  },
+  {
+    "qid": "B7",
+    "axis": 2,
+    "query": "register MCP tool handler",
+    "expected_paths": [
+      "toolName",
+      "validatedArgs",
+      "registerTool",
+      "register"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\scripts\\memu-query.ts:main",
+    "snip": {
+      "path": "mcp-server\\src\\scripts\\memu-query.ts",
+      "name": "main",
+      "kind": "function_declaration",
+      "snippet": "async function main(): Promise<void> {\n  const args = parseArgs(process.argv.slice(2));\n  const _thisDir = dirname(fileURLToPath(import.meta.url));\n  // dist/scripts/ -> dist/ -> mcp-server/\n  const bundlePath = join(_thisDir, '..', '..', 'bundle.js');\n\n  const child = spawn('node', [bundlePath], {\n    stdio: ['pipe', 'pipe', 'pipe'],\n    env: { ...process.env },\n  });\n\n  let stdoutBuf = '';\n  let done = false;\n  const kill = (code: number): void => { if (!done) { done = true; child.kill(); proc..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "spawns node process unrelated to registering MCP tool handlers"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "spawns process, unrelated to handler registration"
+    }
+  },
+  {
+    "qid": "B7",
+    "axis": 2,
+    "query": "register MCP tool handler",
+    "expected_paths": [
+      "toolName",
+      "validatedArgs",
+      "registerTool",
+      "register"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "mcp-server\\src\\adapters\\registry.ts:register",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\registry.ts",
+      "name": "register",
+      "kind": "method_definition",
+      "snippet": "register(adapter: VaultMindAdapter): void {\n    this.adapters.set(adapter.name, adapter);\n    if (this.defaultName === null) {\n      this.defaultName = adapter.name;\n    }\n  }"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Adapter registration, not MCP tool handler"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Generic adapter registration, not MCP tool handler"
+    }
+  },
+  {
+    "qid": "B8",
+    "axis": 2,
+    "query": "handle concurrent writes to the same vault file",
+    "expected_paths": [
+      "lock",
+      "concurrent",
+      "queue",
+      "mutex"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\ai-output.test.ts:first",
+    "snip": {
+      "path": "mcp-server\\src\\ai-output.test.ts",
+      "name": "first",
+      "kind": "lexical_declaration",
+      "snippet": "const first = vaultFs.dispatch('vault.writeAIOutput', {\r\n      persona: 'vault-architect',\r\n      parentQuery: 'same query',\r\n      sourceNodes: [],\r\n      agent: 'claude-opus-4-7',\r\n      body: `${LONG_BODY} -- first`,\r\n      slug: 'same-slug',\r\n      dryRun: false,\r\n    }) as WriteOk;"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Single write call, no concurrency handling"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Shows vault write but no concurrency handling"
+    }
+  },
+  {
+    "qid": "B8",
+    "axis": 2,
+    "query": "handle concurrent writes to the same vault file",
+    "expected_paths": [
+      "lock",
+      "concurrent",
+      "queue",
+      "mutex"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\ai-output.test.ts:second",
+    "snip": {
+      "path": "mcp-server\\src\\ai-output.test.ts",
+      "name": "second",
+      "kind": "lexical_declaration",
+      "snippet": "const second = vaultFs.dispatch('vault.writeAIOutput', {\r\n      persona: 'vault-architect',\r\n      parentQuery: 'same query',\r\n      sourceNodes: [],\r\n      agent: 'claude-opus-4-7',\r\n      body: `${LONG_BODY} -- second`,\r\n      slug: 'same-slug',\r\n      dryRun: false,\r\n    }) as WriteOk;"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Test code for single vault write, no concurrent handling"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "vault write call but no concurrency handling shown"
+    }
+  },
+  {
+    "qid": "B8",
+    "axis": 2,
+    "query": "handle concurrent writes to the same vault file",
+    "expected_paths": [
+      "lock",
+      "concurrent",
+      "queue",
+      "mutex"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "mcp-server\\src\\core\\operations.ts:queryOps",
+    "snip": {
+      "path": "mcp-server\\src\\core\\operations.ts",
+      "name": "queryOps",
+      "kind": "lexical_declaration",
+      "snippet": "const queryOps: Operation[] = [\r\n    {\r\n      name: 'vault.reindex',\r\n      namespace: 'vault',\r\n      description: 'Bulk-index all markdown files into VaultBrain semantic store. Use after initial setup or vault migration.',\r\n      mutating: false,\r\n      params: {\r\n        dryRun: { type: 'boolean', required: false, default: false, description: 'Count files without ingesting (default: false)' },\r\n        concurrency: { type: 'number', required: false, default: 4, description: 'Max concurrent in..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "off-topic; reindex concurrency differs from handling concurrent file writes"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Mentions concurrency but not write handling"
+    }
+  },
+  {
+    "qid": "B8",
+    "axis": 2,
+    "query": "handle concurrent writes to the same vault file",
+    "expected_paths": [
+      "lock",
+      "concurrent",
+      "queue",
+      "mutex"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\ai-output.test.ts:writeFile",
+    "snip": {
+      "path": "mcp-server\\src\\ai-output.test.ts",
+      "name": "writeFile",
+      "kind": "function_declaration",
+      "snippet": "function writeFile(vault: string, relPath: string, content: string): string {\r\n  const full = join(vault, relPath.replace(/\\//g, '\\\\').replace(/\\\\/g, '/')); // normalize\r\n  const full2 = join(vault, relPath);\r\n  mkdirSync(join(vault, relPath).replace(/[^/\\\\]+$/, ''), { recursive: true });\r\n  writeFileSync(full2, content, 'utf-8');\r\n  return full2;\r\n}"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "writes file but lacks concurrency control"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "writes files but lacks concurrency handling"
+    }
+  },
+  {
+    "qid": "B8",
+    "axis": 2,
+    "query": "handle concurrent writes to the same vault file",
+    "expected_paths": [
+      "lock",
+      "concurrent",
+      "queue",
+      "mutex"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "mcp-server\\src\\adapters\\obsidian.ts:write",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\obsidian.ts",
+      "name": "write",
+      "kind": "method_definition",
+      "snippet": "async write(path: string, content: string, dryRun = false): Promise<void> {\n    if (!this.available) throw new Error(\"Obsidian not available\");\n    // Try modify first; if file doesn't exist, fall through to create\n    try {\n      await this.call(\"vault.modify\", { path, content, dryRun });\n    } catch (e) {\n      const msg = (e as Error).message;\n      if (\n        msg.includes(\"-32001\") ||          // RPC_FILE_NOT_FOUND\n        msg.includes(\"not found\") ||\n        msg.includes(\"FILE_NOT_FOUND\")..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Does not handle concurrent access conflicts"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Addresses file writes but lacks concurrency handling mechanisms"
+    }
+  },
+  {
+    "qid": "B9",
+    "axis": 2,
+    "query": "detect conflicting edits between adapters",
+    "expected_paths": [
+      "conflict",
+      "diff",
+      "version",
+      "merge"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\unified-query.test.ts:adapterB",
+    "snip": {
+      "path": "mcp-server\\src\\unified-query.test.ts",
+      "name": "adapterB",
+      "kind": "lexical_declaration",
+      "snippet": "const adapterB = fakeAdapter(\"b\", [\n    mkResult(\"docB\", \"b\"),\n    mkResult(\"docX\", \"b\"),\n  ]);"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Test setup code for fake adapters; no conflict detection logic"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Test setup for adapters, not conflict detection"
+    }
+  },
+  {
+    "qid": "B9",
+    "axis": 2,
+    "query": "detect conflicting edits between adapters",
+    "expected_paths": [
+      "conflict",
+      "diff",
+      "version",
+      "merge"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\unified-query.test.ts:makeRegistry",
+    "snip": {
+      "path": "mcp-server\\src\\unified-query.test.ts",
+      "name": "makeRegistry",
+      "kind": "function_declaration",
+      "snippet": "function makeRegistry(...adapters: VaultMindAdapter[]): AdapterRegistry {\n  const reg = new AdapterRegistry();\n  for (const a of adapters) reg.register(a);\n  return reg;\n}"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Registry creation code, not conflict detection"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Registers adapters but shows no conflict detection"
+    }
+  },
+  {
+    "qid": "B9",
+    "axis": 2,
+    "query": "detect conflicting edits between adapters",
+    "expected_paths": [
+      "conflict",
+      "diff",
+      "version",
+      "merge"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "mcp-server\\src\\adapters\\registry.ts:getByCapability",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\registry.ts",
+      "name": "getByCapability",
+      "kind": "method_definition",
+      "snippet": "getByCapability(capability: AdapterCapability): VaultMindAdapter[] {\n    return [...this.adapters.values()].filter((a) =>\n      (a.capabilities as readonly AdapterCapability[]).includes(capability),\n    );\n  }"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Simple capability filter, no conflict detection"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "filters adapters by capability, not conflict detection"
+    }
+  },
+  {
+    "qid": "B9",
+    "axis": 2,
+    "query": "detect conflicting edits between adapters",
+    "expected_paths": [
+      "conflict",
+      "diff",
+      "version",
+      "merge"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\adapters\\registry.ts:unregister",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\registry.ts",
+      "name": "unregister",
+      "kind": "method_definition",
+      "snippet": "unregister(name: string): boolean {\n    const deleted = this.adapters.delete(name);\n    if (this.defaultName === name) {\n      this.defaultName = this.adapters.size > 0 ? this.adapters.keys().next().value ?? null : null;\n    }\n    return deleted;\n  }"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "unregister method unrelated to conflict detection"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "tangentially related - only involves adapters, no conflict detection logic"
+    }
+  },
+  {
+    "qid": "B9",
+    "axis": 2,
+    "query": "detect conflicting edits between adapters",
+    "expected_paths": [
+      "conflict",
+      "diff",
+      "version",
+      "merge"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "mcp-server\\src\\unified-query.test.ts:registry",
+    "snip": {
+      "path": "mcp-server\\src\\unified-query.test.ts",
+      "name": "registry",
+      "kind": "lexical_declaration",
+      "snippet": "const registry = makeRegistry(fakeAdapter(\"fake\", results));"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "test setup code creating registry, no conflict detection"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "Registry creation unrelated to conflict detection"
+    }
+  },
+  {
+    "qid": "B10",
+    "axis": 2,
+    "query": "aggregate metadata across multiple notes",
+    "expected_paths": [
+      "meta",
+      "aggregate",
+      "frontmatter",
+      "kb_meta"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "recipes\\collectors\\circleback-collector.ts:buildDigest",
+    "snip": {
+      "path": "recipes\\collectors\\circleback-collector.ts",
+      "name": "buildDigest",
+      "kind": "function_declaration",
+      "snippet": "function buildDigest(notes: CirclebackNote[]): string {\n  const date = todayStr();\n\n  // Group by meeting date\n  const byDate = new Map<string, CirclebackNote[]>();\n  for (const note of notes) {\n    const d = datePart(note.date);\n    const group = byDate.get(d) ?? [];\n    group.push(note);\n    byDate.set(d, group);\n  }\n\n  const frontmatter = [\n    '---',\n    `date: ${date}`,\n    `source: circleback-to-vault`,\n    `type: digest`,\n    `meetings: ${notes.length}`,\n    '---',\n    '',\n    `# Meeting ..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Aggregates notes into digest with metadata grouping"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "Aggregates notes counts and groups"
+    }
+  },
+  {
+    "qid": "B10",
+    "axis": 2,
+    "query": "aggregate metadata across multiple notes",
+    "expected_paths": [
+      "meta",
+      "aggregate",
+      "frontmatter",
+      "kb_meta"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "recipes\\collectors\\circleback-collector.ts:formatNote",
+    "snip": {
+      "path": "recipes\\collectors\\circleback-collector.ts",
+      "name": "formatNote",
+      "kind": "function_declaration",
+      "snippet": "function formatNote(note: CirclebackNote): string {\n  const parts: string[] = [`### ${note.title}`];\n  parts.push(`> ${datePart(note.date)}\\n`);\n\n  const attendees = formatAttendees(note.attendees);\n  if (attendees) parts.push(attendees);\n\n  if (note.summary) {\n    parts.push(`**Summary:**\\n${note.summary}\\n`);\n  }\n\n  if (note.next_steps) {\n    parts.push(`**Next Steps:**\\n${note.next_steps}\\n`);\n  }\n\n  const actionItems = formatActionItems(note.action_items);\n  if (actionItems) parts.push(actio..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Formats single note only, no aggregation across multiple notes"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "formats single notes, no aggregation across multiple notes"
+    }
+  },
+  {
+    "qid": "B10",
+    "axis": 2,
+    "query": "aggregate metadata across multiple notes",
+    "expected_paths": [
+      "meta",
+      "aggregate",
+      "frontmatter",
+      "kb_meta"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "recipes\\collectors\\circleback-collector.ts:notes",
+    "snip": {
+      "path": "recipes\\collectors\\circleback-collector.ts",
+      "name": "notes",
+      "kind": "lexical_declaration",
+      "snippet": "const notes = await fetchAllNotes(syncAfter);"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Only declares notes variable, no aggregation logic shown"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Fetches notes but shows no aggregation logic"
+    }
+  },
+  {
+    "qid": "B10",
+    "axis": 2,
+    "query": "aggregate metadata across multiple notes",
+    "expected_paths": [
+      "meta",
+      "aggregate",
+      "frontmatter",
+      "kb_meta"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "recipes\\collectors\\circleback-collector.ts:digest",
+    "snip": {
+      "path": "recipes\\collectors\\circleback-collector.ts",
+      "name": "digest",
+      "kind": "lexical_declaration",
+      "snippet": "const digest = buildDigest(notes);"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "buildDigest(notes) aggregates data from multiple notes, matching aggregation query"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "mentions notes and digest but lacks implementation details"
+    }
+  },
+  {
+    "qid": "B10",
+    "axis": 2,
+    "query": "aggregate metadata across multiple notes",
+    "expected_paths": [
+      "meta",
+      "aggregate",
+      "frontmatter",
+      "kb_meta"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "recipes\\collectors\\circleback-collector.ts:url",
+    "snip": {
+      "path": "recipes\\collectors\\circleback-collector.ts",
+      "name": "url",
+      "kind": "lexical_declaration",
+      "snippet": "const url = new URL(`${BASE_URL}/notes`);"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Only URL declaration, no aggregation logic"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "URL declaration for notes endpoint, not aggregation logic"
+    }
+  },
+  {
+    "qid": "C1",
+    "axis": 3,
+    "query": "who calls assertRealPathInsideVault",
+    "expected_paths": [
+      "vault_create",
+      "vault_modify",
+      "vault_delete"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\connector\\fs-transport.ts:assertRealPathInsideVault",
+    "snip": {
+      "path": "mcp-server\\src\\connector\\fs-transport.ts",
+      "name": "assertRealPathInsideVault",
+      "kind": "method_definition",
+      "snippet": "private assertRealPathInsideVault(full: string): void {\n    const realTarget = fs.existsSync(full)\n      ? fs.realpathSync(full)\n      : this.realpathExistingAncestor(path.dirname(full));\n    const rel = path.relative(this.realVault, realTarget);\n    if (rel.startsWith('..') || path.isAbsolute(rel))\n      throw { code: -32602, message: 'path traversal blocked' };\n  }"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "shows method definition not callers"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "shows method definition not callers"
+    }
+  },
+  {
+    "qid": "C1",
+    "axis": 3,
+    "query": "who calls assertRealPathInsideVault",
+    "expected_paths": [
+      "vault_create",
+      "vault_modify",
+      "vault_delete"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\index.ts:assertRealPathInsideVault",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "assertRealPathInsideVault",
+      "kind": "method_definition",
+      "snippet": "private assertRealPathInsideVault(full: string): void {\n    const realTarget = existsSync(full)\n      ? realpathSync(full)\n      : this.realpathExistingAncestor(dirname(full));\n    const rel = relative(this.realVault, realTarget);\n    if (rel.startsWith(\"..\") || pathIsAbsolute(rel)) throw err(-32602, \"path traversal blocked\");\n  }"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "shows definition only, not callers"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "shows definition but not callers"
+    }
+  },
+  {
+    "qid": "C1",
+    "axis": 3,
+    "query": "who calls assertRealPathInsideVault",
+    "expected_paths": [
+      "vault_create",
+      "vault_modify",
+      "vault_delete"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "mcp-server\\src\\connector\\fs-transport.ts:resolve",
+    "snip": {
+      "path": "mcp-server\\src\\connector\\fs-transport.ts",
+      "name": "resolve",
+      "kind": "method_definition",
+      "snippet": "resolve(p: string, opts: { allowRoot?: boolean } = {}): string {\n    const normalized = this.normalizeVaultPath(p, opts);\n    const full = path.resolve(this.vault, normalized);\n    const rel = path.relative(this.vault, full);\n    if (rel.startsWith('..') || path.isAbsolute(rel))\n      throw { code: -32602, message: 'path escapes vault' };\n    this.assertRealPathInsideVault(full);\n    return full;\n  }"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "shows direct call site of assertRealPathInsideVault"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "shows resolve method calling assertRealPathInsideVault"
+    }
+  },
+  {
+    "qid": "C1",
+    "axis": 3,
+    "query": "who calls assertRealPathInsideVault",
+    "expected_paths": [
+      "vault_create",
+      "vault_modify",
+      "vault_delete"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\index.ts:resolve",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "resolve",
+      "kind": "method_definition",
+      "snippet": "resolve(p: string, opts: { allowRoot?: boolean } = {}): string {\n    const normalized = this.normalizeVaultPath(p, opts);\n    const full = resolve(this.vault, normalized);\n    const rel = relative(this.vault, full);\n    if (rel.startsWith(\"..\") || pathIsAbsolute(rel)) throw err(-32602, \"path escapes vault\");\n    this.assertRealPathInsideVault(full);\n    return full;\n  }"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "resolve method calls assertRealPathInsideVault"
+    },
+    "arm_b": {
+      "grade": 3,
+      "reason": "resolve method directly calls assertRealPathInsideVault"
+    }
+  },
+  {
+    "qid": "C1",
+    "axis": 3,
+    "query": "who calls assertRealPathInsideVault",
+    "expected_paths": [
+      "vault_create",
+      "vault_modify",
+      "vault_delete"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "mcp-server\\src\\compile-trigger.test.ts:makeTrigger",
+    "snip": {
+      "path": "mcp-server\\src\\compile-trigger.test.ts",
+      "name": "makeTrigger",
+      "kind": "function_declaration",
+      "snippet": "function makeTrigger(opts: { threshold?: number } = {}): CompileTrigger {\n  return new CompileTrigger({\n    vaultPath: FAKE_VAULT,\n    compilerPath: FAKE_COMPILER,\n    python: \"python\",\n    threshold: opts.threshold ?? 3,\n    autoCompile: false, // prevent any real subprocess calls\n  });\n}"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Code shows makeTrigger function, not assertRealPathInsideVault callers"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "No calls to assertRealPathInsideVault shown"
+    }
+  },
+  {
+    "qid": "C2",
+    "axis": 3,
+    "query": "what operations does ObsidianAdapter implement",
+    "expected_paths": [
+      "read",
+      "write",
+      "search",
+      "list"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\adapters\\obsidian.ts:ObsidianAdapter",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\obsidian.ts",
+      "name": "ObsidianAdapter",
+      "kind": "class_declaration",
+      "snippet": "class ObsidianAdapter implements VaultMindAdapter {\n  readonly name = \"obsidian\";\n  readonly capabilities: readonly AdapterCapability[] = [\n    \"search\", \"read\", \"write\", \"graph\", \"events\",\n  ];\n\n  private ws: WebSocket | null = null;\n  private available = false;\n  private reqId = 0;\n  private readonly pending = new Map<number, PendingRequest>();\n  private readonly changeListeners: Array<(event: FileEvent) => void> = [];\n  private readonly timeout: number;\n  private readonly portFile: string;\n\n ..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 1,
+      "reason": "Shows ObsidianAdapter capabilities including search, read, write, graph, events"
+    },
+    "arm_b": {
+      "grade": 3,
+      "reason": "Capabilities array directly lists all implemented operations"
+    }
+  },
+  {
+    "qid": "C2",
+    "axis": 3,
+    "query": "what operations does ObsidianAdapter implement",
+    "expected_paths": [
+      "read",
+      "write",
+      "search",
+      "list"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\adapters\\obsidian.test.ts:adapter",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\obsidian.test.ts",
+      "name": "adapter",
+      "kind": "lexical_declaration",
+      "snippet": "const adapter = new ObsidianAdapter({ portFile: TMP_PORT_FILE });"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "test instantiation only"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Mentions ObsidianAdapter but shows only instantiation, not operations"
+    }
+  },
+  {
+    "qid": "C2",
+    "axis": 3,
+    "query": "what operations does ObsidianAdapter implement",
+    "expected_paths": [
+      "read",
+      "write",
+      "search",
+      "list"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "mcp-server\\src\\adapters\\obsidian.test.ts:adapter",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\obsidian.test.ts",
+      "name": "adapter",
+      "kind": "lexical_declaration",
+      "snippet": "const adapter = new ObsidianAdapter({ portFile: TMP_PORT_FILE });"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Test instantiation code shows no operations"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Shows adapter usage but not its implemented operations"
+    }
+  },
+  {
+    "qid": "C2",
+    "axis": 3,
+    "query": "what operations does ObsidianAdapter implement",
+    "expected_paths": [
+      "read",
+      "write",
+      "search",
+      "list"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\adapters\\obsidian.test.ts:adapter",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\obsidian.test.ts",
+      "name": "adapter",
+      "kind": "lexical_declaration",
+      "snippet": "const adapter = new ObsidianAdapter({ portFile: TMP_PORT_FILE });"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Test instantiation unrelated to operations"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Only instantiates adapter, doesn't show operations"
+    }
+  },
+  {
+    "qid": "C2",
+    "axis": 3,
+    "query": "what operations does ObsidianAdapter implement",
+    "expected_paths": [
+      "read",
+      "write",
+      "search",
+      "list"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "mcp-server\\src\\adapters\\obsidian.test.ts:adapter",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\obsidian.test.ts",
+      "name": "adapter",
+      "kind": "lexical_declaration",
+      "snippet": "const adapter = new ObsidianAdapter({ portFile: TMP_PORT_FILE });"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Test instantiation reveals only constructor usage, not implemented operations"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Shows adapter instantiation only, not operations"
+    }
+  },
+  {
+    "qid": "C3",
+    "axis": 3,
+    "query": "which adapter calls FilesystemAdapter as fallback",
+    "expected_paths": [
+      "ObsidianAdapter",
+      "fallback"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\adapters\\filesystem.ts:FilesystemAdapter",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\filesystem.ts",
+      "name": "FilesystemAdapter",
+      "kind": "class_declaration",
+      "snippet": "class FilesystemAdapter implements VaultMindAdapter {\n  readonly name = \"filesystem\";\n  readonly capabilities: readonly AdapterCapability[] = [\"search\", \"read\", \"write\"];\n\n  private readonly basePath: string;\n\n  constructor(private vaultPath: string) {\n    // Normalize base path with trailing separator for safe prefix comparison\n    this.basePath = vaultPath.endsWith(sep) ? vaultPath : vaultPath + sep;\n  }\n\n  async init(): Promise<void> {\n    // No setup needed -- vault path validated at config ..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Shows FilesystemAdapter definition, not which adapter uses it as fallback"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Mentions FilesystemAdapter but lacks fallback caller information"
+    }
+  },
+  {
+    "qid": "C3",
+    "axis": 3,
+    "query": "which adapter calls FilesystemAdapter as fallback",
+    "expected_paths": [
+      "ObsidianAdapter",
+      "fallback"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\index.ts:main",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "main",
+      "kind": "function_declaration",
+      "snippet": "async function main(): Promise<void> {\n  const config = loadConfig();\n\n  // --- Adapter registry ---\n  const registry = new AdapterRegistry();\n\n  if (config.vault_path) {\n    const fsAdapter = new FilesystemAdapter(config.vault_path);\n    await fsAdapter.init();\n    registry.register(fsAdapter);\n  }\n\n  // Optional adapters -- init gracefully, don't block if unavailable\n  const enabledAdapters = new Set(config.adapters ?? [\"filesystem\", \"memu\", \"gitnexus\", \"obsidian\", \"qmd\", \"vaultbrain\"]);\n\n  if..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Shows FilesystemAdapter registration but not fallback caller"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Shows FilesystemAdapter registration, not fallback usage"
+    }
+  },
+  {
+    "qid": "C3",
+    "axis": 3,
+    "query": "which adapter calls FilesystemAdapter as fallback",
+    "expected_paths": [
+      "ObsidianAdapter",
+      "fallback"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "mcp-server\\src\\index.ts:fsAdapter",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "fsAdapter",
+      "kind": "lexical_declaration",
+      "snippet": "const fsAdapter = new FilesystemAdapter(config.vault_path);"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Shows FilesystemAdapter instantiation only, no fallback mechanism or calling adapter"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Mentions FilesystemAdapter but doesn't show fallback caller"
+    }
+  },
+  {
+    "qid": "C3",
+    "axis": 3,
+    "query": "which adapter calls FilesystemAdapter as fallback",
+    "expected_paths": [
+      "ObsidianAdapter",
+      "fallback"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\adapters\\interface.ts:VaultMindAdapter",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\interface.ts",
+      "name": "VaultMindAdapter",
+      "kind": "interface_declaration",
+      "snippet": "interface VaultMindAdapter {\n  /** Unique adapter name (e.g. \"filesystem\", \"obsidian\", \"memu\") */\n  readonly name: string;\n\n  /** Declared capabilities -- unified query checks these before calling methods */\n  readonly capabilities: readonly AdapterCapability[];\n\n  /** True if the adapter successfully connected and is ready to serve requests */\n  readonly isAvailable?: boolean;\n\n  // --- Core (implement what you can) ---\n\n  search?(query: string, opts?: SearchOpts): Promise<SearchResult[]>;\n  /*..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Interface definition unrelated to fallback logic"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Interface definition, not fallback logic"
+    }
+  },
+  {
+    "qid": "C3",
+    "axis": 3,
+    "query": "which adapter calls FilesystemAdapter as fallback",
+    "expected_paths": [
+      "ObsidianAdapter",
+      "fallback"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "mcp-server\\src\\index.ts:enabledAdapters",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "enabledAdapters",
+      "kind": "lexical_declaration",
+      "snippet": "const enabledAdapters = new Set(config.adapters ?? [\"filesystem\", \"memu\", \"gitnexus\", \"obsidian\", \"qmd\", \"vaultbrain\"]);"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Lists adapters but doesn't show fallback logic or which adapter uses FilesystemAdapter"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "Only lists adapter names, no fallback logic"
+    }
+  },
+  {
+    "qid": "C4",
+    "axis": 3,
+    "query": "what error handler runs when vault_create fails preflight",
+    "expected_paths": [
+      "error",
+      "throw",
+      "PreflightError",
+      "VaultError"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\adapters\\obsidian.ts:write",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\obsidian.ts",
+      "name": "write",
+      "kind": "method_definition",
+      "snippet": "async write(path: string, content: string, dryRun = false): Promise<void> {\n    if (!this.available) throw new Error(\"Obsidian not available\");\n    // Try modify first; if file doesn't exist, fall through to create\n    try {\n      await this.call(\"vault.modify\", { path, content, dryRun });\n    } catch (e) {\n      const msg = (e as Error).message;\n      if (\n        msg.includes(\"-32001\") ||          // RPC_FILE_NOT_FOUND\n        msg.includes(\"not found\") ||\n        msg.includes(\"FILE_NOT_FOUND\")..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "code shows write method error handling, not vault_create preflight logic"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Same vault area but handles vault.modify errors, not vault_create preflight failures"
+    }
+  },
+  {
+    "qid": "C4",
+    "axis": 3,
+    "query": "what error handler runs when vault_create fails preflight",
+    "expected_paths": [
+      "error",
+      "throw",
+      "PreflightError",
+      "VaultError"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\index.ts:checkAuth",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "checkAuth",
+      "kind": "function_declaration",
+      "snippet": "function checkAuth(config: VaultMindConfig, args: Record<string, unknown>): void {\n  if (!config.auth_token) return;\n  const provided = (args._auth_token as string) || (args._token as string);\n  if (provided !== config.auth_token) {\n    throw err(-32403, \"Authentication failed: invalid or missing token\");\n  }\n}"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Unrelated to vault_create preflight error handling"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "checkAuth function unrelated to vault_create preflight"
+    }
+  },
+  {
+    "qid": "C4",
+    "axis": 3,
+    "query": "what error handler runs when vault_create fails preflight",
+    "expected_paths": [
+      "error",
+      "throw",
+      "PreflightError",
+      "VaultError"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "mcp-server\\src\\adapters\\obsidian.ts:dispatchEvent",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\obsidian.ts",
+      "name": "dispatchEvent",
+      "kind": "method_definition",
+      "snippet": "private dispatchEvent(method: string, params?: Record<string, unknown>): void {\n    if (!params) return;\n    const typeMap: Record<string, FileEvent[\"type\"]> = {\n      \"vault:create\": \"create\",\n      \"vault:modify\": \"modify\",\n      \"vault:delete\": \"delete\",\n      \"vault:rename\": \"rename\",\n    };\n    const type = typeMap[method];\n    if (!type) return;\n\n    const event: FileEvent = {\n      type,\n      path: (params.path as string) ?? \"\",\n      oldPath: type === \"rename\" ? (params.oldPath as strin..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "code handles event dispatching not error handlers"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "dispatchEvent handles file events, not vault_create error handlers"
+    }
+  },
+  {
+    "qid": "C4",
+    "axis": 3,
+    "query": "what error handler runs when vault_create fails preflight",
+    "expected_paths": [
+      "error",
+      "throw",
+      "PreflightError",
+      "VaultError"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\adapters\\obsidian.ts:typeMap",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\obsidian.ts",
+      "name": "typeMap",
+      "kind": "lexical_declaration",
+      "snippet": "const typeMap: Record<string, FileEvent[\"type\"]> = {\n      \"vault:create\": \"create\",\n      \"vault:modify\": \"modify\",\n      \"vault:delete\": \"delete\",\n      \"vault:rename\": \"rename\",\n    };"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Just a type mapping with no error handling or preflight logic"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Maps vault ops to types but lacks error handler logic"
+    }
+  },
+  {
+    "qid": "C4",
+    "axis": 3,
+    "query": "what error handler runs when vault_create fails preflight",
+    "expected_paths": [
+      "error",
+      "throw",
+      "PreflightError",
+      "VaultError"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "mcp-server\\src\\core\\types.ts:OperationContext",
+    "snip": {
+      "path": "mcp-server\\src\\core\\types.ts",
+      "name": "OperationContext",
+      "kind": "interface_declaration",
+      "snippet": "interface OperationContext {\r\n  vault: VaultExecutor;\r\n  adapters: unknown | null;   // AdapterRegistry -- not imported here to avoid circular dep\r\n  config: VaultMindConfig;\r\n  logger: Logger;\r\n  dryRun: boolean;\r\n}"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Interface definition unrelated to error handlers or preflight failures"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "VaultExecutor type mentioned but no error handling code"
+    }
+  },
+  {
+    "qid": "C5",
+    "axis": 3,
+    "query": "what does concept_graph run call internally",
+    "expected_paths": [
+      "models"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\compile-trigger.ts:run",
+    "snip": {
+      "path": "mcp-server\\src\\compile-trigger.ts",
+      "name": "run",
+      "kind": "method_definition",
+      "snippet": "async run(topic?: string): Promise<CompileResult> {\n    if (this.running) {\n      return {\n        ok: false,\n        topic: topic ?? \"unknown\",\n        sourcesCompiled: 0,\n        conceptsCreated: 0,\n        contradictions: 0,\n        error: \"Compilation already running\",\n        timestamp: new Date().toISOString(),\n      };\n    }\n\n    const targetTopic = topic ?? this.detectTopic();\n    if (!targetTopic) {\n      return {\n        ok: false,\n        topic: \"\",\n        sourcesCompiled: 0,\n       ..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "File is about compile-trigger not concept_graph"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "Wrong file, unrelated to concept_graph"
+    }
+  },
+  {
+    "qid": "C5",
+    "axis": 3,
+    "query": "what does concept_graph run call internally",
+    "expected_paths": [
+      "models"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\adapters\\obsidian.ts:graph",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\obsidian.ts",
+      "name": "graph",
+      "kind": "method_definition",
+      "snippet": "async graph(): Promise<GraphData> {\n    if (!this.available) return { nodes: [], edges: [] };\n    try {\n      return (await this.call(\"vault.graph\", {})) as GraphData;\n    } catch {\n      return { nodes: [], edges: [] };\n    }\n  }"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Code shows vault.graph, not concept_graph"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Shows graph method but no concept_graph reference"
+    }
+  },
+  {
+    "qid": "C5",
+    "axis": 3,
+    "query": "what does concept_graph run call internally",
+    "expected_paths": [
+      "models"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "mcp-server\\src\\scripts\\memu-perf.ts:runWarm",
+    "snip": {
+      "path": "mcp-server\\src\\scripts\\memu-perf.ts",
+      "name": "runWarm",
+      "kind": "function_declaration",
+      "snippet": "async function runWarm(args: Args): Promise<number[]> {\n  const adapter = new MemUAdapter({ dsn: args.dsn, userId: args.userId });\n  await adapter.init();\n  if (!adapter.isAvailable) {\n    await adapter.dispose();\n    throw new Error(\"adapter unavailable during warm run\");\n  }\n  const samples: number[] = [];\n  try {\n    // Throwaway query to prime PG query planner -- first call includes parse/plan.\n    await adapter.search(args.query);\n    for (let i = 0; i < args.iters; i++) {\n      const t0 = ..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Unrelated to concept_graph"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "No mention of concept_graph; unrelated performance testing code"
+    }
+  },
+  {
+    "qid": "C5",
+    "axis": 3,
+    "query": "what does concept_graph run call internally",
+    "expected_paths": [
+      "models"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\connector\\ws-transport.ts:call",
+    "snip": {
+      "path": "mcp-server\\src\\connector\\ws-transport.ts",
+      "name": "call",
+      "kind": "method_definition",
+      "snippet": "call(method: string, params: unknown, id: string | number): Promise<JsonRpcResponse> {\r\n    return new Promise((resolve, reject) => {\r\n      const timer = setTimeout(() => {\r\n        this.pending.delete(id);\r\n        reject(new Error(`WS call timeout: ${method} (id=${id})`));\r\n      }, 30000);\r\n      this.pending.set(id, (msg: JsonRpcResponse) => {\r\n        clearTimeout(timer);\r\n        resolve(msg);\r\n      });\r\n      this.ws!.send(JSON.stringify({ jsonrpc: '2.0', method, params, id }));\r\n    })..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "WebSocket RPC call method unrelated to concept_graph"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "Unrelated WebSocket RPC call method, no concept_graph connection"
+    }
+  },
+  {
+    "qid": "C5",
+    "axis": 3,
+    "query": "what does concept_graph run call internally",
+    "expected_paths": [
+      "models"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "mcp-server\\src\\compile-trigger.ts:concepts",
+    "snip": {
+      "path": "mcp-server\\src\\compile-trigger.ts",
+      "name": "concepts",
+      "kind": "lexical_declaration",
+      "snippet": "const concepts = this.extractNumber(stdout, \"Concepts created\");"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Unrelated file showing concept extraction from stdout, not internal calls of concept_graph run"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Extracts concept count, not internal calls"
+    }
+  },
+  {
+    "qid": "C6",
+    "axis": 3,
+    "query": "who produces kb_meta records",
+    "expected_paths": [
+      "compiler",
+      "writer"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\compile-trigger.ts:loadInitialDirty",
+    "snip": {
+      "path": "mcp-server\\src\\compile-trigger.ts",
+      "name": "loadInitialDirty",
+      "kind": "method_definition",
+      "snippet": "async loadInitialDirty(): Promise<void> {\n    if (!this.vaultPath) return;\n    const kbMeta = resolve(this.compilerPath, \"kb_meta.py\");\n    if (!existsSync(kbMeta)) return;\n\n    let topics: string[];\n    try {\n      topics = readdirSync(this.vaultPath, { withFileTypes: true })\n        .filter((d) => d.isDirectory() && existsSync(resolve(this.vaultPath, d.name, \"_meta.json\")))\n        .map((d) => d.name);\n    } catch {\n      return;\n    }\n\n    for (const topic of topics) {\n      try {\n        con..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "shows kb_meta reading not producing"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Mentions kb_meta but does not explain its production"
+    }
+  },
+  {
+    "qid": "C6",
+    "axis": 3,
+    "query": "who produces kb_meta records",
+    "expected_paths": [
+      "compiler",
+      "writer"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\compile-trigger.ts:kbMeta",
+    "snip": {
+      "path": "mcp-server\\src\\compile-trigger.ts",
+      "name": "kbMeta",
+      "kind": "lexical_declaration",
+      "snippet": "const kbMeta = resolve(this.compilerPath, \"kb_meta.py\");"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Shows file path only, not who produces records"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "references kb_meta file path but doesn't explain production"
+    }
+  },
+  {
+    "qid": "C6",
+    "axis": 3,
+    "query": "who produces kb_meta records",
+    "expected_paths": [
+      "compiler",
+      "writer"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "mcp-server\\src\\ai-output.test.ts:SweepMetrics",
+    "snip": {
+      "path": "mcp-server\\src\\ai-output.test.ts",
+      "name": "SweepMetrics",
+      "kind": "interface_declaration",
+      "snippet": "interface SweepMetrics {\r\n  totalEntries: number;\r\n  byPersona: Record<string, number>;\r\n  byStatus: Record<string, number>;\r\n  byQuarantineState: Record<string, number>;\r\n  realBacklinkHitRate: number;\r\n}"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "SweepMetrics interface unrelated to kb_meta records"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "No relation to kb_meta records"
+    }
+  },
+  {
+    "qid": "C6",
+    "axis": 3,
+    "query": "who produces kb_meta records",
+    "expected_paths": [
+      "compiler",
+      "writer"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\index.ts:Entry",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "Entry",
+      "kind": "type_alias_declaration",
+      "snippet": "type Entry = {\n          relPath: string;\n          absPath: string;\n          content: string;\n          fm: Record<string, unknown>;\n          mtimeMs: number;\n          entryMs: number; // frontmatter date primary, mtime fallback\n          persona: string;\n          status: string;\n          sourceNodes: string[];\n        };"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "No mention of kb_meta records or production logic"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Entry type definition unrelated to kb_meta producers"
+    }
+  },
+  {
+    "qid": "C6",
+    "axis": 3,
+    "query": "who produces kb_meta records",
+    "expected_paths": [
+      "compiler",
+      "writer"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "mcp-server\\src\\scripts\\memu-query.ts:body",
+    "snip": {
+      "path": "mcp-server\\src\\scripts\\memu-query.ts",
+      "name": "body",
+      "kind": "lexical_declaration",
+      "snippet": "let body: { results?: Array<{ source: string; path: string; content: string; score: number; metadata?: Record<string, unknown> }> };"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Type definition for query results, unrelated to kb_meta production"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "No mention of kb_meta records or their production"
+    }
+  },
+  {
+    "qid": "C7",
+    "axis": 3,
+    "query": "what reads Node tags field",
+    "expected_paths": [
+      "tags",
+      "search",
+      "filter"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\adapters\\vaultbrain\\index.ts:extractTags",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\vaultbrain\\index.ts",
+      "name": "extractTags",
+      "kind": "function_declaration",
+      "snippet": "function extractTags(content: string): string[] {\n  const frontmatter = content.match(/^---\\n([\\s\\S]*?)\\n---/);\n  if (!frontmatter) return [];\n  const inlineTags = frontmatter[1].match(/^tags:\\s*\\[([^\\]]+)\\]/m);\n  const blockTags = frontmatter[1].match(/^tags:\\s*\\n((?:\\s*-\\s*.+\\n?)+)/m);\n  const tagSource = inlineTags?.[1] ?? blockTags?.[1];\n  if (!tagSource) return [];\n  return tagSource\n    .split(/[\\n,]/)\n    .map((t) => t.replace(/^-\\s*/, \"\").replace(/['\"]/g, \"\").trim())\n    .filter(Boolean)..."
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "parses markdown frontmatter not Node tags"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Parses tags from content but not Node"
+    }
+  },
+  {
+    "qid": "C7",
+    "axis": 3,
+    "query": "what reads Node tags field",
+    "expected_paths": [
+      "tags",
+      "search",
+      "filter"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\index.ts:tags",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "tags",
+      "kind": "lexical_declaration",
+      "snippet": "const tags: string[] = [];"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Local variable declaration unrelated to reading Node tags field"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "Local variable declaration unrelated to reading Node tags field"
+    }
+  },
+  {
+    "qid": "C7",
+    "axis": 3,
+    "query": "what reads Node tags field",
+    "expected_paths": [
+      "tags",
+      "search",
+      "filter"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "mcp-server\\src\\connector\\fs-transport.ts:tags",
+    "snip": {
+      "path": "mcp-server\\src\\connector\\fs-transport.ts",
+      "name": "tags",
+      "kind": "lexical_declaration",
+      "snippet": "const tags: string[] = [];"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Local variable declaration unrelated to Node tags field"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "declares tags variable, not reading Node tags"
+    }
+  },
+  {
+    "qid": "C7",
+    "axis": 3,
+    "query": "what reads Node tags field",
+    "expected_paths": [
+      "tags",
+      "search",
+      "filter"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\connector\\fs-transport.ts:tags",
+    "snip": {
+      "path": "mcp-server\\src\\connector\\fs-transport.ts",
+      "name": "tags",
+      "kind": "lexical_declaration",
+      "snippet": "const tags: string[] = [];"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Local variable declaration, not reading Node tags field"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "Local variable declaration unrelated to Node tags field"
+    }
+  },
+  {
+    "qid": "C7",
+    "axis": 3,
+    "query": "what reads Node tags field",
+    "expected_paths": [
+      "tags",
+      "search",
+      "filter"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "mcp-server\\src\\index.ts:tags",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "tags",
+      "kind": "lexical_declaration",
+      "snippet": "const tags: string[] = [];"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Variable declaration unrelated to Node tags"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "Variable declaration only, does not read Node tags field"
+    }
+  },
+  {
+    "qid": "C8",
+    "axis": 3,
+    "query": "what runs after MemUAdapter sync completes",
+    "expected_paths": [
+      "callback",
+      "onSync",
+      "afterSync",
+      "notify"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\scripts\\memu-perf.ts:runCold",
+    "snip": {
+      "path": "mcp-server\\src\\scripts\\memu-perf.ts",
+      "name": "runCold",
+      "kind": "function_declaration",
+      "snippet": "async function runCold(args: Args): Promise<number[]> {\n  const samples: number[] = [];\n  for (let i = 0; i < args.iters; i++) {\n    const adapter = new MemUAdapter({ dsn: args.dsn, userId: args.userId });\n    await adapter.init();\n    if (!adapter.isAvailable) {\n      await adapter.dispose();\n      throw new Error(\n        \"adapter unavailable during cold run -- check MEMU_DSN / PG reachable\",\n      );\n    }\n    const t0 = performance.now();\n    await adapter.search(args.query);\n    samples.pus..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Code shows performance testing flow, not sync completion behavior"
+    },
+    "arm_b": {
+      "grade": 2,
+      "reason": "Shows init then search sequence after MemUAdapter setup"
+    }
+  },
+  {
+    "qid": "C8",
+    "axis": 3,
+    "query": "what runs after MemUAdapter sync completes",
+    "expected_paths": [
+      "callback",
+      "onSync",
+      "afterSync",
+      "notify"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\scripts\\memu-perf.ts:runWarm",
+    "snip": {
+      "path": "mcp-server\\src\\scripts\\memu-perf.ts",
+      "name": "runWarm",
+      "kind": "function_declaration",
+      "snippet": "async function runWarm(args: Args): Promise<number[]> {\n  const adapter = new MemUAdapter({ dsn: args.dsn, userId: args.userId });\n  await adapter.init();\n  if (!adapter.isAvailable) {\n    await adapter.dispose();\n    throw new Error(\"adapter unavailable during warm run\");\n  }\n  const samples: number[] = [];\n  try {\n    // Throwaway query to prime PG query planner -- first call includes parse/plan.\n    await adapter.search(args.query);\n    for (let i = 0; i < args.iters; i++) {\n      const t0 = ..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Code shows MemUAdapter performance testing, not sync completion flow"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Mentions MemUAdapter but doesn't show sync completion or subsequent code"
+    }
+  },
+  {
+    "qid": "C8",
+    "axis": 3,
+    "query": "what runs after MemUAdapter sync completes",
+    "expected_paths": [
+      "callback",
+      "onSync",
+      "afterSync",
+      "notify"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "mcp-server\\src\\adapters\\memu.test.ts:adapter",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\memu.test.ts",
+      "name": "adapter",
+      "kind": "lexical_declaration",
+      "snippet": "const adapter = new MemUAdapter({ dsn: BAD_DSN, userId: \"nobody\", timeout: 500 });"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Only instantiates MemUAdapter, doesn't show post-sync behavior"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "Only shows adapter instantiation, not post-sync operations"
+    }
+  },
+  {
+    "qid": "C8",
+    "axis": 3,
+    "query": "what runs after MemUAdapter sync completes",
+    "expected_paths": [
+      "callback",
+      "onSync",
+      "afterSync",
+      "notify"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\adapters\\memu.test.ts:adapter",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\memu.test.ts",
+      "name": "adapter",
+      "kind": "lexical_declaration",
+      "snippet": "const adapter = new MemUAdapter({ dsn: BAD_DSN, userId: \"nobody\", timeout: 500 });"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Only shows MemUAdapter initialization in test, no sync completion logic"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "Adapter instantiation only, no sync logic"
+    }
+  },
+  {
+    "qid": "C8",
+    "axis": 3,
+    "query": "what runs after MemUAdapter sync completes",
+    "expected_paths": [
+      "callback",
+      "onSync",
+      "afterSync",
+      "notify"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "mcp-server\\src\\adapters\\memu.test.ts:adapter",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\memu.test.ts",
+      "name": "adapter",
+      "kind": "lexical_declaration",
+      "snippet": "const adapter = new MemUAdapter({ dsn: BAD_DSN, userId: \"nobody\", timeout: 500 });"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Test instantiation code only, no sync completion handling"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "Test instantiation code, no sync completion logic"
+    }
+  },
+  {
+    "qid": "C9",
+    "axis": 3,
+    "query": "who calls OAuth2Provider",
+    "expected_paths": [],
+    "negative": true,
+    "hit_idx": 0,
+    "hit_str": "recipes\\collectors\\gmail-setup.ts:tokenRes",
+    "snip": {
+      "path": "recipes\\collectors\\gmail-setup.ts",
+      "name": "tokenRes",
+      "kind": "lexical_declaration",
+      "snippet": "const tokenRes = await fetch('https://oauth2.googleapis.com/token', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },\n  body: new URLSearchParams({\n    code,\n    client_id: CLIENT_ID,\n    client_secret: CLIENT_SECRET,\n    redirect_uri: REDIRECT_URI,\n    grant_type: 'authorization_code',\n  }),\n});"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Code makes direct OAuth2 token requests, does not reference or call any OAuth2Provider"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Deals with OAuth2 token endpoint but does not reference or show who calls OAuth2Provider"
+    }
+  },
+  {
+    "qid": "C9",
+    "axis": 3,
+    "query": "who calls OAuth2Provider",
+    "expected_paths": [],
+    "negative": true,
+    "hit_idx": 1,
+    "hit_str": "recipes\\collectors\\gmail-collector.ts:TOKEN_URL",
+    "snip": {
+      "path": "recipes\\collectors\\gmail-collector.ts",
+      "name": "TOKEN_URL",
+      "kind": "lexical_declaration",
+      "snippet": "const TOKEN_URL = 'https://oauth2.googleapis.com/token';"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "OAuth2 URL constant unrelated to provider callers"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Mentions OAuth2 URL but doesn't show callers of OAuth2Provider"
+    }
+  },
+  {
+    "qid": "C9",
+    "axis": 3,
+    "query": "who calls OAuth2Provider",
+    "expected_paths": [],
+    "negative": true,
+    "hit_idx": 2,
+    "hit_str": "recipes\\collectors\\gmail-setup.ts:authUrl",
+    "snip": {
+      "path": "recipes\\collectors\\gmail-setup.ts",
+      "name": "authUrl",
+      "kind": "lexical_declaration",
+      "snippet": "const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');"
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Code creates OAuth URL, not OAuth2Provider"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Uses OAuth2 URL but does not reference OAuth2Provider"
+    }
+  },
+  {
+    "qid": "C9",
+    "axis": 3,
+    "query": "who calls OAuth2Provider",
+    "expected_paths": [],
+    "negative": true,
+    "hit_idx": 3,
+    "hit_str": "recipes\\collectors\\gmail-setup.ts:server",
+    "snip": {
+      "path": "recipes\\collectors\\gmail-setup.ts",
+      "name": "server",
+      "kind": "lexical_declaration",
+      "snippet": "const server = createServer((req, res) => {\n    const url = new URL(req.url ?? '/', `http://localhost:${PORT}`);\n    if (url.pathname !== '/callback') {\n      res.writeHead(404);\n      res.end('Not found');\n      return;\n    }\n\n    const error = url.searchParams.get('error');\n    if (error) {\n      res.writeHead(400, { 'Content-Type': 'text/html' });\n      res.end(`<h2>OAuth error: ${error}</h2><p>You can close this tab.</p>`);\n      server.close();\n      reject(new Error(`OAuth error: ${error}`..."
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Code handles OAuth callbacks but does not call OAuth2Provider"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "Handles OAuth callback, not OAuth2Provider caller"
+    }
+  },
+  {
+    "qid": "C9",
+    "axis": 3,
+    "query": "who calls OAuth2Provider",
+    "expected_paths": [],
+    "negative": true,
+    "hit_idx": 4,
+    "hit_str": "recipes\\collectors\\gmail-setup.ts:code",
+    "snip": {
+      "path": "recipes\\collectors\\gmail-setup.ts",
+      "name": "code",
+      "kind": "lexical_declaration",
+      "snippet": "const code = await new Promise<string>((resolve, reject) => {\n  const server = createServer((req, res) => {\n    const url = new URL(req.url ?? '/', `http://localhost:${PORT}`);\n    if (url.pathname !== '/callback') {\n      res.writeHead(404);\n      res.end('Not found');\n      return;\n    }\n\n    const error = url.searchParams.get('error');\n    if (error) {\n      res.writeHead(400, { 'Content-Type': 'text/html' });\n      res.end(`<h2>OAuth error: ${error}</h2><p>You can close this tab.</p>`);\n    ..."
+    },
+    "hand_p_at_5": 1.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "OAuth callback handler not OAuth2Provider caller"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "OAuth callback handling, not OAuth2Provider callers"
+    }
+  },
+  {
+    "qid": "C10",
+    "axis": 3,
+    "query": "what does GitNexusAdapter call during indexing",
+    "expected_paths": [
+      "analyze",
+      "spawn",
+      "exec",
+      "ripgrep"
+    ],
+    "negative": false,
+    "hit_idx": 0,
+    "hit_str": "mcp-server\\src\\adapters\\gitnexus.ts:GitNexusAdapter",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\gitnexus.ts",
+      "name": "GitNexusAdapter",
+      "kind": "class_declaration",
+      "snippet": "class GitNexusAdapter implements VaultMindAdapter {\n  readonly name = \"gitnexus\";\n  readonly capabilities: readonly AdapterCapability[] = [\"search\"];\n\n  private readonly binary: string;\n  private readonly repos: string[];\n  private readonly timeout: number;\n  private available = false;\n\n  get isAvailable(): boolean { return this.available; }\n\n  constructor(config?: GitNexusAdapterConfig) {\n    this.binary = config?.binary ?? \"gitnexus\";\n    this.repos = config?.repos ?? [];\n    this.timeout = co..."
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Code lacks indexing methods or calls"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "shows class definition but no indexing method calls"
+    }
+  },
+  {
+    "qid": "C10",
+    "axis": 3,
+    "query": "what does GitNexusAdapter call during indexing",
+    "expected_paths": [
+      "analyze",
+      "spawn",
+      "exec",
+      "ripgrep"
+    ],
+    "negative": false,
+    "hit_idx": 1,
+    "hit_str": "mcp-server\\src\\adapters\\gitnexus.ts:GitNexusAdapterConfig",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\gitnexus.ts",
+      "name": "GitNexusAdapterConfig",
+      "kind": "interface_declaration",
+      "snippet": "interface GitNexusAdapterConfig {\n  /** Path to gitnexus CLI binary (default: \"gitnexus\") */\n  binary?: string;\n  /** Repository filter -- only search these repos */\n  repos?: string[];\n  /** Timeout in ms (default: 15000) */\n  timeout?: number;\n}"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Interface only shows config options, not indexing calls"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "config interface unrelated to indexing calls"
+    }
+  },
+  {
+    "qid": "C10",
+    "axis": 3,
+    "query": "what does GitNexusAdapter call during indexing",
+    "expected_paths": [
+      "analyze",
+      "spawn",
+      "exec",
+      "ripgrep"
+    ],
+    "negative": false,
+    "hit_idx": 2,
+    "hit_str": "mcp-server\\src\\adapters\\gitnexus.ts:constructor",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\gitnexus.ts",
+      "name": "constructor",
+      "kind": "method_definition",
+      "snippet": "constructor(config?: GitNexusAdapterConfig) {\n    this.binary = config?.binary ?? \"gitnexus\";\n    this.repos = config?.repos ?? [];\n    this.timeout = config?.timeout ?? 15_000;\n  }"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Shows constructor only, not indexing calls"
+    },
+    "arm_b": {
+      "grade": 0,
+      "reason": "constructor unrelated to indexing calls"
+    }
+  },
+  {
+    "qid": "C10",
+    "axis": 3,
+    "query": "what does GitNexusAdapter call during indexing",
+    "expected_paths": [
+      "analyze",
+      "spawn",
+      "exec",
+      "ripgrep"
+    ],
+    "negative": false,
+    "hit_idx": 3,
+    "hit_str": "mcp-server\\src\\index.ts:gnAdapter",
+    "snip": {
+      "path": "mcp-server\\src\\index.ts",
+      "name": "gnAdapter",
+      "kind": "lexical_declaration",
+      "snippet": "const gnAdapter = new GitNexusAdapter();"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "Only shows object instantiation, not what methods GitNexusAdapter calls during indexing"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "Mentions GitNexusAdapter but only shows instantiation, not indexing calls"
+    }
+  },
+  {
+    "qid": "C10",
+    "axis": 3,
+    "query": "what does GitNexusAdapter call during indexing",
+    "expected_paths": [
+      "analyze",
+      "spawn",
+      "exec",
+      "ripgrep"
+    ],
+    "negative": false,
+    "hit_idx": 4,
+    "hit_str": "mcp-server\\src\\adapters\\gitnexus.ts:init",
+    "snip": {
+      "path": "mcp-server\\src\\adapters\\gitnexus.ts",
+      "name": "init",
+      "kind": "method_definition",
+      "snippet": "async init(): Promise<void> {\n    try {\n      await exec(this.binary, [\"--version\"], { timeout: 5000 });\n      this.available = true;\n    } catch {\n      process.stderr.write(\"vault-mind: [warn] gitnexus CLI not found, adapter disabled\\n\");\n    }\n  }"
+    },
+    "hand_p_at_5": 0.0,
+    "arm_a": {
+      "verdict": 0,
+      "reason": "init method shows version check, not indexing"
+    },
+    "arm_b": {
+      "grade": 1,
+      "reason": "shows init not indexing calls"
+    }
+  }
+]
