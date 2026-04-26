@@ -48,11 +48,70 @@ impl Store {
     }
 
     pub fn insert_edge(&self, from: i64, to: i64, kind: &str) -> Result<()> {
+        self.insert_edge_conf(from, to, kind, 1.0)
+    }
+
+    /// Insert with explicit confidence (per resolver step in graph_build.rs).
+    /// 1.0 = same-file resolution, 0.9 = import-file resolution, 0.7 = global-unique fallback.
+    pub fn insert_edge_conf(&self, from: i64, to: i64, kind: &str, confidence: f64) -> Result<()> {
         self.conn.execute(
-            "INSERT OR IGNORE INTO edges(from_id,to_id,kind,confidence) VALUES (?,?,?,1.0)",
-            params![from, to, kind],
+            "INSERT OR IGNORE INTO edges(from_id,to_id,kind,confidence) VALUES (?,?,?,?)",
+            params![from, to, kind, confidence],
         )?;
         Ok(())
+    }
+
+    /// Returns all edges of the given kinds with confidence ≥ min_conf, as
+    /// `Vec<(from_id, to_id, confidence)>`. Used by graph_ppr for PPR matrix
+    /// construction; ARCHITECTURE §9.7 confidence_min default = 0.5.
+    pub fn edges_of_kinds(
+        &self,
+        kinds: &[&str],
+        min_conf: f64,
+    ) -> Result<Vec<(i64, i64, f64)>> {
+        if kinds.is_empty() {
+            return Ok(vec![]);
+        }
+        let placeholders = std::iter::repeat("?")
+            .take(kinds.len())
+            .collect::<Vec<_>>()
+            .join(",");
+        let sql = format!(
+            "SELECT from_id, to_id, confidence FROM edges \
+             WHERE kind IN ({}) AND confidence >= ?",
+            placeholders
+        );
+        let mut st = self.conn.prepare(&sql)?;
+        let mut params_vec: Vec<&dyn rusqlite::ToSql> = kinds
+            .iter()
+            .map(|k| k as &dyn rusqlite::ToSql)
+            .collect();
+        params_vec.push(&min_conf);
+        let rows = st.query_map(params_vec.as_slice(), |r| {
+            Ok((
+                r.get::<_, i64>(0)?,
+                r.get::<_, i64>(1)?,
+                r.get::<_, f64>(2)?,
+            ))
+        })?;
+        Ok(rows.filter_map(|r| r.ok()).collect())
+    }
+
+    /// Counts edges grouped by (kind, confidence_bucket) where bucket = round(confidence*10)/10.
+    /// Returns Vec<(kind, confidence_bucket, count)> sorted by kind asc, conf desc.
+    pub fn count_edges_by_kind_conf(&self) -> Result<Vec<(String, f64, i64)>> {
+        let mut st = self.conn.prepare(
+            "SELECT kind, ROUND(confidence, 1) as bucket, COUNT(*) FROM edges \
+             GROUP BY kind, bucket ORDER BY kind ASC, bucket DESC",
+        )?;
+        let rows = st.query_map([], |r| {
+            Ok((
+                r.get::<_, String>(0)?,
+                r.get::<_, f64>(1)?,
+                r.get::<_, i64>(2)?,
+            ))
+        })?;
+        Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
     pub fn list_files(&self) -> Result<Vec<String>> {

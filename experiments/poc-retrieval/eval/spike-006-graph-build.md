@@ -132,3 +132,65 @@ This is a documented gap: tree-sitter `(call_expression function: (identifier))`
 ## Decision input for ARCHITECTURE.md
 
 The 877-edge graph from a 52-file corpus, built in 8.9s with a 67.5% unresolved rate, is **sufficient signal that REQ-02 graph layer materially answers axis-3 queries** that retrieval can't. The 100% structural answer to "who calls assertRealPathInsideVault" vs ~0% retrieval baseline is the pivot point. Phase 1 should commit to graph-builder + 4 edge kinds; default-import / namespace / barrel-file resolution can stay Phase 3+ without blocking REQ-02 acceptance.
+
+---
+
+## Gap-fill round (executed 2026-04-27)
+
+Three of "Top NOT-implemented" gaps addressed; one parent-agent-driven (sub-agents permission-blocked, parent took over).
+
+### 1. `new_expression` → Calls
+
+`Q_CALLS` extended with two new alternates:
+- `(new_expression constructor: (identifier) @callee)` — `new Foo(...)`
+- `(new_expression constructor: (member_expression …))` — `new ns.Foo(...)`
+
+Member-call alternates ALSO capture `object: (identifier) @ns_obj` to support namespace-import resolution (#3).
+
+### 2. Per-resolver-step confidence
+
+`storage::insert_edge_conf(from, to, kind, confidence)` added; `insert_edge` delegates with default 1.0. `graph_build::resolve_with_conf` returns `Option<(i64, f64)>`:
+- Step 1 same-file → **1.0**
+- Step 2 import-file → **0.9**
+- Step 3 global-unique fallback → **0.7**
+
+Calls/Implements/Extends inserts route through `insert_edge_conf`. Imports stay 1.0 (deterministic post-resolution).
+
+ARCHITECTURE §9.7 `confidence_min=0.5` BFS filter is now meaningful (was no-op when all = 1.0).
+
+### 3. Namespace-import handler
+
+Previously `import * as X from "..."` was skipped. Now populates `namespace_aliases: HashMap<(file, alias), target_file>`. Calls site `X.foo()` with `X` matching alias → resolve `foo` directly in `target_file` at confidence 0.9, bypass global-unique fallback. No Imports edge for namespace-only imports.
+
+### Result
+
+| Edge kind | Baseline | Gap-fill | Δ |
+|-----------|----------|----------|---|
+| Calls | 749 | **795** | **+46** |
+| Imports | 120 | 120 | 0 |
+| Implements | 7 | 7 | 0 |
+| Extends | 1 | 1 | 0 |
+| **TOTAL** | 877 | **923** | **+46** |
+
+Build wall 9.6s (≈ baseline 8.9s). 1040 Calls captured pre-UNIQUE-dedup, 795 stored — member-with-object + member-without-object alternates overlap, `UNIQUE(from_id, to_id, kind)` dedupes (kept first-insert confidence).
+
+The +46 lift = constructor calls. Spot-check: `new ObsidianAdapter()` from `index.ts` now produces a Calls edge.
+
+### Still NOT implemented (P3+)
+
+- **Default imports** (`import X from "..."`) — local binding ≠ target's exported name on step 2; pass_imports docs the gap
+- **Barrel-file re-exports** — `export { X } from "./submodule"` not followed; ARCHITECTURE §9.7 `import_alias_resolver` Phase 3 followup
+- **CLI dump for confidence distribution** — `Store::count_edges_by_kind_conf` exists; subcommand wire is a 10-LOC followup
+- **Confidence-weighted PPR transitions** — `graph_ppr` (sibling commit) uses confidence as hard filter only; weighted transitions are Phase 3+
+
+---
+
+## PPR library landed (sibling commit)
+
+`src/graph_ppr.rs` (~210 LOC) implements Personalized PageRank as Fast-GraphRAG / HippoRAG-style traversal:
+- Pure-data `ppr_from_edge_list(edges, entries, damping, iters)` — testable without DB
+- DB-wrapping `personalized_pagerank(storage, entry_ids, kinds, damping, iters, conf_min)` — calls `Store::edges_of_kinds` then delegates to pure fn
+- Dangling-mass redistribution to teleport (preserves Σ=1)
+- 4 unit tests pass (synthetic 5-node, empty entries, isolated entry, dangling mass conservation)
+
+NOT wired into a CLI subcommand yet — Phase 3 wires `--axis-3` query mode that fans entry symbols into PPR + returns top-N. Library-first approach lets parent decide CLI surface separately.

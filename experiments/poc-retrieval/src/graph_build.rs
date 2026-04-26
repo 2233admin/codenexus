@@ -1,4 +1,5 @@
 use anyhow::{Context, Result};
+use std::collections::HashMap;
 use std::path::PathBuf;
 use std::time::Instant;
 use tree_sitter::{Parser, Query, QueryCursor};
@@ -22,12 +23,31 @@ pub struct EdgeBuilder<'a> {
     q_imports: Query,
     q_implements: Query,
     q_extends: Query,
+    /// (file_path, alias) -> target_file_path. Built in pass_imports for
+    /// `import * as X from "..."` declarations; consumed in pass_relations
+    /// when a Calls site is `X.foo()` to resolve `foo` in target file.
+    namespace_aliases: HashMap<(String, String), String>,
 }
 
+// Calls covers function calls AND constructor invocations (new X(...)).
+// Member-call alternates capture both the property-identifier (callee) and the
+// object-identifier (ns_obj) to support namespace-import resolution X.foo().
+// Pattern overlap (member with vs without object) is fine: storage UNIQUE
+// constraint dedupes resulting edges, picking the first-inserted confidence.
 const Q_CALLS: &str = r#"
 [
   (call_expression function: (identifier) @callee)
-  (call_expression function: (member_expression property: (property_identifier) @callee))
+  (call_expression function: (member_expression
+    object: (identifier) @ns_obj
+    property: (property_identifier) @callee))
+  (call_expression function: (member_expression
+    property: (property_identifier) @callee))
+  (new_expression constructor: (identifier) @callee)
+  (new_expression constructor: (member_expression
+    object: (identifier) @ns_obj
+    property: (property_identifier) @callee))
+  (new_expression constructor: (member_expression
+    property: (property_identifier) @callee))
 ]
 "#;
 
@@ -90,6 +110,7 @@ impl<'a> EdgeBuilder<'a> {
             q_imports,
             q_implements,
             q_extends,
+            namespace_aliases: HashMap::new(),
         })
     }
 
@@ -217,8 +238,14 @@ impl<'a> EdgeBuilder<'a> {
             };
 
             if is_namespace {
-                // Skip — resolver can't anchor to a single symbol in target file
-                stats.unresolved += 1;
+                // Track alias → target_file for Calls resolver namespace lookup.
+                // Don't insert an Imports edge (no single anchor symbol exists for `* as X`).
+                if let Some(target) = self.resolve_import_path(file, &source) {
+                    self.namespace_aliases
+                        .insert((file.to_string(), name.clone()), target);
+                } else {
+                    stats.unresolved += 1;
+                }
                 continue;
             }
 
@@ -276,39 +303,54 @@ impl<'a> EdgeBuilder<'a> {
             return Ok(());
         }
 
-        // Calls
+        // Calls — namespace-aware: per match, look for ns_obj capture and resolve via
+        // namespace_aliases when present. Otherwise fall through to resolve_with_conf.
         {
-            let cap_idx = self
+            let callee_idx = self
                 .q_calls
                 .capture_index_for_name("callee")
                 .ok_or_else(|| anyhow::anyhow!("callee capture missing"))?;
+            let ns_obj_idx = self.q_calls.capture_index_for_name("ns_obj");
             let mut cursor = QueryCursor::new();
             for m in cursor.matches(&self.q_calls, root, src.as_bytes()) {
+                let mut callee_name: Option<(String, usize)> = None;
+                let mut ns_obj_name: Option<String> = None;
                 for cap in m.captures {
-                    if cap.index != cap_idx {
-                        continue;
+                    if cap.index == callee_idx {
+                        callee_name = Some((
+                            src[cap.node.byte_range()].to_string(),
+                            cap.node.start_position().row + 1,
+                        ));
+                    } else if Some(cap.index) == ns_obj_idx {
+                        ns_obj_name = Some(src[cap.node.byte_range()].to_string());
                     }
-                    let name = src[cap.node.byte_range()].to_string();
-                    let row = cap.node.start_position().row + 1;
-                    let from_id = match enclosing_symbol(&symbols_in_file, row) {
-                        Some(id) => id,
-                        None => continue, // top-level call outside indexed symbols
-                    };
-                    if from_id == 0 {
-                        continue;
+                }
+                let (name, row) = match callee_name {
+                    Some(t) => t,
+                    None => continue,
+                };
+                let from_id = match enclosing_symbol(&symbols_in_file, row) {
+                    Some(id) => id,
+                    None => continue,
+                };
+                if from_id == 0 {
+                    continue;
+                }
+                let resolved = if let Some(obj) = ns_obj_name {
+                    self.resolve_with_namespace(file, &obj, &name)
+                } else {
+                    self.resolve_with_conf(file, &name)
+                };
+                match resolved {
+                    Some((to_id, conf)) => {
+                        if to_id == from_id {
+                            continue;
+                        }
+                        self.storage.insert_edge_conf(from_id, to_id, "Calls", conf)?;
+                        stats.calls += 1;
                     }
-                    match self.resolve(file, &name) {
-                        Some(to_id) => {
-                            if to_id == from_id {
-                                // self-reference — skip to keep noise down
-                                continue;
-                            }
-                            self.storage.insert_edge(from_id, to_id, "Calls")?;
-                            stats.calls += 1;
-                        }
-                        None => {
-                            stats.unresolved += 1;
-                        }
+                    None => {
+                        stats.unresolved += 1;
                     }
                 }
             }
@@ -332,12 +374,13 @@ impl<'a> EdgeBuilder<'a> {
                         Some(id) => id,
                         None => continue,
                     };
-                    match self.resolve(file, &name) {
-                        Some(to_id) => {
+                    match self.resolve_with_conf(file, &name) {
+                        Some((to_id, conf)) => {
                             if to_id == from_id {
                                 continue;
                             }
-                            self.storage.insert_edge(from_id, to_id, "Implements")?;
+                            self.storage
+                                .insert_edge_conf(from_id, to_id, "Implements", conf)?;
                             stats.implements += 1;
                         }
                         None => {
@@ -366,12 +409,13 @@ impl<'a> EdgeBuilder<'a> {
                         Some(id) => id,
                         None => continue,
                     };
-                    match self.resolve(file, &name) {
-                        Some(to_id) => {
+                    match self.resolve_with_conf(file, &name) {
+                        Some((to_id, conf)) => {
                             if to_id == from_id {
                                 continue;
                             }
-                            self.storage.insert_edge(from_id, to_id, "Extends")?;
+                            self.storage
+                                .insert_edge_conf(from_id, to_id, "Extends", conf)?;
                             stats.extends += 1;
                         }
                         None => {
@@ -386,20 +430,51 @@ impl<'a> EdgeBuilder<'a> {
     }
 
     fn resolve(&self, from_file: &str, name: &str) -> Option<i64> {
-        // Step 1: same-file
+        self.resolve_with_conf(from_file, name).map(|(id, _)| id)
+    }
+
+    /// Naive 3-step resolver with per-step confidence:
+    ///   Step 1 (same-file)        -> 1.0
+    ///   Step 2 (import-file)      -> 0.9
+    ///   Step 3 (global-unique)    -> 0.7
+    fn resolve_with_conf(&self, from_file: &str, name: &str) -> Option<(i64, f64)> {
         if let Ok(Some(id)) = self.storage.symbol_in_file_by_name(from_file, name) {
-            return Some(id);
+            return Some((id, 1.0));
         }
-        // Step 2: import-file
         if let Ok(targets) = self.storage.import_targets_for_file(from_file) {
             for tgt in targets {
                 if let Ok(Some(id)) = self.storage.symbol_in_file_by_name(&tgt, name) {
-                    return Some(id);
+                    return Some((id, 0.9));
                 }
             }
         }
-        // Step 3: global unique
-        self.storage.find_global_unique(name).ok().flatten()
+        self.storage
+            .find_global_unique(name)
+            .ok()
+            .flatten()
+            .map(|id| (id, 0.7))
+    }
+
+    /// Namespace-aware resolution for `X.foo()` calls. If `obj` is a tracked
+    /// namespace alias for `from_file`, look up `name` directly in the target
+    /// file at confidence 0.9 (deterministic post-resolution). Falls back to
+    /// regular resolve_with_conf if obj is not a namespace alias.
+    fn resolve_with_namespace(
+        &self,
+        from_file: &str,
+        obj: &str,
+        name: &str,
+    ) -> Option<(i64, f64)> {
+        let key = (from_file.to_string(), obj.to_string());
+        if let Some(target_file) = self.namespace_aliases.get(&key) {
+            if let Ok(Some(id)) = self
+                .storage
+                .symbol_in_file_by_name(target_file.as_str(), name)
+            {
+                return Some((id, 0.9));
+            }
+        }
+        self.resolve_with_conf(from_file, name)
     }
 
     /// Resolve a relative import source string ("./foo", "../bar/baz") to an indexed

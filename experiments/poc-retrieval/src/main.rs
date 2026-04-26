@@ -1,5 +1,6 @@
 mod embedder;
 mod graph_build;
+mod graph_ppr;
 mod parser;
 mod reranker;
 mod search;
