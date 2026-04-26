@@ -1,4 +1,5 @@
 mod embedder;
+mod graph_build;
 mod parser;
 mod reranker;
 mod search;
@@ -47,6 +48,20 @@ enum Cmd {
         rerank: bool,
         #[arg(long, default_value = "eval/results.json")]
         out: PathBuf,
+    },
+    BuildGraph {
+        #[arg(long)]
+        repo: PathBuf,
+        #[arg(long, default_value = "poc.db")]
+        db: String,
+    },
+    DumpEdges {
+        #[arg(long, default_value = "poc.db")]
+        db: String,
+        #[arg(long)]
+        kind: Option<String>,
+        #[arg(long, default_value_t = 5)]
+        limit: usize,
     },
 }
 
@@ -205,6 +220,27 @@ fn main() -> Result<()> {
             std::fs::create_dir_all(out.parent().unwrap_or(std::path::Path::new(".")))?;
             std::fs::write(&out, serde_json::to_string_pretty(&results)?)?;
             eprintln!("wrote {}", out.display());
+        }
+        Cmd::BuildGraph { repo, db } => {
+            let store = storage::Store::open(&db)?;
+            let mut builder = graph_build::EdgeBuilder::new(&store, repo)?;
+            let stats = builder.build_all()?;
+            eprintln!(
+                "Calls: {}, Imports: {}, Implements: {}, Extends: {}, unresolved: {}",
+                stats.calls, stats.imports, stats.implements, stats.extends, stats.unresolved
+            );
+            let totals = store.count_edges_by_kind()?;
+            eprintln!("=== final edge counts ===");
+            for (k, n) in totals {
+                eprintln!("  {}: {}", k, n);
+            }
+        }
+        Cmd::DumpEdges { db, kind, limit } => {
+            let store = storage::Store::open(&db)?;
+            let rows = store.dump_edges_join(kind.as_deref(), limit)?;
+            for (fp, fname, k, tp, tname) in rows {
+                println!("{}\t{}\t{}\t{}\t{}", fp, fname, k, tp, tname);
+            }
         }
     }
     Ok(())

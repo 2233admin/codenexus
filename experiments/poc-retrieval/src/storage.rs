@@ -26,10 +26,133 @@ impl Store {
               INSERT INTO symbols_fts(rowid, name, snippet, kind, search_blob)
               VALUES (new.id, new.name, new.snippet, new.kind, new.search_blob);
             END;
+            CREATE TABLE IF NOT EXISTS edges (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                from_id INTEGER NOT NULL REFERENCES symbols(id),
+                to_id INTEGER NOT NULL REFERENCES symbols(id),
+                kind TEXT NOT NULL CHECK (kind IN ('Calls','Imports','Implements','Extends')),
+                confidence REAL NOT NULL DEFAULT 1.0,
+                UNIQUE(from_id, to_id, kind)
+            );
+            CREATE INDEX IF NOT EXISTS edges_from ON edges(from_id, kind);
+            CREATE INDEX IF NOT EXISTS edges_to   ON edges(to_id,   kind);
             "#,
         )
         .context("schema")?;
         Ok(Self { conn })
+    }
+
+    pub fn clear_edges(&self) -> Result<()> {
+        self.conn.execute_batch("DELETE FROM edges;")?;
+        Ok(())
+    }
+
+    pub fn insert_edge(&self, from: i64, to: i64, kind: &str) -> Result<()> {
+        self.conn.execute(
+            "INSERT OR IGNORE INTO edges(from_id,to_id,kind,confidence) VALUES (?,?,?,1.0)",
+            params![from, to, kind],
+        )?;
+        Ok(())
+    }
+
+    pub fn list_files(&self) -> Result<Vec<String>> {
+        let mut st = self.conn.prepare("SELECT DISTINCT path FROM symbols")?;
+        let rows = st.query_map([], |r| r.get::<_, String>(0))?;
+        Ok(rows.filter_map(|r| r.ok()).collect())
+    }
+
+    /// Returns (id, name, start_line, end_line) for all symbols in `path`,
+    /// ordered by start_line ascending.
+    pub fn symbols_in_file_full(
+        &self,
+        path: &str,
+    ) -> Result<Vec<(i64, String, usize, usize)>> {
+        let mut st = self.conn.prepare(
+            "SELECT id, name, start_line, end_line FROM symbols WHERE path=? ORDER BY start_line ASC",
+        )?;
+        let rows = st.query_map(params![path], |r| {
+            Ok((
+                r.get::<_, i64>(0)?,
+                r.get::<_, String>(1)?,
+                r.get::<_, i64>(2)? as usize,
+                r.get::<_, i64>(3)? as usize,
+            ))
+        })?;
+        Ok(rows.filter_map(|r| r.ok()).collect())
+    }
+
+    pub fn symbol_in_file_by_name(&self, path: &str, name: &str) -> Result<Option<i64>> {
+        let mut st = self.conn.prepare(
+            "SELECT id FROM symbols WHERE path=? AND name=? LIMIT 1",
+        )?;
+        let mut rows = st.query(params![path, name])?;
+        if let Some(row) = rows.next()? {
+            Ok(Some(row.get::<_, i64>(0)?))
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub fn find_global_unique(&self, name: &str) -> Result<Option<i64>> {
+        let mut st = self.conn.prepare("SELECT id FROM symbols WHERE name=? LIMIT 2")?;
+        let rows: Vec<i64> = st
+            .query_map(params![name], |r| r.get::<_, i64>(0))?
+            .filter_map(|r| r.ok())
+            .collect();
+        if rows.len() == 1 {
+            Ok(Some(rows[0]))
+        } else {
+            Ok(None)
+        }
+    }
+
+    /// Files imported by `from_file` (resolved target paths, derived via Imports edges).
+    pub fn import_targets_for_file(&self, from_file: &str) -> Result<Vec<String>> {
+        let mut st = self.conn.prepare(
+            "SELECT DISTINCT s2.path
+             FROM edges e
+             JOIN symbols s1 ON e.from_id=s1.id
+             JOIN symbols s2 ON e.to_id=s2.id
+             WHERE s1.path = ?1 AND e.kind = 'Imports'",
+        )?;
+        let rows = st.query_map(params![from_file], |r| r.get::<_, String>(0))?;
+        Ok(rows.filter_map(|r| r.ok()).collect())
+    }
+
+    pub fn count_edges_by_kind(&self) -> Result<Vec<(String, i64)>> {
+        let mut st = self
+            .conn
+            .prepare("SELECT kind, COUNT(*) FROM edges GROUP BY kind ORDER BY kind")?;
+        let rows = st.query_map([], |r| {
+            Ok((r.get::<_, String>(0)?, r.get::<_, i64>(1)?))
+        })?;
+        Ok(rows.filter_map(|r| r.ok()).collect())
+    }
+
+    /// JOIN edges with symbols, optionally filtered by kind. Returns
+    /// (from_path, from_name, kind, to_path, to_name).
+    pub fn dump_edges_join(
+        &self,
+        kind: Option<&str>,
+        limit: usize,
+    ) -> Result<Vec<(String, String, String, String, String)>> {
+        let sql = "SELECT s1.path, s1.name, e.kind, s2.path, s2.name
+                   FROM edges e
+                   JOIN symbols s1 ON e.from_id=s1.id
+                   JOIN symbols s2 ON e.to_id=s2.id
+                   WHERE (?1 IS NULL OR e.kind = ?1)
+                   LIMIT ?2";
+        let mut st = self.conn.prepare(sql)?;
+        let rows = st.query_map(params![kind, limit as i64], |r| {
+            Ok((
+                r.get::<_, String>(0)?,
+                r.get::<_, String>(1)?,
+                r.get::<_, String>(2)?,
+                r.get::<_, String>(3)?,
+                r.get::<_, String>(4)?,
+            ))
+        })?;
+        Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
     pub fn clear(&self) -> Result<()> {
