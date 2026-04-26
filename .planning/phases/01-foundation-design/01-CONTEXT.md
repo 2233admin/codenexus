@@ -296,6 +296,8 @@ Produce `docs/ARCHITECTURE.md` (clean-room, no GitNexus reference) covering:
 - Security scanners port from CodeFlow MIT
 - Health score computation
 - Workspace split (will hit one of D-R1's triggers around here)
+- **Repomix-style ingestion path** — accept `yamadashy/repomix` packed bundles (XML/MD/JSON) as alternative input for repos we don't clone locally; useful for read-only / archived / remote-only sources. MIT, port-eligible under Apache 2.0 + NOTICE if any code is lifted.
+- **Repomix-style output mode** — emit "neighborhood pack around symbol X" as a query response format for LLM consumers (extension of D-A4's rich query). References repomix's tree-sitter compression heuristics (~70% token reduction) but ports pattern, not code (TS source, we're Rust — clean-room friendly).
 
 ### To Phase 5 (Bridge)
 - memU integration mode (self-contained vs shared PG vs hybrid)
@@ -312,8 +314,9 @@ Produce `docs/ARCHITECTURE.md` (clean-room, no GitNexus reference) covering:
 - Tauri native window option (PROJECT.md anti-scope today; could revisit)
 - VS Code extension (separate project if ever; MCP integration is enough)
 
-### Out of scope but noted
-- The Kami project (`https://github.com/tw93/kami`) — user mentioned mid-discussion. Not folded into Phase 1 scope. Possible roles to evaluate later: (a) doc-generation tool for future ARCHITECTURE / RFC documents, (b) UI inspiration for the cytoscape-fronted graph viewer, (c) wheel for Phase 4 viz layer. Action: review URL after Phase 1 commits, decide whether to add to wheel inventory or backlog.
+### Out of scope but noted (adjacent tools, NOT CodeNexus runtime dependencies)
+- **Kami** (`https://github.com/tw93/kami`, MIT code + commercial-restricted TsangerJinKai font) — Python + HTML/CSS + WeasyPrint doc/PDF generator from natural-language prompts; templates for one-pager / long-doc / letter / portfolio / resume / slide deck. **Role for CodeNexus**: Phase 1 plan-phase invokes Kami to render `docs/ARCHITECTURE.md` (and future RFCs / ADRs / project docs) to polished PDF for review and sharing. NOT a CodeNexus runtime dependency. CLAUDE.md already auto-triggers Kami on long-doc tasks, so the path is wired — ARCHITECTURE.md write should "just work" through it.
+- **Repomix** (`https://github.com/yamadashy/repomix`, MIT) — TypeScript repo-packing tool: walks repo, applies gitignore + .repomixignore + globs, emits XML/MD/JSON/plain-text consolidation; ~70% token reduction via tree-sitter signature extraction; bundled secretlint + gpt-tokenizer + MCP server mode + remote repo cloning. **Role for CodeNexus**: adjacent sister tool. Phase 1-3 don't touch it. Phase 4 deferred items above add ingestion + output mode roles. Worth occasional re-check for design ideas (compression heuristics, ignore semantics) — but not a wheel to lift wholesale (TS source, semantically and stack-wise different from us).
 
 </deferred>
 
@@ -329,8 +332,6 @@ Produce `docs/ARCHITECTURE.md` (clean-room, no GitNexus reference) covering:
 4. **Configuration format for `IndexConfig.embedder.batch_size` override (D-W5).** TOML key path? CLI flag form (`--batch-size N`)? Env var (`CODENEXUS_BATCH_SIZE`)? All three? Plan-phase or ARCHITECTURE.md examples decide.
 
 5. **Workspace split criteria — measurement how?** D-R1 names triggers but not who measures or where the threshold check lives. Suggestion: ARCHITECTURE.md adds a "review checkpoint" at Phase 4 entry that runs `cargo build --timings` + `cargo tree | wc -l` and writes results to a phase summary. Confirm during plan-phase.
-
-6. **Kami URL action.** User dropped `https://github.com/tw93/kami` mid-discussion without explicit framing. Capture in deferred above, but ARCHITECTURE.md write itself should NOT consume Kami until user clarifies intent (doc-gen tool vs viz wheel vs unrelated).
 
 </unresolved_questions>
 

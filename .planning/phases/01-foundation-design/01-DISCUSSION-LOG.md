@@ -266,12 +266,30 @@ Notable out-of-scope: `https://github.com/tw93/kami` URL dropped mid-discussion;
 
 ---
 
+## Round 7: Adjacent Tools Filing (post-commit, user-initiated)
+
+User dropped two GitHub URLs during/after wrap-up and flagged both as "重要":
+- `https://github.com/tw93/kami` (during Round 6 review window)
+- `https://github.com/yamadashy/repomix/fork` (after initial CONTEXT.md commit)
+
+Both fetched and assessed. Verdict for both: **adjacent tools, not core wheels.**
+
+| Tool | License | Stack | Role for CodeNexus | Filed at |
+|------|---------|-------|---------------------|----------|
+| Kami | MIT (font commercial-restricted) | Python + HTML/CSS + WeasyPrint | Doc/PDF render tool that auto-triggers from CLAUDE.md when ARCHITECTURE.md is written. NOT a runtime dep. | `<deferred>` "Out of scope but noted" |
+| Repomix | MIT | TypeScript / Node.js | Repo packer for LLM context windows. Phase 4 may add ingestion + output paths. NOT a wholesale lift target (different stack). | `<deferred>` "To Phase 4" + "Out of scope but noted" |
+
+User selected: "Apply as proposed" — single amendment commit captures both. Unresolved Question #6 (Kami URL action) resolved by this round.
+
+---
+
 ## Discussion meta
 
-- Total AskUserQuestion calls: 6 (Round 0 + Rounds 1-5 + Round 5 boundary follow-up)
-- Total decisions captured: **24** (4 A2A + 4 clean-room + 4 supervision + 7 wheels + 4 boundary + 5 refinements; D-W-extras and D-B-extras are auxiliary clusters not separately numbered)
-- User acceptance rate of recommendations: **18/20 explicit options (90%)** + 1 thoughtful de-selection (viz from CodeFlow) + 1 multi-step refinement round
+- Total AskUserQuestion calls: 7 (Round 0 + Rounds 1-5 + Round 5 boundary follow-up + Round 7 amendment confirmation)
+- Total decisions captured: **24 architectural + 2 adjacent-tool filings** (4 A2A + 4 clean-room + 4 supervision + 7 wheels + 4 boundary + 5 refinements; D-W-extras and D-B-extras are auxiliary clusters not separately numbered; Kami + Repomix filed in deferred)
+- User acceptance rate of recommendations: **19/21 explicit options (~90%)** + 1 thoughtful de-selection (viz from CodeFlow) + 1 multi-step refinement round + 1 amendment round
 - Mid-session tooling fix: gsd-sdk junction repair (5min); workflow gates restored before CONTEXT.md commit
+- Post-commit amendment: Repomix + Kami filed in deferred sections; Unresolved Question #6 resolved
 
 ---
 
