@@ -1,0 +1,15 @@
+.venv/
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+uv.lock.bak
+
+# Raw eval outputs — large + per-run noise. Narrative .md is canonical.
+round_*_results.json
+round_*_results_run*.json
+round_*_summary.json
+round_*_summary_run*.json
+_smoke*.json
+_probe_*.py

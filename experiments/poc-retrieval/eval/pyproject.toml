@@ -1,0 +1,13 @@
+[project]
+name = "codenexus-eval"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "anthropic>=0.97.0",
+    "openai>=1.50",
+    "pandas>=3.0.2",
+    "python-dotenv>=1.2.2",
+    "ragas>=0.2,<0.3",
+    "scipy>=1.17.1",
+    "tenacity>=9.1.4",
+]
