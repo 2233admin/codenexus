@@ -58,3 +58,22 @@ Rate relevance on a 0-3 scale (NIST TREC):
 Output JSON:
 {{"grade": 0, 1, 2, or 3, "reason": "<<= 5 words>"}}
 """
+
+ARM_PAIRWISE_PROMPT = """Compare two code search result sets for the same query.
+
+QUERY: {query}
+
+CANDIDATE SET A (top 5):
+{set_a_block}
+
+CANDIDATE SET B (top 5):
+{set_b_block}
+
+Which set better answers the query? Output JSON ONLY:
+{{"verdict": "A" | "B" | "tie", "reason": "<<= 10 words>"}}
+
+Rules:
+- "A" = set A's hits are more relevant overall
+- "B" = set B's hits are more relevant overall
+- "tie" = roughly equivalent OR neither is clearly better
+"""

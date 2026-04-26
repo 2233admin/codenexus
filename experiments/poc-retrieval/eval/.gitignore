@@ -13,3 +13,6 @@ results_round*.json
 # Throwaway diagnostic files only
 _smoke*.json
 _probe_*.py
+_*_probe.py
+_*_probe.log
+round_*_smoke*.json

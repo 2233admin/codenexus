@@ -1,0 +1,278 @@
+{
+  "n_queries": 30,
+  "n_judge_calls": 30,
+  "wall_clock_seconds": 15.28,
+  "concurrency": 24,
+  "provider": "okaoi",
+  "model": "MiniMax-M2.7",
+  "round_a": "results_round3_a06_v2.json",
+  "round_b": "results_round4_a06_rr_v2.json",
+  "verdicts": {
+    "A": 12,
+    "B": 8,
+    "tie": 8,
+    "error": 2
+  },
+  "verdicts_by_axis": {
+    "1": {
+      "A": 4,
+      "B": 1,
+      "tie": 4,
+      "error": 1
+    },
+    "2": {
+      "A": 5,
+      "B": 3,
+      "tie": 1,
+      "error": 1
+    },
+    "3": {
+      "A": 3,
+      "B": 4,
+      "tie": 3,
+      "error": 0
+    }
+  },
+  "per_query": [
+    {
+      "qid": "A1",
+      "axis": 1,
+      "query": "ObsidianAdapter",
+      "negative": false,
+      "verdict": "A",
+      "reason": "Set A includes the class definition hit"
+    },
+    {
+      "qid": "A10",
+      "axis": 1,
+      "query": "OAuth2Provider",
+      "negative": true,
+      "verdict": "B",
+      "reason": "B replaces unrelated provided with server callback handler"
+    },
+    {
+      "qid": "A2",
+      "axis": 1,
+      "query": "VaultBrainAdapter",
+      "negative": false,
+      "verdict": "tie",
+      "reason": "Both sets contain identical VaultBrainAdapter results in nearly equivalent order"
+    },
+    {
+      "qid": "A3",
+      "axis": 1,
+      "query": "assertRealPathInsideVault",
+      "negative": false,
+      "verdict": "tie",
+      "reason": "Both sets contain identical results - same 5 matches for assertRealPathInsideVault in same files, only ordering differs"
+    },
+    {
+      "qid": "A4",
+      "axis": 1,
+      "query": "PROTECTED_DIRS",
+      "negative": false,
+      "verdict": "tie",
+      "reason": "Both sets contain identical relevant matches"
+    },
+    {
+      "qid": "A5",
+      "axis": 1,
+      "query": "concept_graph run function",
+      "negative": false,
+      "verdict": "A",
+      "reason": "A has makeAllOperations dealing with concepts; B has fetchChatHistory unrelated to query"
+    },
+    {
+      "qid": "A6",
+      "axis": 1,
+      "query": "validatedArgs",
+      "negative": false,
+      "verdict": "A",
+      "reason": null
+    },
+    {
+      "qid": "A7",
+      "axis": 1,
+      "query": "kb_meta",
+      "negative": false,
+      "verdict": "tie",
+      "reason": "Both sets share identical top 2 kb_meta results; bottom 3 in each are unrelated"
+    },
+    {
+      "qid": "A8",
+      "axis": 1,
+      "query": "Node tags field",
+      "negative": false,
+      "verdict": "A",
+      "reason": "A has multiple direct tag field references vs B's sparse mix"
+    },
+    {
+      "qid": "A9",
+      "axis": 1,
+      "query": "parseYAMLFrontmatter",
+      "negative": true,
+      "verdict": null,
+      "reason": null
+    },
+    {
+      "qid": "B1",
+      "axis": 2,
+      "query": "filesystem fallback when obsidian not running",
+      "negative": false,
+      "verdict": "B",
+      "reason": "B shows obsidian unavailable error handling and filesystem adapter fallback"
+    },
+    {
+      "qid": "B10",
+      "axis": 2,
+      "query": "aggregate metadata across multiple notes",
+      "negative": false,
+      "verdict": "A",
+      "reason": "A includes fetchAllNotes showing collection; B adds formatNote only formatting single notes"
+    },
+    {
+      "qid": "B2",
+      "axis": 2,
+      "query": "preflight check for protected directories",
+      "negative": false,
+      "verdict": "tie",
+      "reason": "Both sets contain identical PROTECTED_DIRS declarations and related check functions"
+    },
+    {
+      "qid": "B3",
+      "axis": 2,
+      "query": "search files by tag",
+      "negative": false,
+      "verdict": "B",
+      "reason": "Set B provides actual search implementations; Set A only handles tag extraction without search logic"
+    },
+    {
+      "qid": "B4",
+      "axis": 2,
+      "query": "build concept graph from notes",
+      "negative": false,
+      "verdict": "A",
+      "reason": "Contains actual graph data structures (GraphNode, GraphEdge) directly relevant to concept graphs"
+    },
+    {
+      "qid": "B5",
+      "axis": 2,
+      "query": "rate limiting middleware",
+      "negative": true,
+      "verdict": null,
+      "reason": null
+    },
+    {
+      "qid": "B6",
+      "axis": 2,
+      "query": "safe file deletion with dry run",
+      "negative": false,
+      "verdict": "A",
+      "reason": "Set A has varied file operations with dry run logic, Set B is all identical test duplicates"
+    },
+    {
+      "qid": "B7",
+      "axis": 2,
+      "query": "register MCP tool handler",
+      "negative": false,
+      "verdict": "A",
+      "reason": "A has more tool-related code; B focuses on docs generation"
+    },
+    {
+      "qid": "B8",
+      "axis": 2,
+      "query": "handle concurrent writes to the same vault file",
+      "negative": false,
+      "verdict": "B",
+      "reason": null
+    },
+    {
+      "qid": "B9",
+      "axis": 2,
+      "query": "detect conflicting edits between adapters",
+      "negative": false,
+      "verdict": "A",
+      "reason": "A shows adapter registry infrastructure and filtering; B has test fixtures"
+    },
+    {
+      "qid": "C1",
+      "axis": 3,
+      "query": "who calls assertRealPathInsideVault",
+      "negative": false,
+      "verdict": "tie",
+      "reason": "Both sets return identical definition hits, neither shows actual callers"
+    },
+    {
+      "qid": "C10",
+      "axis": 3,
+      "query": "what does GitNexusAdapter call during indexing",
+      "negative": false,
+      "verdict": "B",
+      "reason": "B includes method definitions (init, constructor) showing actual calls"
+    },
+    {
+      "qid": "C2",
+      "axis": 3,
+      "query": "what operations does ObsidianAdapter implement",
+      "negative": false,
+      "verdict": "A",
+      "reason": "A shows class with capabilities list and interface; B has only redundant test instantiations"
+    },
+    {
+      "qid": "C3",
+      "axis": 3,
+      "query": "which adapter calls FilesystemAdapter as fallback",
+      "negative": false,
+      "verdict": "tie",
+      "reason": "Neither set shows fallback logic; A has class/instance declarations, B adds interface but no fallback calls"
+    },
+    {
+      "qid": "C4",
+      "axis": 3,
+      "query": "what error handler runs when vault_create fails preflight",
+      "negative": false,
+      "verdict": "B",
+      "reason": "B includes vault:create event handling and type mapping"
+    },
+    {
+      "qid": "C5",
+      "axis": 3,
+      "query": "what does concept_graph run call internally",
+      "negative": false,
+      "verdict": "B",
+      "reason": "B has unique relevant entries including call() method showing internal RPC mechanism"
+    },
+    {
+      "qid": "C6",
+      "axis": 3,
+      "query": "who produces kb_meta records",
+      "negative": false,
+      "verdict": "B",
+      "reason": "B ranks loadInitialDirty method first, showing behavior around kb_meta records rather than just a variable reference"
+    },
+    {
+      "qid": "C7",
+      "axis": 3,
+      "query": "what reads Node tags field",
+      "negative": false,
+      "verdict": "A",
+      "reason": "A shows actual tag field reads; B only has empty array declarations"
+    },
+    {
+      "qid": "C8",
+      "axis": 3,
+      "query": "what runs after MemUAdapter sync completes",
+      "negative": false,
+      "verdict": "A",
+      "reason": "A contains afterEpoch/syncAfter variables directly relevant to post-sync timing"
+    },
+    {
+      "qid": "C9",
+      "axis": 3,
+      "query": "who calls OAuth2Provider",
+      "negative": true,
+      "verdict": "tie",
+      "reason": "Neither set shows OAuth2Provider calls; both focus on OAuth2 token/URL code"
+    }
+  ]
+}

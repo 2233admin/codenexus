@@ -18,6 +18,7 @@ import asyncio
 import itertools
 import json
 import os
+import re
 import sqlite3
 import sys
 import time
@@ -37,6 +38,7 @@ from tenacity import (
 from ragas_prompts import (
     ARM_A_BINARY_PROMPT,
     ARM_B_GRADED_PROMPT,
+    ARM_PAIRWISE_PROMPT,
     JUDGE_SYSTEM,
 )
 
@@ -99,6 +101,20 @@ def safe_json(raw: str) -> dict[str, Any]:
                 return json.loads(raw[s : e + 1])
             except json.JSONDecodeError:
                 pass
+        # Regex fallback: extract verdict/grade/reason fields individually
+        result: dict[str, Any] = {}
+        m = re.search(r'"verdict"\s*:\s*"([^"]+)"', raw)
+        if m:
+            result["verdict"] = m.group(1)
+        m = re.search(r'"grade"\s*:\s*(\d+)', raw)
+        if m:
+            result["grade"] = int(m.group(1))
+        m = re.search(r'"reason"\s*:\s*"([^"]*)"', raw)
+        if m:
+            result["reason"] = m.group(1)
+        if result:
+            result["_recovered"] = True
+            return result
     return {"_parse_error": True, "raw": raw[:300]}
 
 
@@ -115,17 +131,17 @@ def safe_json(raw: str) -> dict[str, Any]:
     ),
     reraise=True,
 )
-async def call_judge(prompt: str) -> dict[str, Any]:
+async def call_judge(prompt: str, max_tokens: int = 500) -> dict[str, Any]:
     client = next(_CLIENT_CYCLE)
     resp = await client.messages.create(
         model=MODEL,
-        max_tokens=500,
+        max_tokens=max_tokens,
         system=JUDGE_SYSTEM,
         messages=[{"role": "user", "content": prompt}],
         temperature=0.0,
     )
     text = ""
-    for block in resp.content:
+    for block in (resp.content or []):
         if getattr(block, "type", None) == "text":
             text = block.text
             break
@@ -207,14 +223,166 @@ def spearman(x: list[float], y: list[float]) -> float:
     return num / (dx * dy)
 
 
+def format_hit_block(snips: list[dict | None]) -> str:
+    """Format top-5 hits as numbered block for pairwise prompt."""
+    lines = []
+    for i, s in enumerate(snips, 1):
+        if s is None:
+            lines.append(f"{i}. (snippet not found)")
+            continue
+        snippet_trunc = (s["snippet"] or "")[:300]
+        lines.append(f"{i}. {s['kind']} {s['name']} at {s['path']}")
+        lines.append("   ```")
+        for sl in snippet_trunc.splitlines():
+            lines.append(f"   {sl}")
+        lines.append("   ```")
+    return "\n".join(lines)
+
+
+async def judge_pairwise(sem: asyncio.Semaphore, query: str, snips_a: list, snips_b: list):
+    async with sem:
+        set_a_block = format_hit_block(snips_a)
+        set_b_block = format_hit_block(snips_b)
+        prompt = ARM_PAIRWISE_PROMPT.format(
+            query=query,
+            set_a_block=set_a_block,
+            set_b_block=set_b_block,
+        )
+        return await call_judge(prompt, max_tokens=500)
+
+
+async def run_pairwise(args) -> None:
+    """Pairwise mode: compare round A vs round B per query, 30 calls total."""
+    provider = os.environ.get("EVAL_PROVIDER", "minimax_official")
+
+    with open(QUERIES, "r", encoding="utf-8") as f:
+        queries_by_id = {q["id"]: q for q in json.load(f)}
+
+    src_a = ROOT / args.round_a
+    src_b = ROOT / args.round_b
+    print(f"Round A: {src_a.name} | Round B: {src_b.name}", file=sys.stderr)
+
+    with open(src_a, "r", encoding="utf-8") as f:
+        data_a = {e["id"]: e for e in json.load(f)}
+    with open(src_b, "r", encoding="utf-8") as f:
+        data_b = {e["id"]: e for e in json.load(f)}
+
+    conn = sqlite3.connect(str(DB))
+    cur = conn.cursor()
+
+    # Build per-query task list (only queries present in both rounds)
+    query_ids = sorted(set(data_a.keys()) & set(data_b.keys()))
+    if args.limit > 0:
+        query_ids = query_ids[: args.limit]
+
+    tasks = []
+    for qid in query_ids:
+        q = queries_by_id.get(qid, {})
+        entry_a = data_a[qid]
+        entry_b = data_b[qid]
+        snips_a = [load_snippet(cur, h) for h in entry_a.get("top5", [])]
+        snips_b = [load_snippet(cur, h) for h in entry_b.get("top5", [])]
+        tasks.append({
+            "qid": qid,
+            "axis": entry_a.get("axis", entry_b.get("axis")),
+            "query": q.get("query", entry_a.get("query", "")),
+            "negative": entry_a.get("negative", False),
+            "snips_a": snips_a,
+            "snips_b": snips_b,
+        })
+    conn.close()
+
+    print(
+        f"Pairwise queries: {len(tasks)} | "
+        f"concurrency={CONCURRENCY} | provider={provider} | model={MODEL}",
+        file=sys.stderr,
+    )
+
+    sem = asyncio.Semaphore(CONCURRENCY)
+    t0 = time.time()
+    coros = [judge_pairwise(sem, t["query"], t["snips_a"], t["snips_b"]) for t in tasks]
+    results = await asyncio.gather(*coros, return_exceptions=True)
+    wall = time.time() - t0
+
+    # Attach results
+    for t, r in zip(tasks, results):
+        if isinstance(r, Exception):
+            t["pairwise"] = {"_error": str(r)[:200]}
+        else:
+            t["pairwise"] = r
+
+    (ROOT / args.out).write_text(
+        json.dumps(tasks, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+    # Aggregate
+    counts = {"A": 0, "B": 0, "tie": 0, "error": 0}
+    axis_counts: dict[int, dict] = {}
+    for t in tasks:
+        pw = t.get("pairwise", {})
+        verdict = pw.get("verdict") if isinstance(pw, dict) else None
+        if verdict in ("A", "B", "tie"):
+            counts[verdict] += 1
+        else:
+            counts["error"] += 1
+        ax = t["axis"]
+        ac = axis_counts.setdefault(ax, {"A": 0, "B": 0, "tie": 0, "error": 0})
+        if verdict in ("A", "B", "tie"):
+            ac[verdict] += 1
+        else:
+            ac["error"] += 1
+
+    summary = {
+        "n_queries": len(tasks),
+        "n_judge_calls": len(tasks),
+        "wall_clock_seconds": round(wall, 2),
+        "concurrency": CONCURRENCY,
+        "provider": provider,
+        "model": MODEL,
+        "round_a": args.round_a,
+        "round_b": args.round_b,
+        "verdicts": counts,
+        "verdicts_by_axis": axis_counts,
+        "per_query": [
+            {
+                "qid": t["qid"],
+                "axis": t["axis"],
+                "query": t["query"],
+                "negative": t["negative"],
+                "verdict": t.get("pairwise", {}).get("verdict") if isinstance(t.get("pairwise"), dict) else None,
+                "reason": t.get("pairwise", {}).get("reason") if isinstance(t.get("pairwise"), dict) else None,
+            }
+            for t in tasks
+        ],
+    }
+    (ROOT / args.summary).write_text(
+        json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+    print(
+        f"pairwise A={counts['A']} B={counts['B']} tie={counts['tie']} err={counts['error']} | "
+        f"wall={wall:.1f}s | n_queries={len(tasks)} | provider={provider} | model={MODEL}"
+    )
+
+
 async def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--mode", choices=["pointwise", "pairwise"], default="pointwise")
+    # pointwise args
     parser.add_argument("--round", type=int, default=4)
     parser.add_argument("--arm", choices=["A", "B", "both"], default="both")
     parser.add_argument("--limit", type=int, default=0, help="0=all queries")
+    # pairwise args
+    parser.add_argument("--round-a", default="results_round3_a06_v2.json")
+    parser.add_argument("--round-b", default="results_round4_a06_rr_v2.json")
+    # shared
     parser.add_argument("--out", default="round_5_results.json")
     parser.add_argument("--summary", default="round_5_summary.json")
     args = parser.parse_args()
+
+    if args.mode == "pairwise":
+        await run_pairwise(args)
+        return
 
     with open(QUERIES, "r", encoding="utf-8") as f:
         queries_by_id = {q["id"]: q for q in json.load(f)}

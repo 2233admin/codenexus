@@ -517,7 +517,11 @@ Until this exists, retrieval changes that involve reranking, embedder swaps, or 
 
 **Phase 3 reranker candidates** (in priority order, do not pick blindly — measure all under Rule 6 LLM-judge eval):
 
-1. **Qwen3-Reranker-4B** *(primary candidate)* — instruction-tuned cross-encoder. Accepts custom task instruction, e.g. *"This is code symbol retrieval. Prioritize function definitions over comment/docstring matches."* Quantized 4B is locally runnable with acceptable latency. Strong fit for code-retrieval queries, where R4 jina-reranker-v2 verbose-bias (Cause A) suggests instruction-tuned would behave better. **Test first.**
+1. **Qwen3-Reranker-4B** *(primary candidate)* — instruction-tuned cross-encoder, Apache 2.0 license (commercial-OK). Accepts custom task instruction via `prompts={"custom": "..."}` parameter (sentence-transformers `CrossEncoder` API), e.g. *"This is code symbol retrieval. Prioritize function definitions over comment/docstring matches."* Strong fit for code-retrieval queries, where R4 jina-reranker-v2 verbose-bias (Cause A) suggests instruction-tuned would behave better. **Test first.**
+   - **Lineup**: Qwen3-Reranker-0.6B / 4B / 8B all available (`Qwen/Qwen3-Reranker-{0.6B,4B,8B}` on HF)
+   - **Footprint**: Full FP16 ~8GB, Q4 quantized ~2-3GB (49 quantization variants on HF as of 2026-04)
+   - **Inference compat**: transformers ≥ 4.51.0 ✓, vLLM ≥ 0.8.5 ✓, **no native Candle (Rust) binding** — Phase 3 deployment options: (a) Python sidecar service over HTTP, (b) ONNX Runtime via `ort` Rust crate (per §10.2 D-W7), (c) wait for community Candle port. Option (b) preferred for fat-binary distribution (REQ-08).
+   - **Output shape**: cross-encoder logit difference, sigmoid → 0-1 probability per (query, doc) pair
 2. **jina-reranker-v2-base-multilingual** — R4 baseline, retained as control. Free tier quota viable for eval batches; verbose-bias documented (R4 Cause A).
 3. **bge-reranker-v2-m3** — fallback if both above lose.
 
