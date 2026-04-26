@@ -16,14 +16,15 @@ impl Store {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 kind TEXT, name TEXT, path TEXT,
                 start_line INT, end_line INT, snippet TEXT,
+                search_blob TEXT,
                 embedding BLOB
             );
             CREATE VIRTUAL TABLE IF NOT EXISTS symbols_fts USING fts5(
-                name, snippet, kind, content='symbols', content_rowid='id'
+                name, snippet, kind, search_blob, content='symbols', content_rowid='id'
             );
             CREATE TRIGGER IF NOT EXISTS symbols_ai AFTER INSERT ON symbols BEGIN
-              INSERT INTO symbols_fts(rowid, name, snippet, kind)
-              VALUES (new.id, new.name, new.snippet, new.kind);
+              INSERT INTO symbols_fts(rowid, name, snippet, kind, search_blob)
+              VALUES (new.id, new.name, new.snippet, new.kind, new.search_blob);
             END;
             "#,
         )
@@ -36,18 +37,19 @@ impl Store {
         Ok(())
     }
 
-    pub fn insert(&self, s: &Symbol, emb: &[f32]) -> Result<i64> {
+    pub fn insert(&self, s: &Symbol, search_blob: &str, emb: &[f32]) -> Result<i64> {
         let blob: Vec<u8> = emb.iter().flat_map(|f| f.to_le_bytes()).collect();
         self.conn.execute(
-            "INSERT INTO symbols(kind,name,path,start_line,end_line,snippet,embedding) VALUES (?,?,?,?,?,?,?)",
-            params![s.kind, s.name, s.path, s.start_line as i64, s.end_line as i64, s.snippet, blob],
+            "INSERT INTO symbols(kind,name,path,start_line,end_line,snippet,search_blob,embedding)
+             VALUES (?,?,?,?,?,?,?,?)",
+            params![s.kind, s.name, s.path, s.start_line as i64, s.end_line as i64, s.snippet, search_blob, blob],
         )?;
         Ok(self.conn.last_insert_rowid())
     }
 
     pub fn bm25(&self, query: &str, k: usize) -> Result<Vec<(i64, f32)>> {
         let mut st = self.conn.prepare(
-            "SELECT rowid, bm25(symbols_fts) AS s FROM symbols_fts
+            "SELECT rowid, bm25(symbols_fts, 10.0, 1.0, 1.0, 5.0) AS s FROM symbols_fts
              WHERE symbols_fts MATCH ?1 ORDER BY s LIMIT ?2",
         )?;
         let rows = st.query_map(params![query, k as i64], |r| {

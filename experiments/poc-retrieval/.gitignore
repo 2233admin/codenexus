@@ -4,4 +4,5 @@ target/
 *.db-shm
 *.db-wal
 eval/results.json
+eval/results_round*.json
 eval/queries.json

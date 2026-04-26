@@ -14,7 +14,13 @@ pub struct Hit {
     pub symbol: Symbol,
 }
 
-pub fn search(store: &Store, embedder: &Embedder, query: &str, k: usize) -> Result<Vec<Hit>> {
+pub fn search(
+    store: &Store,
+    embedder: &Embedder,
+    query: &str,
+    k: usize,
+    alpha: f32,
+) -> Result<Vec<Hit>> {
     let bm25 = store.bm25(&fts_escape(query), 50).unwrap_or_default();
 
     let qv = embedder.embed(query, Role::Query)?;
@@ -32,6 +38,9 @@ pub fn search(store: &Store, embedder: &Embedder, query: &str, k: usize) -> Resu
     let vec_score: HashMap<i64, f32> = vec_top.iter().copied().collect();
 
     let c = 60.0f32;
+    let bm25_w = 1.0 - alpha;
+    let vec_w = alpha;
+
     let mut all_ids: Vec<i64> = bm25_rank.keys().chain(vec_rank.keys()).copied().collect();
     all_ids.sort();
     all_ids.dedup();
@@ -40,7 +49,7 @@ pub fn search(store: &Store, embedder: &Embedder, query: &str, k: usize) -> Resu
         .map(|id| {
             let r1 = bm25_rank.get(&id).map(|r| 1.0 / (c + *r as f32)).unwrap_or(0.0);
             let r2 = vec_rank.get(&id).map(|r| 1.0 / (c + *r as f32)).unwrap_or(0.0);
-            (id, r1 + r2)
+            (id, bm25_w * r1 + vec_w * r2)
         })
         .collect();
     fused.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
@@ -72,4 +81,61 @@ fn fts_escape(q: &str) -> String {
         .filter(|s| !s.is_empty())
         .collect::<Vec<_>>()
         .join(" OR ")
+}
+
+/// Decompose a code identifier into space-separated lowercase words.
+/// Splits camelCase, snake_case, kebab-case, and dot.notation.
+/// Examples:
+///   walkSubtree            -> "walk subtree"
+///   PROTECTED_DIRS         -> "protected dirs"
+///   assertRealPathInsideVault -> "assert real path inside vault"
+///   XMLParser              -> "xml parser"
+///   ObsidianAdapterConfig  -> "obsidian adapter config"
+pub fn decompose(s: &str) -> String {
+    let mut out = String::with_capacity(s.len() * 2);
+    let chars: Vec<char> = s.chars().collect();
+    for (i, c) in chars.iter().enumerate() {
+        if *c == '_' || *c == '-' || *c == '.' || *c == '/' || *c == '\\' {
+            if !out.ends_with(' ') && !out.is_empty() {
+                out.push(' ');
+            }
+        } else if c.is_uppercase() && i > 0 {
+            let prev = chars[i - 1];
+            let next = chars.get(i + 1).copied();
+            let split = (prev.is_lowercase() || prev.is_numeric())
+                || (prev.is_uppercase() && next.map_or(false, |n| n.is_lowercase()));
+            if split && !out.ends_with(' ') {
+                out.push(' ');
+            }
+            out.extend(c.to_lowercase());
+        } else if c.is_alphanumeric() {
+            out.extend(c.to_lowercase());
+        } else {
+            if !out.ends_with(' ') && !out.is_empty() {
+                out.push(' ');
+            }
+        }
+    }
+    out.split_whitespace().collect::<Vec<_>>().join(" ")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::decompose;
+    #[test]
+    fn camel() {
+        assert_eq!(decompose("walkSubtree"), "walk subtree");
+        assert_eq!(decompose("assertRealPathInsideVault"), "assert real path inside vault");
+        assert_eq!(decompose("XMLParser"), "xml parser");
+        assert_eq!(decompose("ObsidianAdapter"), "obsidian adapter");
+    }
+    #[test]
+    fn snake() {
+        assert_eq!(decompose("PROTECTED_DIRS"), "protected dirs");
+        assert_eq!(decompose("kb_meta"), "kb meta");
+    }
+    #[test]
+    fn mixed() {
+        assert_eq!(decompose("foo.bar/baz-qux_quux"), "foo bar baz qux quux");
+    }
 }

@@ -28,6 +28,8 @@ enum Cmd {
         db: String,
         #[arg(long, default_value_t = 5)]
         top: usize,
+        #[arg(long, default_value_t = 0.5)]
+        alpha: f32,
         #[arg(long)]
         json: bool,
     },
@@ -36,6 +38,8 @@ enum Cmd {
         queries: PathBuf,
         #[arg(long, default_value = "poc.db")]
         db: String,
+        #[arg(long, default_value_t = 0.5)]
+        alpha: f32,
         #[arg(long, default_value = "eval/results.json")]
         out: PathBuf,
     },
@@ -73,6 +77,9 @@ fn main() -> Result<()> {
             eprintln!("parsed {} symbols", symbols.len());
             let total = symbols.len();
             for (i, s) in symbols.iter().enumerate() {
+                let dn = search::decompose(&s.name);
+                let ds = search::decompose(&s.snippet);
+                let blob = format!("{} {}", dn, ds);
                 let text = format!("{} {} {}", s.kind, s.name, s.snippet);
                 let emb = match embedder.embed(&text, embedder::Role::Passage) {
                     Ok(v) => v,
@@ -81,23 +88,24 @@ fn main() -> Result<()> {
                         continue;
                     }
                 };
-                store.insert(s, &emb)?;
-                if (i + 1) % 50 == 0 {
+                store.insert(s, &blob, &emb)?;
+                if (i + 1) % 200 == 0 {
                     eprintln!("[{}/{}] indexed", i + 1, total);
                 }
             }
             eprintln!("done.");
         }
-        Cmd::Query { text, db, top, json } => {
+        Cmd::Query { text, db, top, alpha, json } => {
             let store = storage::Store::open(&db)?;
             let embedder = embedder::Embedder::new();
-            let hits = search::search(&store, &embedder, &text, top)?;
+            let hits = search::search(&store, &embedder, &text, top, alpha)?;
             if json {
                 println!("{}", serde_json::to_string_pretty(&hits)?);
             } else {
+                eprintln!("alpha={} (vec_w={:.2}, bm25_w={:.2})", alpha, alpha, 1.0 - alpha);
                 for (i, h) in hits.iter().enumerate() {
                     println!(
-                        "#{} [{:.3}] {} {} {}:{}-{}",
+                        "#{} [{:.4}] {} {} {}:{}-{}",
                         i + 1,
                         h.rrf_score,
                         h.symbol.kind,
@@ -109,14 +117,15 @@ fn main() -> Result<()> {
                 }
             }
         }
-        Cmd::Eval { queries, db, out } => {
+        Cmd::Eval { queries, db, alpha, out } => {
             let raw = std::fs::read_to_string(&queries)?;
             let qs: Vec<EvalQuery> = serde_json::from_str(&raw)?;
             let store = storage::Store::open(&db)?;
             let embedder = embedder::Embedder::new();
             let mut results = Vec::new();
+            eprintln!("running eval at alpha={}", alpha);
             for q in qs {
-                let hits = search::search(&store, &embedder, &q.query, 5)?;
+                let hits = search::search(&store, &embedder, &q.query, 5, alpha)?;
                 let top5: Vec<String> = hits
                     .iter()
                     .map(|h| format!("{}:{}", h.symbol.path, h.symbol.name))
@@ -130,7 +139,9 @@ fn main() -> Result<()> {
                     })
                 };
                 let p = if q.negative {
-                    if hits.is_empty() || hits[0].rrf_score < 0.025 {
+                    // Threshold scales with RRF max: under alpha-weighted RRF max=1/(c+1)≈0.0164.
+                    // 0.012 ≈ 73% of max — matches old threshold 0.025 / unweighted max 0.033.
+                    if hits.is_empty() || hits[0].rrf_score < 0.012 {
                         1.0
                     } else {
                         -0.25
@@ -160,7 +171,7 @@ fn main() -> Result<()> {
                     e.1 += 1;
                     acc
                 });
-            eprintln!("\n=== axis precision ===");
+            eprintln!("\n=== axis precision (alpha={}) ===", alpha);
             for (a, (sum, n)) in &by_axis {
                 eprintln!("axis {}: {:.1}% (n={})", a, sum / *n as f32 * 100.0, n);
             }
