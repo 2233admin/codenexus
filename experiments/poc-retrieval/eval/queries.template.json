@@ -1,0 +1,27 @@
+[
+  { "id": "axis2_q01", "axis": 2, "query": "filesystem fallback when obsidian not running",
+    "expected_paths": ["FilesystemAdapter", "ObsidianAdapter"], "negative": false,
+    "_note": "spike-001 Q1 baseline=10%" },
+  { "id": "axis2_q02", "axis": 2, "query": "preflight check for protected directories",
+    "expected_paths": ["assertRealPathInsideVault", "PROTECTED_DIRS"], "negative": false,
+    "_note": "spike-001 Q2 baseline=70%" },
+  { "id": "axis2_q03", "axis": 2, "query": "search files by tag",
+    "expected_paths": ["vault_searchByTag", "Node.tags"], "negative": false,
+    "_note": "spike-001 Q3 baseline=65%" },
+  { "id": "axis2_q04", "axis": 2, "query": "build concept graph from notes",
+    "expected_paths": ["concept_graph", "compiler"], "negative": false,
+    "_note": "spike-001 Q4 baseline=80%" },
+  { "id": "axis2_q05", "axis": 2, "query": "rate limiting middleware",
+    "expected_paths": [], "negative": true,
+    "_note": "spike-001 Q5 NEGATIVE control. baseline=0% (returned LIMIT noise)" },
+  { "id": "axis2_q06", "axis": 2, "query": "safe file deletion with dry run",
+    "expected_paths": ["dryRun", "vault_delete"], "negative": false,
+    "_note": "spike-001 Q6 baseline=30%" },
+  { "id": "axis2_q07", "axis": 2, "query": "register MCP tool handler",
+    "expected_paths": ["toolName", "validatedArgs", "registerTool"], "negative": false,
+    "_note": "spike-001 Q7 baseline=50%" },
+
+  { "_TODO_axis1": "10 symbol-exact queries — fill names that exist in obsidian-llm-wiki, e.g. 'assertRealPathInsideVault', 'VaultBrainAdapter', 'concept_graph', + 1-2 negative like 'parseYAMLFrontmatter'" },
+  { "_TODO_axis2_extras": "3 more semantic queries — suggest concurrency / conflict detection / metadata aggregation" },
+  { "_TODO_axis3": "10 call-relation queries — POC will likely score low here, that's the data point" }
+]

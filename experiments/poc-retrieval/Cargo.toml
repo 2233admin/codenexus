@@ -1,0 +1,20 @@
+[package]
+name = "poc-retrieval"
+version = "0.0.1"
+edition = "2021"
+description = "CodeNexus retrieval-only POC. Validates whether tree-sitter + qwen3-embedding + BM25/cosine RRF clears the 60% precision gate before locking Phase 1 architecture."
+
+[dependencies]
+tree-sitter = "0.22"
+tree-sitter-typescript = "0.21"
+rusqlite = { version = "0.31", features = ["bundled", "modern_sqlite"] }
+reqwest = { version = "0.12", features = ["blocking", "json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+clap = { version = "4", features = ["derive"] }
+anyhow = "1"
+ignore = "0.4"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
