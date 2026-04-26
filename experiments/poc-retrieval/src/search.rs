@@ -1,7 +1,7 @@
 use anyhow::Result;
 use std::collections::HashMap;
 
-use crate::embedder::{cosine, Embedder};
+use crate::embedder::{cosine, Embedder, Role};
 use crate::parser::Symbol;
 use crate::storage::Store;
 
@@ -17,7 +17,7 @@ pub struct Hit {
 pub fn search(store: &Store, embedder: &Embedder, query: &str, k: usize) -> Result<Vec<Hit>> {
     let bm25 = store.bm25(&fts_escape(query), 50).unwrap_or_default();
 
-    let qv = embedder.embed(query)?;
+    let qv = embedder.embed(query, Role::Query)?;
     let mut vec_scored: Vec<(i64, f32)> = store
         .all_embeddings()?
         .into_iter()

@@ -3,6 +3,14 @@ use serde::{Deserialize, Serialize};
 
 const OLLAMA_URL: &str = "http://localhost:11434/api/embeddings";
 const MODEL: &str = "qwen3-embedding:0.6b";
+const QUERY_INSTRUCT: &str =
+    "Instruct: Given a natural language code search query, retrieve the most relevant code symbol from a TypeScript codebase\nQuery: ";
+
+#[derive(Copy, Clone)]
+pub enum Role {
+    Query,
+    Passage,
+}
 
 #[derive(Serialize)]
 struct Req<'a> {
@@ -29,13 +37,17 @@ impl Embedder {
         }
     }
 
-    pub fn embed(&self, text: &str) -> Result<Vec<f32>> {
+    pub fn embed(&self, text: &str, role: Role) -> Result<Vec<f32>> {
+        let prompt: String = match role {
+            Role::Query => format!("{}{}", QUERY_INSTRUCT, text),
+            Role::Passage => text.to_string(),
+        };
         let r: Resp = self
             .client
             .post(OLLAMA_URL)
             .json(&Req {
                 model: MODEL,
-                prompt: text,
+                prompt: &prompt,
             })
             .send()
             .context("ollama http")?

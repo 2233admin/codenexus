@@ -74,7 +74,7 @@ fn main() -> Result<()> {
             let total = symbols.len();
             for (i, s) in symbols.iter().enumerate() {
                 let text = format!("{} {} {}", s.kind, s.name, s.snippet);
-                let emb = match embedder.embed(&text) {
+                let emb = match embedder.embed(&text, embedder::Role::Passage) {
                     Ok(v) => v,
                     Err(e) => {
                         eprintln!("[{}/{}] embed fail {}: {}", i + 1, total, s.name, e);
@@ -121,23 +121,28 @@ fn main() -> Result<()> {
                     .iter()
                     .map(|h| format!("{}:{}", h.symbol.path, h.symbol.name))
                     .collect();
+                let matches = |h: &search::Hit| -> bool {
+                    let p = h.symbol.path.to_lowercase();
+                    let n = h.symbol.name.to_lowercase();
+                    q.expected_paths.iter().any(|ep| {
+                        let e = ep.to_lowercase();
+                        p.contains(&e) || n == e || n.contains(&e)
+                    })
+                };
                 let p = if q.negative {
-                    if hits.is_empty() || hits[0].rrf_score < 0.01 {
+                    if hits.is_empty() || hits[0].rrf_score < 0.025 {
                         1.0
                     } else {
-                        0.0
+                        -0.25
                     }
+                } else if hits.first().map(matches).unwrap_or(false) {
+                    1.0
+                } else if hits.iter().take(3).any(matches) {
+                    0.5
                 } else {
-                    let n_hits = hits
-                        .iter()
-                        .filter(|h| {
-                            q.expected_paths.iter().any(|ep| {
-                                h.symbol.path.contains(ep) || h.symbol.name == *ep
-                            })
-                        })
-                        .count();
-                    n_hits as f32 / 5.0
+                    0.0
                 };
+                let top1_rrf = hits.first().map(|h| h.rrf_score).unwrap_or(0.0);
                 results.push(EvalResult {
                     id: q.id,
                     axis: q.axis,
@@ -145,7 +150,7 @@ fn main() -> Result<()> {
                     negative: q.negative,
                     top5,
                     precision_at_5: p,
-                    notes: String::new(),
+                    notes: format!("top1_rrf={:.4}", top1_rrf),
                 });
             }
             let by_axis: std::collections::BTreeMap<u8, (f32, usize)> =

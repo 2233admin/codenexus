@@ -18,10 +18,11 @@ const QUERY_SRC: &str = r#"
 (class_declaration name: (type_identifier) @name) @body
 (method_definition name: (property_identifier) @name) @body
 (interface_declaration name: (type_identifier) @name) @body
+(type_alias_declaration name: (type_identifier) @name) @body
+(enum_declaration name: (identifier) @name) @body
 (lexical_declaration
   (variable_declarator
-    name: (identifier) @name
-    value: (arrow_function))) @body
+    name: (identifier) @name)) @body
 "#;
 
 pub fn parse_repo(root: &Path) -> Result<Vec<Symbol>> {
@@ -59,6 +60,9 @@ pub fn parse_repo(root: &Path) -> Result<Vec<Symbol>> {
                 }
             }
             if let Some(bn) = body_node {
+                if name.is_empty() {
+                    continue;
+                }
                 let snippet = clip(&src[bn.byte_range()], 500);
                 symbols.push(Symbol {
                     kind: bn.kind().to_string(),
