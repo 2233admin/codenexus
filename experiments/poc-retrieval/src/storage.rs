@@ -152,6 +152,31 @@ impl Store {
         }
     }
 
+    /// Returns all symbol IDs matching `name` (used for graph entry-point lookup,
+    /// supports multiple matches when the name is not globally unique).
+    pub fn find_symbols_by_name(&self, name: &str) -> Result<Vec<i64>> {
+        let mut st = self.conn.prepare("SELECT id FROM symbols WHERE name=?")?;
+        let rows = st.query_map(params![name], |r| r.get::<_, i64>(0))?;
+        Ok(rows.filter_map(|r| r.ok()).collect())
+    }
+
+    /// Look up a symbol by id; returns (path, name, kind) or None.
+    pub fn symbol_by_id(&self, id: i64) -> Result<Option<(String, String, String)>> {
+        let mut st = self
+            .conn
+            .prepare("SELECT path, name, kind FROM symbols WHERE id=? LIMIT 1")?;
+        let mut rows = st.query(params![id])?;
+        if let Some(row) = rows.next()? {
+            Ok(Some((
+                row.get::<_, String>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+            )))
+        } else {
+            Ok(None)
+        }
+    }
+
     pub fn find_global_unique(&self, name: &str) -> Result<Option<i64>> {
         let mut st = self.conn.prepare("SELECT id FROM symbols WHERE name=? LIMIT 2")?;
         let rows: Vec<i64> = st

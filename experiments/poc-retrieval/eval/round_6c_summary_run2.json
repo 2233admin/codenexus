@@ -1,0 +1,15 @@
+{
+  "n_queries": 30,
+  "n_judge_calls": 60,
+  "wall_clock_seconds": 42.86,
+  "verdicts": {
+    "consistent_A": 5,
+    "consistent_B": 3,
+    "inconsistent": 4,
+    "tie_or_mixed": 8,
+    "error": 10
+  },
+  "inconsistency_rate": 0.2,
+  "round_a": "results_round3_a06_v2.json",
+  "round_b": "results_round4_a06_rr_v2.json"
+}

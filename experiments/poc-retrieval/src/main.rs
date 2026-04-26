@@ -64,6 +64,33 @@ enum Cmd {
         #[arg(long, default_value_t = 5)]
         limit: usize,
     },
+    /// Graph-traversal query (axis-3 use case). Extracts subject from query
+    /// text (or --subject override), runs Personalized PageRank on edges of
+    /// allowed kinds, returns top-N symbols by PPR score. Bidirectional by
+    /// default (covers "who calls X" + "what X calls" semantics).
+    QueryGraph {
+        text: String,
+        #[arg(long, default_value = "poc.db")]
+        db: String,
+        #[arg(long)]
+        subject: Option<String>,
+        #[arg(long, default_value = "Calls")]
+        kinds: String,
+        #[arg(long, default_value_t = 5)]
+        top: usize,
+        #[arg(long, default_value_t = 0.85)]
+        damping: f64,
+        #[arg(long, default_value_t = 30)]
+        iters: usize,
+        #[arg(long, default_value_t = 0.5)]
+        conf_min: f64,
+        /// If false, only forward direction (entry → callees). Default true
+        /// adds reverse edges so PPR mass also flows entry ← callers.
+        #[arg(long, default_value_t = true)]
+        bidirectional: bool,
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -243,6 +270,152 @@ fn main() -> Result<()> {
                 println!("{}\t{}\t{}\t{}\t{}", fp, fname, k, tp, tname);
             }
         }
+        Cmd::QueryGraph {
+            text,
+            db,
+            subject,
+            kinds,
+            top,
+            damping,
+            iters,
+            conf_min,
+            bidirectional,
+            json,
+        } => {
+            let store = storage::Store::open(&db)?;
+
+            // 1. Determine subject — explicit override else extract longest
+            //    identifier-shaped token from text (camelCase / PascalCase /
+            //    snake_case all qualify; prefer ones with at least one uppercase
+            //    or underscore to filter out short common words like "what" "calls").
+            let subject = subject.clone().unwrap_or_else(|| extract_subject(&text));
+            eprintln!("subject = {}", subject);
+
+            // 2. Find entry symbol IDs by name.
+            let entry_ids = store.find_symbols_by_name(&subject)?;
+            if entry_ids.is_empty() {
+                if json {
+                    println!("{{\"subject\": \"{}\", \"entry_ids\": [], \"results\": []}}", subject);
+                } else {
+                    eprintln!("subject '{}' not found in symbols table — likely a negative-class query or non-symbol noun", subject);
+                }
+                return Ok(());
+            }
+            eprintln!("entry_ids = {:?}", entry_ids);
+
+            // 3. Parse --kinds (comma-separated).
+            let kind_list: Vec<graph_ppr::EdgeKind> = kinds
+                .split(',')
+                .filter_map(|s| match s.trim() {
+                    "Calls" => Some(graph_ppr::EdgeKind::Calls),
+                    "Imports" => Some(graph_ppr::EdgeKind::Imports),
+                    "Implements" => Some(graph_ppr::EdgeKind::Implements),
+                    "Extends" => Some(graph_ppr::EdgeKind::Extends),
+                    other => {
+                        eprintln!("warn: ignoring unknown edge kind '{}'", other);
+                        None
+                    }
+                })
+                .collect();
+
+            // 4. Load edges + optionally add reverse (bidirectional).
+            let kind_strs: Vec<&str> = kind_list.iter().map(|k| k.as_str()).collect();
+            let edges_with_conf = store.edges_of_kinds(&kind_strs, conf_min)?;
+            let mut edges: Vec<(i64, i64)> =
+                edges_with_conf.iter().map(|(u, v, _)| (*u, *v)).collect();
+            if bidirectional {
+                let reverses: Vec<(i64, i64)> =
+                    edges_with_conf.iter().map(|(u, v, _)| (*v, *u)).collect();
+                edges.extend(reverses);
+            }
+            eprintln!(
+                "edges loaded: {} ({})",
+                edges.len(),
+                if bidirectional { "bidirectional" } else { "forward only" }
+            );
+
+            // 5. Run PPR.
+            let ranked = graph_ppr::ppr_from_edge_list(&edges, &entry_ids, damping, iters);
+
+            // 6. Filter out entry symbols themselves AND dedupe by (path, name)
+            //    — multiple symbol_ids with same identity (e.g. const `adapter`
+            //    redeclared in each test) produce duplicate rows. Resolve top-N
+            //    to (path, name, kind, score).
+            let entry_set: std::collections::HashSet<i64> = entry_ids.iter().copied().collect();
+            let mut seen: std::collections::HashSet<(String, String)> = std::collections::HashSet::new();
+            let mut output_rows: Vec<(String, String, String, f64)> = Vec::new();
+            for (id, score) in &ranked {
+                if entry_set.contains(id) {
+                    continue;
+                }
+                if let Some((path, name, kind)) = store.symbol_by_id(*id)? {
+                    let key = (path.clone(), name.clone());
+                    if seen.contains(&key) {
+                        continue;
+                    }
+                    seen.insert(key);
+                    output_rows.push((path, name, kind, *score));
+                    if output_rows.len() >= top {
+                        break;
+                    }
+                }
+            }
+
+            if json {
+                let entries: Vec<i64> = entry_ids.clone();
+                let results_json: Vec<serde_json::Value> = output_rows
+                    .iter()
+                    .map(|(p, n, k, s)| {
+                        serde_json::json!({
+                            "path": p, "name": n, "kind": k, "score": s,
+                        })
+                    })
+                    .collect();
+                let out = serde_json::json!({
+                    "subject": subject,
+                    "entry_ids": entries,
+                    "kinds": kind_list.iter().map(|k| k.as_str()).collect::<Vec<_>>(),
+                    "bidirectional": bidirectional,
+                    "results": results_json,
+                });
+                println!("{}", serde_json::to_string_pretty(&out)?);
+            } else {
+                eprintln!("=== top {} (PPR damping={} iters={}) ===", top, damping, iters);
+                for (i, (path, name, kind, score)) in output_rows.iter().enumerate() {
+                    println!("#{} [{:.6}] {} {} {}", i + 1, score, kind, name, path);
+                }
+            }
+        }
     }
     Ok(())
+}
+
+/// Extract the most likely "subject" symbol from a natural-language axis-3 query.
+/// Heuristic: longest token matching identifier syntax (alphanumerics + underscore,
+/// starting with letter) AND containing at least one uppercase letter OR underscore.
+/// If no qualifying token, fall back to longest plain alphabetic word ≥ 4 chars.
+fn extract_subject(text: &str) -> String {
+    let tokens: Vec<&str> = text
+        .split(|c: char| !(c.is_alphanumeric() || c == '_'))
+        .filter(|t| !t.is_empty())
+        .collect();
+    let qualifying: Vec<&&str> = tokens
+        .iter()
+        .filter(|t| {
+            let starts_letter = t.chars().next().map(|c| c.is_alphabetic()).unwrap_or(false);
+            let has_upper_or_underscore =
+                t.chars().any(|c| c.is_uppercase()) || t.contains('_');
+            starts_letter && has_upper_or_underscore
+        })
+        .collect();
+    if let Some(longest) = qualifying.iter().max_by_key(|t| t.len()) {
+        return (***longest).to_string();
+    }
+    // Fallback: longest 4+ char alphabetic word
+    tokens
+        .iter()
+        .filter(|t| t.len() >= 4 && t.chars().all(|c| c.is_alphabetic()))
+        .max_by_key(|t| t.len())
+        .map(|s| (*s).to_string())
+        .unwrap_or_else(|| text.to_string())
 }
