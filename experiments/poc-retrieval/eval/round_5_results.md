@@ -160,3 +160,63 @@ LLM verdict: "Which top-5 better answers the query? A / B / tie"
 - **`concept_absent` flag in queries.json** — R4 Cause B mitigation, distinguish "exact name absent / concept exists" from "concept absent". Currently mixed under one `negative` flag.
 - **R3 graded re-judge** — same arm B@t2 prompt over R3 results to establish rerank-off baseline under Rule 6 metric. Feeds R6 pairwise validity check.
 - **Fine-tuned judge (Phase 4+)** — Prometheus / JudgeLM route. R5+ raw judgments are now committed (per Rule 6 retention policy) to accumulate training data starting from this round.
+
+## R5b -- Verbosity-aware rubric (executed 2026-04-27)
+
+**Probe question**: Is the LLM judge (MiniMax-M2.7) verbosity-biased? Does adding an explicit length-penalty line to ARM_B_GRADED_PROMPT improve κ@t2 agreement with hand scores?
+
+### Change made
+
+Inserted after the 0-3 rubric levels, before `Output JSON:` in `ragas_prompts.py`:
+
+```
+**Length penalty**: Verbose snippets that elaborate on the topic but are not the canonical
+implementation should NOT outrank concise canonical answers. Prefer the symbol whose code body
+directly implements the queried concept over symbols whose docstrings or test descriptions merely
+mention it.
+```
+
+ARM_A_BINARY_PROMPT and ARM_PAIRWISE_PROMPT unchanged.
+
+### 3-run results (--round 4 --arm B, same R4 query set)
+
+| Run | arm B@t2 κ vs hand | arm B Spearman rho | wall (s) |
+|-----|--------------------|--------------------|----------|
+| Run 1 | 0.444 | 0.328 | 53.1 |
+| Run 2 | 0.255 | 0.222 | 54.9 |
+| Run 3 | 0.516 | 0.395 | 42.5 |
+| **Mean +- std** | **0.405 +- 0.135** | **0.315 +- 0.088** | 50.2 |
+
+### Comparison vs R5 baseline
+
+| Metric | R5 (no length penalty) | R5b (with length penalty) | Delta |
+|--------|----------------------|--------------------------|-------|
+| arm B@t2 kappa mean | 0.661 | 0.405 | **-0.256** |
+| arm B@t2 kappa std | 0.072 | 0.135 | +0.063 |
+
+### Verdict: **REGRESSION**
+
+Delta = -0.256, far outside the ±0.07 noise band. The length-penalty instruction made agreement with hand scores substantially worse, not better.
+
+### Interpretation
+
+The regression indicates the length-penalty clause is **actively misleading the judge** for this dataset. Several plausible causes:
+
+1. **Over-penalizes docstrings/tests that ARE the canonical answer**: In CodeNexus R4 queries, some hand-labeled canonical hits are docstrings or test helper functions (axis 2 semantic-NL queries). The length-penalty instruction causes the judge to systematically downgrade these to grade 1-2, pushing κ below hand threshold.
+2. **Instruction conflict with NIST TREC grade-3 definition**: Grade 3 = "this is the best/primary answer". Many hand-labeled grade-3 hits in this dataset ARE documentation or test assertions; "code body directly implements" is not the only valid canonical form.
+3. **Stochasticity amplified**: R5b std=0.135 vs R5 std=0.072 -- the instruction made the judge less stable, not more. Length-penalty language is ambiguous enough that MiniMax-M2.7 applies it inconsistently across runs.
+
+### Action
+
+**Revert ARM_B_GRADED_PROMPT** to R5 baseline (remove length-penalty block). The verbosity-bias hypothesis for the *judge* is **not confirmed** -- judge was not the source of R5 disagreements. R4 Cause A (reranker prefers verbose snippets) is a retrieval-layer problem, not a judge-prompt problem.
+
+### Implication for production judge
+
+Length-penalty rubric is NOT universally safe. Applied without domain calibration it inverts the judge's signal on codebases where documentation and tests are the sought artifact. If readopted in future:
+- Scope it to axis 1 (symbol-exact) queries only, not axis 2 (semantic-NL)
+- Validate on held-out queries before committing to Phase 3 Gate metric
+
+### Raw output files
+
+- `eval/round_5b_results.json` / `_run2.json` / `_run3.json`
+- `eval/round_5b_summary.json` / `_run2.json` / `_run3.json`

@@ -1,0 +1,632 @@
+[
+  {
+    "id": "A1",
+    "axis": 1,
+    "query": "ObsidianAdapter",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\unified-query.test.ts:dispose",
+      "mcp-server\\src\\compile-trigger.ts:topics",
+      "mcp-server\\src\\scripts\\memu-perf.ts:samples",
+      "mcp-server\\src\\scripts\\memu-perf.ts:samples",
+      "recipes\\collectors\\voile-collector.ts:channels"
+    ],
+    "top5_scores": [
+      0.95717,
+      0.95706,
+      0.95692,
+      0.95692,
+      0.95655
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "A2",
+    "axis": 1,
+    "query": "VaultBrainAdapter",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\connector\\fs-transport.test.ts:vault",
+      "mcp-server\\src\\smoke.test.ts:vaultRoot",
+      "mcp-server\\src\\ai-output.test.ts:vault",
+      "mcp-server\\src\\ai-output.test.ts:vault",
+      "mcp-server\\src\\smoke.test.ts:res"
+    ],
+    "top5_scores": [
+      0.95441,
+      0.95415,
+      0.95386,
+      0.95386,
+      0.95225
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "A3",
+    "axis": 1,
+    "query": "assertRealPathInsideVault",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\adapters\\filesystem.ts:resolved",
+      "mcp-server\\src\\adapters\\memu.test.ts:results",
+      "mcp-server\\src\\ai-output.test.ts:full2",
+      "mcp-server\\src\\index.ts:trimmed",
+      "mcp-server\\src\\index.ts:absPath"
+    ],
+    "top5_scores": [
+      0.96396,
+      0.96259,
+      0.96245,
+      0.96222,
+      0.96191
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "A4",
+    "axis": 1,
+    "query": "PROTECTED_DIRS",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\index.ts:inspectedDirs",
+      "mcp-server\\src\\scripts\\memu-perf.ts:Stats",
+      "mcp-server\\src\\index.ts:supersedeCandidates",
+      "mcp-server\\src\\scripts\\memu-perf.ts:row",
+      "recipes\\collectors\\x-collector.ts:CollectorStats"
+    ],
+    "top5_scores": [
+      0.93189,
+      0.92994,
+      0.92771,
+      0.92759,
+      0.92667
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "A5",
+    "axis": 1,
+    "query": "concept_graph run function",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\connector\\fs-transport.ts:links",
+      "mcp-server\\src\\connector\\fs-transport.ts:links",
+      "mcp-server\\src\\connector\\fs-transport.ts:links",
+      "mcp-server\\src\\index.ts:links",
+      "mcp-server\\src\\connector\\fs-transport.ts:links"
+    ],
+    "top5_scores": [
+      0.97686,
+      0.97686,
+      0.97686,
+      0.97686,
+      0.97686
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "A6",
+    "axis": 1,
+    "query": "validatedArgs",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\adapters\\vaultbrain\\ingest.ts:normalized",
+      "mcp-server\\src\\index.ts:skipped",
+      "mcp-server\\src\\core\\operations.ts:errors",
+      "mcp-server\\src\\adapters\\vaultbrain\\ingest.ts:pieces",
+      "recipes\\collectors\\voile-collector.ts:blocks"
+    ],
+    "top5_scores": [
+      0.94727,
+      0.9471,
+      0.94686,
+      0.9462,
+      0.94568
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "A7",
+    "axis": 1,
+    "query": "kb_meta",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\compile-trigger.ts:topics",
+      "recipes\\collectors\\voile-collector.ts:channels",
+      "mcp-server\\src\\index.ts:skipped",
+      "mcp-server\\src\\adapters\\qmd.ts:proc",
+      "recipes\\collectors\\astrbot-collector.ts:blocks"
+    ],
+    "top5_scores": [
+      0.96405,
+      0.96151,
+      0.96096,
+      0.95941,
+      0.95938
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "A8",
+    "axis": 1,
+    "query": "Node tags field",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\adapters\\obsidian.test.ts:events",
+      "recipes\\collectors\\voile-collector.ts:DB",
+      "mcp-server\\src\\compile-trigger.ts:topic",
+      "recipes\\collectors\\weflow-collector.ts:headers",
+      "mcp-server\\src\\connector\\fs-transport.ts:links"
+    ],
+    "top5_scores": [
+      0.96836,
+      0.968,
+      0.9672,
+      0.96717,
+      0.96655
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "A9",
+    "axis": 1,
+    "query": "parseYAMLFrontmatter",
+    "negative": true,
+    "top5": [
+      "mcp-server\\src\\index.ts:yamlLines",
+      "mcp-server\\src\\adapters\\vaultbrain\\index.ts:chunks",
+      "mcp-server\\src\\connector\\fs-transport.ts:headings",
+      "mcp-server\\src\\index.ts:headings",
+      "mcp-server\\src\\connector\\fs-transport.ts:links"
+    ],
+    "top5_scores": [
+      0.97038,
+      0.96848,
+      0.96765,
+      0.96765,
+      0.96744
+    ],
+    "precision_at_5": 1.0
+  },
+  {
+    "id": "A10",
+    "axis": 1,
+    "query": "OAuth2Provider",
+    "negative": true,
+    "top5": [
+      "recipes\\collectors\\voile-collector.ts:channels",
+      "mcp-server\\src\\ai-output.test.ts:vault",
+      "mcp-server\\src\\ai-output.test.ts:vault",
+      "mcp-server\\src\\index.ts:skipped",
+      "mcp-server\\src\\scripts\\memu-perf.ts:samples"
+    ],
+    "top5_scores": [
+      0.9512,
+      0.94964,
+      0.94964,
+      0.94958,
+      0.94877
+    ],
+    "precision_at_5": 1.0
+  },
+  {
+    "id": "B1",
+    "axis": 2,
+    "query": "filesystem fallback when obsidian not running",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\adapters\\obsidian.ts:DEFAULT_PORT_FILE",
+      "mcp-server\\src\\adapters\\obsidian.test.ts:wss",
+      "mcp-server\\src\\scripts\\generate-tools-doc.test.ts:onDisk",
+      "mcp-server\\src\\index.ts:REVIEW_STATUS_VALUES",
+      "mcp-server\\src\\recipes\\_framework.ts:frontmatter"
+    ],
+    "top5_scores": [
+      0.97314,
+      0.97288,
+      0.97268,
+      0.97185,
+      0.97161
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "B2",
+    "axis": 2,
+    "query": "preflight check for protected directories",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\adapters\\vaultbrain\\pglite-engine.ts:constructor",
+      "mcp-server\\src\\adapters\\vaultbrain\\index.ts:constructor",
+      "mcp-server\\src\\recipes\\recipes.test.ts:second",
+      "recipes\\collectors\\linear-collector.ts:variables",
+      "recipes\\collectors\\linear-collector.ts:issues"
+    ],
+    "top5_scores": [
+      0.97514,
+      0.97514,
+      0.97492,
+      0.9747,
+      0.97401
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "B3",
+    "axis": 2,
+    "query": "search files by tag",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\recipes\\recipes.test.ts:first",
+      "recipes\\collectors\\circleback-collector.ts:dayNotes",
+      "mcp-server\\src\\adapters\\obsidian.test.ts:events",
+      "mcp-server\\src\\recipes\\_framework.ts:s",
+      "recipes\\collectors\\circleback-collector.ts:group"
+    ],
+    "top5_scores": [
+      0.97169,
+      0.96986,
+      0.96866,
+      0.9686,
+      0.96844
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "B4",
+    "axis": 2,
+    "query": "build concept graph from notes",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\core\\operations.ts:stem",
+      "recipes\\collectors\\circleback-collector.ts:dayNotes",
+      "recipes\\collectors\\x-collector.ts:user",
+      "recipes\\collectors\\feishu-collector.ts:chats",
+      "recipes\\collectors\\astrbot-collector.ts:sessions"
+    ],
+    "top5_scores": [
+      0.97275,
+      0.97036,
+      0.9702,
+      0.97018,
+      0.96966
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "B5",
+    "axis": 2,
+    "query": "rate limiting middleware",
+    "negative": true,
+    "top5": [
+      "mcp-server\\src\\adapters\\obsidian.test.ts:events",
+      "mcp-server\\src\\recipes\\recipes.test.ts:first",
+      "mcp-server\\src\\compile-trigger.ts:topic",
+      "mcp-server\\src\\compile-trigger.ts:args",
+      "mcp-server\\src\\connector\\fs-transport.ts:full"
+    ],
+    "top5_scores": [
+      0.96562,
+      0.96529,
+      0.96509,
+      0.96454,
+      0.96442
+    ],
+    "precision_at_5": 1.0
+  },
+  {
+    "id": "B6",
+    "axis": 2,
+    "query": "safe file deletion with dry run",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\index.ts:content",
+      "mcp-server\\src\\index.ts:content",
+      "mcp-server\\src\\core\\operations.ts:stem",
+      "mcp-server\\src\\adapters\\vaultbrain\\ingest.ts:withOverlap",
+      "mcp-server\\src\\connector\\fs-transport.ts:full"
+    ],
+    "top5_scores": [
+      0.97407,
+      0.97407,
+      0.97388,
+      0.97388,
+      0.97295
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "B7",
+    "axis": 2,
+    "query": "register MCP tool handler",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\connector\\fs-transport.test.ts:transport",
+      "mcp-server\\src\\connector\\fs-transport.test.ts:transport",
+      "recipes\\collectors\\linear-collector.ts:CollectorState",
+      "recipes\\collectors\\voile-collector.ts:DB",
+      "mcp-server\\src\\compile-trigger.ts:args"
+    ],
+    "top5_scores": [
+      0.97305,
+      0.97305,
+      0.97148,
+      0.97121,
+      0.97117
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "B8",
+    "axis": 2,
+    "query": "handle concurrent writes to the same vault file",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\adapters\\vaultbrain\\ingest.ts:overlapChars",
+      "mcp-server\\src\\index.ts:brokenLinks",
+      "mcp-server\\src\\connector\\fs-transport.ts:brokenLinks",
+      "recipes\\collectors\\linear-collector.ts:issues",
+      "mcp-server\\src\\core\\operations.ts:stem"
+    ],
+    "top5_scores": [
+      0.96666,
+      0.96543,
+      0.96543,
+      0.96408,
+      0.96367
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "B9",
+    "axis": 2,
+    "query": "detect conflicting edits between adapters",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\adapters\\vaultbrain\\ingest.ts:overlapChars",
+      "recipes\\collectors\\linear-collector.ts:issues",
+      "mcp-server\\src\\index.ts:arrayItems",
+      "mcp-server\\src\\connector\\fs-transport.ts:arrayItems",
+      "mcp-server\\src\\connector\\fs-transport.ts:links"
+    ],
+    "top5_scores": [
+      0.96912,
+      0.96487,
+      0.96449,
+      0.96449,
+      0.96444
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "B10",
+    "axis": 2,
+    "query": "aggregate metadata across multiple notes",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\adapters\\vaultbrain\\ingest.ts:overlapChars",
+      "mcp-server\\src\\unified-query.ts:sources",
+      "mcp-server\\src\\unified-query.ts:sources",
+      "recipes\\collectors\\astrbot-collector.ts:sessions",
+      "mcp-server\\src\\core\\types.ts:BacklinkResult"
+    ],
+    "top5_scores": [
+      0.96979,
+      0.96929,
+      0.96929,
+      0.96765,
+      0.96764
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "C1",
+    "axis": 3,
+    "query": "who calls assertRealPathInsideVault",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\index.ts:full",
+      "mcp-server\\src\\ai-output.test.ts:full2",
+      "mcp-server\\src\\smoke.test.ts:vaultRoot",
+      "mcp-server\\src\\connector\\fs-transport.ts:links",
+      "mcp-server\\src\\connector\\fs-transport.ts:links"
+    ],
+    "top5_scores": [
+      0.97147,
+      0.97144,
+      0.97137,
+      0.97073,
+      0.97073
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "C2",
+    "axis": 3,
+    "query": "what operations does ObsidianAdapter implement",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\adapters\\memu.test.ts:results",
+      "mcp-server\\src\\connector\\fs-transport.ts:links",
+      "mcp-server\\src\\connector\\fs-transport.ts:links",
+      "mcp-server\\src\\connector\\fs-transport.ts:links",
+      "mcp-server\\src\\index.ts:links"
+    ],
+    "top5_scores": [
+      0.97111,
+      0.97016,
+      0.97016,
+      0.97016,
+      0.97016
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "C3",
+    "axis": 3,
+    "query": "which adapter calls FilesystemAdapter as fallback",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\recipes\\_framework.ts:frontmatter",
+      "recipes\\collectors\\astrbot-collector.ts:platformCol",
+      "mcp-server\\src\\adapters\\registry.ts:adapter",
+      "recipes\\collectors\\linear-collector.ts:issues",
+      "mcp-server\\src\\core\\types.ts:BacklinkResult"
+    ],
+    "top5_scores": [
+      0.97441,
+      0.97403,
+      0.97352,
+      0.9734,
+      0.97331
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "C4",
+    "axis": 3,
+    "query": "what error handler runs when vault_create fails preflight",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\adapters\\filesystem.ts:init",
+      "mcp-server\\src\\recipes\\recipes.test.ts:result",
+      "recipes\\collectors\\gmail-collector.ts:afterEpoch",
+      "mcp-server\\src\\index.ts:replaced",
+      "mcp-server\\src\\ai-output.test.ts:rel1"
+    ],
+    "top5_scores": [
+      0.97881,
+      0.97812,
+      0.97763,
+      0.9771,
+      0.97647
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "C5",
+    "axis": 3,
+    "query": "what does concept_graph run call internally",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\connector\\fs-transport.ts:links",
+      "mcp-server\\src\\connector\\fs-transport.ts:links",
+      "mcp-server\\src\\connector\\fs-transport.ts:links",
+      "mcp-server\\src\\connector\\fs-transport.ts:links",
+      "mcp-server\\src\\index.ts:links"
+    ],
+    "top5_scores": [
+      0.97595,
+      0.97595,
+      0.97595,
+      0.97595,
+      0.97595
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "C6",
+    "axis": 3,
+    "query": "who produces kb_meta records",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\adapters\\vaultbrain\\ingest.ts:overlapChars",
+      "mcp-server\\src\\connector\\fs-transport.ts:links",
+      "mcp-server\\src\\index.ts:links",
+      "mcp-server\\src\\connector\\fs-transport.ts:links",
+      "mcp-server\\src\\connector\\fs-transport.ts:links"
+    ],
+    "top5_scores": [
+      0.97542,
+      0.97517,
+      0.97517,
+      0.97517,
+      0.97517
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "C7",
+    "axis": 3,
+    "query": "what reads Node tags field",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\compile-trigger.ts:topic",
+      "mcp-server\\src\\recipes\\recipes.test.ts:first",
+      "mcp-server\\src\\index.ts:tags",
+      "mcp-server\\src\\connector\\fs-transport.ts:tags",
+      "mcp-server\\src\\connector\\fs-transport.ts:tags"
+    ],
+    "top5_scores": [
+      0.97759,
+      0.97703,
+      0.97629,
+      0.97629,
+      0.97629
+    ],
+    "precision_at_5": 1.0
+  },
+  {
+    "id": "C8",
+    "axis": 3,
+    "query": "what runs after MemUAdapter sync completes",
+    "negative": false,
+    "top5": [
+      "recipes\\collectors\\linear-collector.ts:issues",
+      "mcp-server\\src\\connector\\fs-transport.ts:links",
+      "mcp-server\\src\\connector\\fs-transport.ts:links",
+      "mcp-server\\src\\connector\\fs-transport.ts:links",
+      "mcp-server\\src\\index.ts:links"
+    ],
+    "top5_scores": [
+      0.97965,
+      0.97494,
+      0.97494,
+      0.97494,
+      0.97494
+    ],
+    "precision_at_5": 0.0
+  },
+  {
+    "id": "C9",
+    "axis": 3,
+    "query": "who calls OAuth2Provider",
+    "negative": true,
+    "top5": [
+      "mcp-server\\src\\adapters\\vaultbrain\\index.ts:chunks",
+      "mcp-server\\src\\connector\\fs-transport.ts:links",
+      "mcp-server\\src\\connector\\fs-transport.ts:links",
+      "mcp-server\\src\\connector\\fs-transport.ts:links",
+      "mcp-server\\src\\index.ts:links"
+    ],
+    "top5_scores": [
+      0.97012,
+      0.96947,
+      0.96947,
+      0.96947,
+      0.96947
+    ],
+    "precision_at_5": 1.0
+  },
+  {
+    "id": "C10",
+    "axis": 3,
+    "query": "what does GitNexusAdapter call during indexing",
+    "negative": false,
+    "top5": [
+      "recipes\\collectors\\linear-collector.ts:issues",
+      "mcp-server\\src\\connector\\fs-transport.ts:links",
+      "mcp-server\\src\\connector\\fs-transport.ts:links",
+      "mcp-server\\src\\connector\\fs-transport.ts:links",
+      "mcp-server\\src\\connector\\fs-transport.ts:links"
+    ],
+    "top5_scores": [
+      0.975,
+      0.97469,
+      0.97469,
+      0.97469,
+      0.97469
+    ],
+    "precision_at_5": 0.0
+  }
+]

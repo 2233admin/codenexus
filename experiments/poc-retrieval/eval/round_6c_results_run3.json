@@ -1,0 +1,272 @@
+[
+  {
+    "qid": "A1",
+    "axis": 1,
+    "query": "ObsidianAdapter",
+    "v_ab": "A",
+    "v_ba": "B",
+    "translate_ab": "real_A",
+    "translate_ba": "real_A"
+  },
+  {
+    "qid": "A10",
+    "axis": 1,
+    "query": "OAuth2Provider",
+    "v_ab": null,
+    "v_ba": "A",
+    "translate_ab": null,
+    "translate_ba": "real_B"
+  },
+  {
+    "qid": "A2",
+    "axis": 1,
+    "query": "VaultBrainAdapter",
+    "v_ab": "tie",
+    "v_ba": "B",
+    "translate_ab": "tie",
+    "translate_ba": "real_A"
+  },
+  {
+    "qid": "A3",
+    "axis": 1,
+    "query": "assertRealPathInsideVault",
+    "v_ab": "tie",
+    "v_ba": "tie",
+    "translate_ab": "tie",
+    "translate_ba": "tie"
+  },
+  {
+    "qid": "A4",
+    "axis": 1,
+    "query": "PROTECTED_DIRS",
+    "v_ab": "tie",
+    "v_ba": "tie",
+    "translate_ab": "tie",
+    "translate_ba": "tie"
+  },
+  {
+    "qid": "A5",
+    "axis": 1,
+    "query": "concept_graph run function",
+    "v_ab": null,
+    "v_ba": null,
+    "translate_ab": null,
+    "translate_ba": null
+  },
+  {
+    "qid": "A6",
+    "axis": 1,
+    "query": "validatedArgs",
+    "v_ab": null,
+    "v_ba": "A",
+    "translate_ab": null,
+    "translate_ba": "real_B"
+  },
+  {
+    "qid": "A7",
+    "axis": 1,
+    "query": "kb_meta",
+    "v_ab": "tie",
+    "v_ba": "tie",
+    "translate_ab": "tie",
+    "translate_ba": "tie"
+  },
+  {
+    "qid": "A8",
+    "axis": 1,
+    "query": "Node tags field",
+    "v_ab": "A",
+    "v_ba": "B",
+    "translate_ab": "real_A",
+    "translate_ba": "real_A"
+  },
+  {
+    "qid": "A9",
+    "axis": 1,
+    "query": "parseYAMLFrontmatter",
+    "v_ab": "B",
+    "v_ba": "A",
+    "translate_ab": "real_B",
+    "translate_ba": "real_B"
+  },
+  {
+    "qid": "B1",
+    "axis": 2,
+    "query": "filesystem fallback when obsidian not running",
+    "v_ab": "B",
+    "v_ba": "A",
+    "translate_ab": "real_B",
+    "translate_ba": "real_B"
+  },
+  {
+    "qid": "B10",
+    "axis": 2,
+    "query": "aggregate metadata across multiple notes",
+    "v_ab": "A",
+    "v_ba": "B",
+    "translate_ab": "real_A",
+    "translate_ba": "real_A"
+  },
+  {
+    "qid": "B2",
+    "axis": 2,
+    "query": "preflight check for protected directories",
+    "v_ab": "A",
+    "v_ba": "A",
+    "translate_ab": "real_A",
+    "translate_ba": "real_B"
+  },
+  {
+    "qid": "B3",
+    "axis": 2,
+    "query": "search files by tag",
+    "v_ab": "A",
+    "v_ba": "B",
+    "translate_ab": "real_A",
+    "translate_ba": "real_A"
+  },
+  {
+    "qid": "B4",
+    "axis": 2,
+    "query": "build concept graph from notes",
+    "v_ab": "A",
+    "v_ba": "B",
+    "translate_ab": "real_A",
+    "translate_ba": "real_A"
+  },
+  {
+    "qid": "B5",
+    "axis": 2,
+    "query": "rate limiting middleware",
+    "v_ab": "A",
+    "v_ba": "A",
+    "translate_ab": "real_A",
+    "translate_ba": "real_B"
+  },
+  {
+    "qid": "B6",
+    "axis": 2,
+    "query": "safe file deletion with dry run",
+    "v_ab": "A",
+    "v_ba": "B",
+    "translate_ab": "real_A",
+    "translate_ba": "real_A"
+  },
+  {
+    "qid": "B7",
+    "axis": 2,
+    "query": "register MCP tool handler",
+    "v_ab": "A",
+    "v_ba": "B",
+    "translate_ab": "real_A",
+    "translate_ba": "real_A"
+  },
+  {
+    "qid": "B8",
+    "axis": 2,
+    "query": "handle concurrent writes to the same vault file",
+    "v_ab": "B",
+    "v_ba": "A",
+    "translate_ab": "real_B",
+    "translate_ba": "real_B"
+  },
+  {
+    "qid": "B9",
+    "axis": 2,
+    "query": "detect conflicting edits between adapters",
+    "v_ab": "tie",
+    "v_ba": "tie",
+    "translate_ab": "tie",
+    "translate_ba": "tie"
+  },
+  {
+    "qid": "C1",
+    "axis": 3,
+    "query": "who calls assertRealPathInsideVault",
+    "v_ab": null,
+    "v_ba": null,
+    "translate_ab": null,
+    "translate_ba": null
+  },
+  {
+    "qid": "C10",
+    "axis": 3,
+    "query": "what does GitNexusAdapter call during indexing",
+    "v_ab": "B",
+    "v_ba": "A",
+    "translate_ab": "real_B",
+    "translate_ba": "real_B"
+  },
+  {
+    "qid": "C2",
+    "axis": 3,
+    "query": "what operations does ObsidianAdapter implement",
+    "v_ab": "A",
+    "v_ba": "tie",
+    "translate_ab": "real_A",
+    "translate_ba": "tie"
+  },
+  {
+    "qid": "C3",
+    "axis": 3,
+    "query": "which adapter calls FilesystemAdapter as fallback",
+    "v_ab": null,
+    "v_ba": "A",
+    "translate_ab": null,
+    "translate_ba": "real_B"
+  },
+  {
+    "qid": "C4",
+    "axis": 3,
+    "query": "what error handler runs when vault_create fails preflight",
+    "v_ab": "tie",
+    "v_ba": "A",
+    "translate_ab": "tie",
+    "translate_ba": "real_B"
+  },
+  {
+    "qid": "C5",
+    "axis": 3,
+    "query": "what does concept_graph run call internally",
+    "v_ab": "B",
+    "v_ba": "A",
+    "translate_ab": "real_B",
+    "translate_ba": "real_B"
+  },
+  {
+    "qid": "C6",
+    "axis": 3,
+    "query": "who produces kb_meta records",
+    "v_ab": "tie",
+    "v_ba": "A",
+    "translate_ab": "tie",
+    "translate_ba": "real_B"
+  },
+  {
+    "qid": "C7",
+    "axis": 3,
+    "query": "what reads Node tags field",
+    "v_ab": "A",
+    "v_ba": null,
+    "translate_ab": "real_A",
+    "translate_ba": null
+  },
+  {
+    "qid": "C8",
+    "axis": 3,
+    "query": "what runs after MemUAdapter sync completes",
+    "v_ab": null,
+    "v_ba": "B",
+    "translate_ab": null,
+    "translate_ba": "real_A"
+  },
+  {
+    "qid": "C9",
+    "axis": 3,
+    "query": "who calls OAuth2Provider",
+    "v_ab": "tie",
+    "v_ba": "A",
+    "translate_ab": "tie",
+    "translate_ba": "real_B"
+  }
+]

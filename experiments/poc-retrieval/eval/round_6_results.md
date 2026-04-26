@@ -106,9 +106,51 @@ But because the A_first / B_first split is roughly balanced (40 / 50 across 90 q
 
 Reranker (R4 Path B with Jina) shows no clear lift over RRF-only (R3 Path A) under both pointwise (R5: κ tied) and pairwise (R6+R6b: trend toward A but p≈0.085) LLM-judge methodologies. ARCHITECTURE.md §9.3 "Path B underperforms Path A" call from R4 is now corroborated by 2 independent eval methods. Phase 3 reranker decision should NOT pick R4-style Jina reranker without first trying alternative candidates (Qwen3-Reranker-4B per §9.5).
 
+## R6c -- Two-orderings consistent wins (executed 2026-04-27)
+
+Per-query, both (A,B) and (B,A) orderings are run. A win is only counted "consistent" if both runs agreed. This is the standard literature mitigation for LLM-judge position bias (Zheng et al. 2023, Wang et al. 2023).
+
+### 3-run headline table
+
+| Run | consistent_A | consistent_B | inconsistent | tie_or_mixed | error | wall (s) |
+|-----|-------------|-------------|-------------|-------------|-------|----------|
+| Run 1 | 6 | 8 | 2 | 10 | 4 | 27.6 |
+| Run 2 | 5 | 3 | 4 | 8 | 10 | 42.9 |
+| Run 3 | 7 | 5 | 2 | 9 | 7 | 61.4 |
+| **Pooled** | **18** | **16** | **8** | **27** | **21** | -- |
+
+Each run: 30 queries x 2 orderings = 60 judge calls. Error rate is high in Run 2 (10/60 = 17%) due to okaoi empty-content stochasticity; not retried by tenacity (no exception raised).
+
+### Aggregate verdict
+
+- consistent_A=18, consistent_B=16, inconsistent=8, tie_or_mixed=27, error=21
+- n_judged (excl. error + tie_or_mixed) = 34 of 90 query slots had a decisive consistent verdict
+- **consistent_A margin: 18 vs 16 = +2** (vs R6 raw margin A=36 B=25 = +11, vs R6b A=34 B=26 = +8)
+- **Inconsistency rate: 8/69 judged non-error = 11.6%** across all 3 runs
+
+### Comparison to R6 and R6b
+
+| Metric | R6 (single-order) | R6b (randomized) | R6c (consistent-wins) |
+|--------|-------------------|------------------|-----------------------|
+| A leads | 36 vs 25 (+11) | 34 vs 26 (+8) | 18 vs 16 (+2) |
+| A% of decisive | 44% | 44% | 53% (18/34) |
+| Method | naive | randomized | two-orderings |
+
+**Key finding**: When controlling for position bias via two-orderings, the R6 A>B margin collapses from +11 to +2. The R6/R6b margin was substantially inflated by position bias and LLM stochasticity. With consistent-wins methodology, A and B are statistically indistinguishable: 18 vs 16 on only 34 decisive pairs out of 90.
+
+### Inconsistency rate vs literature
+
+Observed 11.6% inconsistency rate (8 of 69 non-error pairs flipped verdict across orderings). GPT-4 literature reports ~40% (Zheng et al. 2023). MiniMax-M2.7's lower rate likely reflects: (a) simpler task (code retrieval vs open-ended chat), (b) temp=0.0 forcing greedy decode, (c) high tie_or_mixed rate (27/69 = 39%) absorbing what would otherwise be inconsistent pairs -- when both orderings return "tie", that's classified as tie_or_mixed not inconsistent.
+
+### Verdict
+
+**R6c: R3 (RRF-only) and R4 (RRF+rerank) are indistinguishable under position-bias-immune two-orderings consistent-wins voting.** The previously observed A>B trend (R6: p=0.084, R6b: p=0.085) was not a methodological artifact per se -- randomization in R6b already confirmed that -- but the consistent-wins filter reveals the margin was driven by queries where the judge was internally inconsistent across orderings. Removing those, the remaining decisive pairs split nearly evenly (18:16).
+
+This is the most rigorous R6 variant. The Phase 3 implication from R6b stands: no evidence to prefer R4 reranker over R3 RRF-only.
+
 ## Followups
 
-### R6c -- Reranker threshold sweep
+### R6c followup -- Reranker threshold sweep
 
 R4 used threshold=0.30. Try 0.15, 0.20, 0.25 with pairwise judge vs R3. If lower threshold recovers axis-2 wins for B, confirms over-filtering hypothesis.
 
@@ -124,6 +166,8 @@ Chunk size sweep, static-graph augmented axis-3 eval, concept_absent flag, R3 gr
 - R6 summaries: `eval/round_6_summary.json`, `_run2.json`, `_run3.json`
 - R6b raw judgments: `eval/round_6b_results.json`, `_run2.json`, `_run3.json` (seeds 42/43/44, includes `shown_first` and `real_verdict` per query)
 - R6b summaries: `eval/round_6b_summary.json`, `_run2.json`, `_run3.json`
-- Code: `eval/ragas_spike.py` (extended for `--randomize-pair-order` + `--seed`), `eval/ragas_prompts.py` (ARM_PAIRWISE_PROMPT added)
+- R6c raw judgments: `eval/round_6c_results.json` (=run1), `_run2.json`, `_run3.json` (per-query v_ab/v_ba/translate fields)
+- R6c summaries: `eval/round_6c_summary.json` (=run1), `_run2.json`, `_run3.json`
+- Code: `eval/ragas_spike.py` (extended for `--randomize-pair-order` + `--seed`), `eval/ragas_prompts.py` (ARM_PAIRWISE_PROMPT added), `eval/r6c_two_orderings.py` (new, two-orderings consistent-wins)
 - LLM: okaoi MiniMax-M2.7 pool, concurrency=24, temp=0.0, max_tokens=500
-- Wall: 15-21s/run (vs 71-119s in R5 pointwise -- 5-8x faster)
+- Wall: 15-21s/run (R6/R6b single-order); 28-62s/run (R6c two-orderings, 2x calls)
