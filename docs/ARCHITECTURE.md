@@ -1,28 +1,29 @@
 # CodeNexus Architecture
 
-> Phase 1 deliverable, 2026-04-27. Status: non-retrieval sections locked. Retrieval section is a stub pending poc-retrieval Round 3.
+> Phase 1 deliverable, 2026-04-27. Status: **all sections locked**, including §9 retrieval (R3 plateau validated, R4 stalled, Path B deferred to Phase 3 with LLM-judge prerequisite).
 
 ---
 
 ## 0. Document Scope
 
-**In scope (this document, locked):**
+**In scope (this document, all locked):**
 
-- Service supervision (§2)
-- A2A schema shape (§3)
-- Clean-room policy and license boundary (§4)
-- State ownership boundary between Rust core and Go server (§5)
+- Service supervision and `/healthz` failure semantics under crash-loop (§2)
+- A2A schema shape and four operation envelopes (§3)
+- Clean-room policy and license boundary; NTFS atime mechanism decided (§4)
+- State ownership boundary; `koanf` picked for Go config (§5)
 - Logging stack and trace propagation (§6)
 - Embedder device abstraction and worker-pool topology (§7)
 - CI/CD GPU compilation policy (§8)
-- Future / deferred items (§10)
+- **Retrieval architecture (§9): R3 Path A configuration locked; Path B reranker code retained, gated on Phase 3 LLM-judge prerequisite**
+- Future / deferred items, including Phase 2 storage backend spike and Phase 4 multi-language ROI receipt (§10)
 
-**Stubbed (this document, §9 only):**
+**Phase-deferred (acknowledged, not Phase 1 scope):**
 
-- Storage trait full shape locks the contract (D-R2) but storage backend
-  pick (redb vs rusqlite+sqlite-vec) is Phase 2 spike work
-- BM25 / vector fusion default tuning, embedder model rationale,
-  reranker integration → `experiments/poc-retrieval/` Round 3
+- Storage backend pick (redb vs rusqlite+sqlite-vec) — Phase 2 spike, trait shape already locked (D-R2)
+- LLM-as-judge eval pipeline — Phase 3 prerequisite before any reranker / embedder change can be measured cleanly (see §9.4)
+- Multi-language tree-sitter — Phase 4, ROI quantified at ≈17% query coverage gap (§9.2)
+- memU integration mode — Phase 5
 
 Everything else not listed above is out of scope for Phase 1.
 
@@ -65,6 +66,8 @@ Build commands and end-user invocation live in `README.md`. The Rust core is a n
 ### 2.2 Healthcheck — D-S2
 
 Rust core exposes `GET /healthz` **outside** the A2A skill surface, returning `{ok, version, uptime_sec, indexed_repos}`. Polled by Go every 10s; 3 consecutive failures → core declared dead. `curl http://localhost:9876/healthz` is the canonical debug command. `/healthz` is NOT under `/tasks/*`, so an unhealthy A2A skill does not cascade to liveness probes.
+
+**Failure semantics under D-S3 crash-loop breaker.** `/healthz` reports **Rust-process liveness only**. It is not a Go-supervisor status endpoint. When Rust is alive, `/healthz` returns `{ok: true, ...}`. When Rust is dead and Go has given up (5 restarts in 60s tripped, see §2.3), `/healthz` is **unreachable** (TCP connection refused, no port bound) — not a 503 from Rust. Go-supervisor state is reflected through Go's own surfaces: `POST /tasks/send` returns `503 Service Unavailable` after the breaker trips, and Go exits non-zero so process supervisors (systemd / Windows Service Manager / parent shell) observe the failure. External callers needing combined status should poll Go's API endpoints, not Rust's `/healthz`.
 
 ### 2.3 Restart strategy — D-S3
 
@@ -287,13 +290,11 @@ POST /tasks/send
 
 Two layers: (1) **written rule** (this section is canon); (2) **pre-commit hook** that refuses commits to `core/**` if the local GitNexus repo was accessed within the last 24 hours. The hook operates on the user's local GitNexus checkout (e.g. `~/code/gitnexus`) by inspecting an "access timestamp" — implementation gets nuanced on Windows.
 
-> **Open implementation detail (Windows NTFS):** NTFS disables last-access tracking by default for performance (`fsutil behavior query DisableLastAccess` typically returns `1` or `2`). On a default Windows install, `stat()` last-access is frozen and the naive hook silently always passes. Three viable mechanisms, to be picked during Phase 1 plan-phase:
->
-> 1. **Require user enables NTFS last-access** via `fsutil behavior set DisableLastAccess 0`. Simple but pollutes the user's filesystem behavior globally.
-> 2. **Substitute "last fetched" check.** Hook reads `<gitnexus>/.git/FETCH_HEAD` mtime or runs `git -C <gitnexus> reflog --date=iso -1`, compares to `now() - 24h`. Robust on all filesystems; captures the more relevant signal.
-> 3. **Manual state stamp.** User runs `clean-room-stamp.sh` at the end of each GitNexus session writing a timestamp to `~/.codenexus/clean-room-state`. Highest discipline cost; lowest false-positive rate.
->
-> Recommendation pending plan-phase: option 2 (FETCH_HEAD mtime) as default, option 3 as fallback for sessions that browse code without fetching.
+**Implementation mechanism (Windows NTFS).** NTFS disables last-access tracking by default for performance (`fsutil behavior query DisableLastAccess` typically returns `1` or `2`). On a default Windows install, `stat()` last-access is frozen, so a naive `atime`-based hook silently always passes. **Decided (Phase 1 close, 2026-04-27): option 2 — FETCH_HEAD mtime as primary signal, option 3 as fallback.**
+
+The pre-commit hook reads `<gitnexus_local_checkout>/.git/FETCH_HEAD` mtime (set by every `git fetch` / `git pull`); if the mtime is within `now() - 24h`, the hook refuses commits to `core/**`. This is robust across NTFS / APFS / ext4 (no `DisableLastAccess` quirk) and captures the operationally-relevant signal: "did you recently sync GitNexus?" rather than the weaker "did you read its files?". Browsing a stale checkout without fetching does not trip the hook — for those sessions, the stricter manual state-stamp fallback applies: `clean-room-stamp.sh` writes a timestamp to `~/.codenexus/clean-room-state` at the end of each GitNexus reading session, and the hook checks `max(FETCH_HEAD_mtime, clean-room-state_mtime)`.
+
+Rejected: option 1 (forcing user to enable NTFS last-access via `fsutil behavior set DisableLastAccess 0`) — pollutes the user's filesystem performance globally for one tool's convenience.
 
 Override with `--clean-room-override <reason>`; reason is appended to `.codenexus/clean-room.log`.
 
@@ -464,18 +465,59 @@ D-W6. Default-CPU, GPU opt-in. `cargo build --no-default-features` is CPU-only a
 
 ---
 
-## 9. Retrieval — STUB
+## 9. Retrieval Architecture
 
-> **Status**: Pending Round 3 of `experiments/poc-retrieval/`. Storage trait full shape (D-R2 sketch already locked), BM25 + vector fusion default parameters, embedder model rationale, and any reranker integration will land after Round 3 numbers.
->
-> **Locked from POC Round 2 empirical evidence (do not relitigate without new data)**:
->
-> - **RRF fusion is parameterized, not constant.** `retrieval.fusion_alpha = 0.6` default (vector weight, BM25 weight = 1 − α), tunable via config. Round 2 showed vector path materially outperforming BM25 (42.5% vs collapse on axis 2). Round 3 alpha sweep (`experiments/poc-retrieval/eval/round_3_results.md`) confirmed α=0.6 is the local optimum where both axis 1 (70%) and axis 2 (47.5%) hit local peak; α≥0.7 trades axis 1 for no axis 2 gain. Equal-weight RRF (α=0.5) is rejected as default.
-> - **BM25 indexing requires camelCase decomposition.** SQLite FTS5 default `unicode61` tokenizer splits on `_` (snake_case works) but does NOT split camelCase. A `search_blob` column populated with decomposed name + snippet (e.g. `walkSubtree` → `walk subtree`) is part of the indexing contract. BM25 column weights (name 10x, snippet 1x, kind 1x, search_blob 5x) are set per Round 3.
-> - **Storage trait `list_symbols_by_file` is mandatory** (D-R2 already locks this — without it, `last_indexed_commit` anchor is meaningless because incremental updates can't find old symbols to delete).
-> - **Single-language MVP cost is empirically ≈17%.** Round 1 + 2 query sets show 5/30 queries map to Python files which TS-only POC cannot answer. Phase 4 multi-language ROI argument has its receipt.
->
-> **TODO for Round 3 to fill**: storage backend final pick (redb vs rusqlite+sqlite-vec, Phase 2 spike still pending), `search_blob` decomposition exact rules, RRF c parameter default, reranker integration if Path A doesn't clear 60% target.
+### 9.1 Validated Configuration (R3 Plateau)
+
+This is the empirically-validated POC configuration as of 2026-04-27. Phase 3 MVP inherits these values verbatim unless a measured regression argues otherwise.
+
+| Parameter | Value | Source |
+|-----------|-------|--------|
+| `retrieval.fusion_alpha` | `0.6` (vector weight; BM25 weight = `1 − α`) | R3 alpha sweep, `eval/round_3_results.md` |
+| `retrieval.fusion_c` | `60` (RRF rank smoothing constant) | RRF literature default |
+| `retrieval.bm25_weights` | `[name:10, snippet:1, kind:1, search_blob:5]` | R3 column-weight tuning |
+| `retrieval.tokenizer` | SQLite FTS5 `unicode61` + Rust-side `decompose()` for camelCase | R2 BM25 SQL probe |
+| `retrieval.search_blob` | `decompose(name) + " " + decompose(snippet)` per symbol | R3 |
+| `retrieval.embedder.model` | ollama `qwen3-embedding:0.6b` (1024d) for POC; candle-loaded for Phase 3 per D-W5 | R2 |
+| `retrieval.embedder.query_prefix` | `"Instruct: Given a natural language code search query, retrieve the most relevant code symbol from a TypeScript codebase\nQuery: "` | R2 — qwen3-embedding is instruction-tuned |
+| `retrieval.embedder.passage_prefix` | empty | R2 — passage side raw |
+| `retrieval.negative_rrf_threshold` | `0.012` (≈73% of alpha-weighted RRF max `1/61`) | R3 |
+| `retrieval.candidate_pool` | top-50 from each of BM25 and vector before fusion | implementation default |
+
+**Measured precision** (n=30 over obsidian-llm-wiki, 2116 symbols): Axis-1 70% / Axis-2 47.5% / Axis-3 ≈0% (ablation-confirmed retrieval-without-graph behavior).
+
+Implementation: `experiments/poc-retrieval/src/{search.rs,storage.rs,embedder.rs,parser.rs}` (~400 LOC total).
+
+### 9.2 Design Contracts (locked, do not relitigate)
+
+- **RRF is parameterized, not constant.** Equal-weight RRF (α=0.5) is rejected as default — POC data shows vector path materially stronger on semantic queries; equal weighting dilutes the better signal. See `eval/round_3_results.md` alpha sweep.
+- **BM25 requires camelCase decomposition.** FTS5 unicode61 splits on `_` but NOT camelCase. `walkSubtree` indexes as one token; query "subtree" cannot find it. The `search_blob` column populated with `decompose(name + snippet)` is **mandatory for any FTS5-based BM25 path**. Reference implementation in `search.rs:decompose()` with unit tests.
+- **Storage trait `list_symbols_by_file` is mandatory** (D-R2 lock). Without it, `last_indexed_commit` anchor is meaningless — incremental updates cannot find old symbols to delete. Trait shape stays as PROJECT.md D-R2.
+- **Single-language MVP cost is ≈17% empirically.** Round 1+2 query sets show 5/30 queries map to Python files (concept_graph.py, kb_meta.py) that TS-only POC cannot answer. Phase 4 multi-language ROI has its receipt. Do not pretend the POC plateau is the multi-lang ceiling.
+
+### 9.3 Known Limits
+
+- **Axis-2 gap to 60% target: 12.5pp** — not addressable by BM25 / embedding tuning alone within Path A. Round 4 demonstrated this empirically: Path A peaked at 47.5% across all alpha values 0.5-0.8. Further lift requires either (a) cross-encoder reranking with a different eval methodology, or (b) better embedder (e.g. jina-embeddings-v5-text-small with task adapter), or (c) corpus-side improvements (more meaningful snippet extraction, better symbol granularity).
+- **Axis-3 ≈ 0% is structural, not a bug.** Call-graph queries ("who calls X", "what does X return", "X implements which interface") require CALLS edges and graph traversal — not retrieval. REQ-02 CALLS edge graph is the **necessary** complement, validated by Round 3's flat 30% (most of which was substring-matching noise, not real call-graph success).
+- **Path B (cross-encoder reranker) showed eval infrastructure insufficient to measure lift.** Round 4 with Jina rerank-v2 produced moderate-quality reranking on smoke tests (B2 PROTECTED_DIRS at 0.43, A2/A3/A4 stable) but headline numbers regressed because: (a) reranker prefers verbose surface matches over canonical implementations, (b) "fuzzy negative" queries with conceptual neighbors get correctly-moderate scores that eval misclassifies, (c) `expected_paths` ground truth was authored against R3's specific picks and doesn't generalize. See `eval/round_4_results.md` and `eval/EVAL_DESIGN_NOTES.md`.
+
+### 9.4 Phase 3 Gate
+
+**Cross-encoder reranker MUST NOT be introduced in Phase 3 MVP until LLM-as-judge eval pipeline exists.** Hand-annotated `expected_paths` is not sustainable past 30 queries × 1 truth-per-query.
+
+**Phase 3 prerequisite**: NDCG@5 with graded relevance (0–3) over a query set ≥ 100 queries × ≥ 2 corpora. Implementation options:
+- LLM-judge: send `(query, candidate)` pairs to a strong LLM (Claude/GPT-4) for 0-3 grading, cache results. ~30 minutes per eval cycle, ~$1 per cycle.
+- Human spot-check: sample 10% of LLM-judge labels for inter-rater agreement audit.
+
+Until this exists, retrieval changes that involve reranking, embedder swaps, or corpus reorganization **cannot be measured cleanly** — and the temptation to overfit to the 30-query dev set is high. See `eval/EVAL_DESIGN_NOTES.md` "Known Eval Limitations" for the full argument.
+
+### 9.5 Reranker code stays opt-in
+
+`experiments/poc-retrieval/src/reranker.rs` and the `--rerank` CLI flag remain in the POC for future re-activation. Reranker uses `JINA_API_KEY` from environment (never hardcoded, per security feedback rule #35). When LLM-judge eval is in place (Phase 3+), Path B can be re-evaluated with confidence.
+
+### 9.6 Pending storage backend pick (Phase 2 Spike)
+
+The storage trait shape is locked (D-R2). The implementation choice between `redb` (pure KV) and `rusqlite + sqlite-vec` (SQL + vector + FTS5 in one file) is a Phase 2 Spike output, not a Phase 1 decision. POC currently uses rusqlite + FTS5 + Rust-side cosine (no sqlite-vec extension); Phase 2 bench will determine the production pick. The trait abstraction allows either to land without re-architecting downstream code.
 
 ---
 
