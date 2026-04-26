@@ -1,0 +1,22 @@
+[package]
+name = "codenexus-core"
+version = "0.0.1"
+edition = "2024"
+license = "Apache-2.0"
+description = "Code + knowledge graph engine. A2A-native agent (axum HTTP server). Part of CodeNexus."
+repository = "https://github.com/2233admin/codenexus"
+authors = ["Curry <ljj120912@gmail.com>"]
+rust-version = "1.85"
+
+[[bin]]
+name = "codenexus-core"
+path = "src/main.rs"
+
+[dependencies]
+# Phase 0 spike will fill: axum, tower, tokio, tree-sitter, candle-core, redb-or-rusqlite,
+# sqlite-vec, gix, serde, serde_json, tracing, tracing-subscriber, figment.
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true

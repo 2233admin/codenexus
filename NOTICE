@@ -1,0 +1,28 @@
+CodeNexus
+Copyright 2026 Curry (ljj120912@gmail.com / github.com/2233admin)
+
+This product is licensed under the Apache License, Version 2.0
+(see LICENSE for full text).
+
+Third-party attributions
+========================
+
+This file will list NOTICE entries from third-party code as it is
+incorporated. Current state: clean — no third-party code yet ported.
+
+Planned attributions (Phase 1 onward):
+
+- CodeFlow (MIT, github.com/braedonsaunders/codeflow):
+  Visualization layer, git overlay (blame/heatmap), pattern detectors,
+  security scanner regex set, markdown wiki-link graph. Will be ported
+  to Rust under Apache 2.0 with explicit attribution here when added.
+
+Clean-room policy
+=================
+
+CodeNexus is a clean-room reimplementation of GitNexus concepts.
+GitNexus is licensed under PolyForm Noncommercial 1.0.0 and its source
+code has NOT been copied into this project. Design notes were written
+from concept understanding without reference to GitNexus source code.
+See docs/origin-spec.md for the original Stitch proposal documenting
+this clean-room separation.

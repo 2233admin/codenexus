@@ -1,0 +1,43 @@
+# dev-env-standards.md day-0 baseline
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/
+build/
+dist/
+*.egg-info/
+.env
+.env.local
+.DS_Store
+
+# Rust
+target/
+**/*.rs.bk
+*.pdb
+
+# Go
+/bin/
+vendor/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# CodeNexus specific
+.codenexus/        # runtime state (port lockfile, cache)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite-journal
