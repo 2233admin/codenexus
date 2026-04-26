@@ -66,11 +66,47 @@ Three possible explanations:
 
 9/90 calls returned empty content from okaoi (no exception, no retry triggered). The `safe_json` regex recovery rescued 7 additional prose responses into valid verdicts (marked `_recovered=True` in per-query output). Net unrecoverable: 9 queries across 3 runs (~3/run). This is consistent with R5 okaoi behavior and does not affect run-to-run verdict distribution materially.
 
+## R6b — Position-bias randomization check (executed 2026-04-27)
+
+Same protocol, but per-query A/B prompt slot is randomly flipped (`--randomize-pair-order`, seeds 42/43/44 for 3 runs). LLM raw verdict re-attributed back to real-A/real-B based on the recorded `shown_first` flag. Audit: also count "first-shown wins / second-shown wins" position-only to estimate the bias magnitude.
+
+### R6b headline (3 runs)
+
+| Run | seed | A_first / B_first split | real_A wins | real_B wins | tie | err | 1st-shown wins | 2nd-shown wins | wall (s) |
+|-----|------|--------------------------|-------------|-------------|-----|-----|-----------------|------------------|----------|
+| 1 | 42 | 14/16 | 13 | 8 | 7 | 2 | 11 | 10 | 21.1 |
+| 2 | 43 | 14/16 | 12 | 10 | 4 | 4 | 14 | 8 | 37.5 |
+| 3 | 44 | 12/18 | 9 | 8 | 7 | 6 | 9 | 8 | 18.2 |
+| **Σ** | — | 40/50 | **34** | **26** | 18 | 12 | 34 | 26 | — |
+
+### R6b vs R6 (real attribution comparison)
+
+| Metric | R6 (no randomize) | R6b (randomized) | Δ |
+|--------|-------------------|------------------|----|
+| A wins | 36 / 81 (44.4%) | 34 / 78 (43.6%) | -0.8 pp |
+| B wins | 25 / 81 (30.9%) | 26 / 78 (33.3%) | +2.4 pp |
+| tie | 20 / 81 (24.7%) | 18 / 78 (23.1%) | -1.6 pp |
+| err | 9 / 90 (10.0%) | 12 / 90 (13.3%) | +3.3 pp |
+
+R6b's err uptick to 13% reproduces R6's known MiniMax-empty-response stochasticity (~10% baseline, no exception → tenacity skips retry).
+
+Chi² for R6b: 4.92, df=2, p ≈ 0.085 — **virtually identical to R6's 4.96 / p=0.084**.
+
+### Position-only audit
+
+Pooled across 3 runs: 1st-shown wins 34 / 78 (43.6%), 2nd-shown wins 26 / 78 (33.3%) — there IS a position effect (~10pp 1st-shown advantage), consistent with literature reports of 5-15% LLM-judge primacy bias.
+
+But because the A_first / B_first split is roughly balanced (40 / 50 across 90 queries), the position effect distributes evenly across both real-A and real-B trials. **Position bias is real but does not drive R6's A>B finding** — the same A>B pattern holds when position is randomized.
+
+### Verdict
+
+**R6 finding stands: RRF-only (R3) trends ahead of RRF+rerank (R4) on this query set, but not statistically significant at α=0.05.** Position bias was a legitimate concern, R6b confirms it is not the explanation. The +13 margin in R6 (and +8 in R6b) is judge stochasticity + small-sample limitation, not artifact.
+
+### Phase 3 implication
+
+Reranker (R4 Path B with Jina) shows no clear lift over RRF-only (R3 Path A) under both pointwise (R5: κ tied) and pairwise (R6+R6b: trend toward A but p≈0.085) LLM-judge methodologies. ARCHITECTURE.md §9.3 "Path B underperforms Path A" call from R4 is now corroborated by 2 independent eval methods. Phase 3 reranker decision should NOT pick R4-style Jina reranker without first trying alternative candidates (Qwen3-Reranker-4B per §9.5).
+
 ## Followups
-
-### R6b -- Position swap (anti-bias check)
-
-Re-run with A and B swapped in prompt order. If B-wins count rises significantly, position bias is the explanation. 30 calls, trivial to implement with `--swap` flag.
 
 ### R6c -- Reranker threshold sweep
 
@@ -86,6 +122,8 @@ Chunk size sweep, static-graph augmented axis-3 eval, concept_absent flag, R3 gr
 - Round B source: `eval/results_round4_a06_rr_v2.json` (RRF + Jina rerank, pool=50, threshold=0.30)
 - R6 raw judgments: `eval/round_6_results.json`, `_run2.json`, `_run3.json`
 - R6 summaries: `eval/round_6_summary.json`, `_run2.json`, `_run3.json`
-- Code: `eval/ragas_spike.py` (extended), `eval/ragas_prompts.py` (ARM_PAIRWISE_PROMPT added)
+- R6b raw judgments: `eval/round_6b_results.json`, `_run2.json`, `_run3.json` (seeds 42/43/44, includes `shown_first` and `real_verdict` per query)
+- R6b summaries: `eval/round_6b_summary.json`, `_run2.json`, `_run3.json`
+- Code: `eval/ragas_spike.py` (extended for `--randomize-pair-order` + `--seed`), `eval/ragas_prompts.py` (ARM_PAIRWISE_PROMPT added)
 - LLM: okaoi MiniMax-M2.7 pool, concurrency=24, temp=0.0, max_tokens=500
 - Wall: 15-21s/run (vs 71-119s in R5 pointwise -- 5-8x faster)

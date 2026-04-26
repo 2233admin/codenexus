@@ -18,6 +18,7 @@ import asyncio
 import itertools
 import json
 import os
+import random
 import re
 import sqlite3
 import sys
@@ -252,7 +253,12 @@ async def judge_pairwise(sem: asyncio.Semaphore, query: str, snips_a: list, snip
 
 
 async def run_pairwise(args) -> None:
-    """Pairwise mode: compare round A vs round B per query, 30 calls total."""
+    """Pairwise mode: compare round A vs round B per query, 30 calls total.
+
+    With --randomize-pair-order, A/B prompt slot is flipped per-query (seeded by
+    --seed for reproducibility). Verdicts re-attributed to real-A / real-B in
+    aggregation; raw position-only counts also reported for bias audit.
+    """
     provider = os.environ.get("EVAL_PROVIDER", "minimax_official")
 
     with open(QUERIES, "r", encoding="utf-8") as f:
@@ -260,7 +266,11 @@ async def run_pairwise(args) -> None:
 
     src_a = ROOT / args.round_a
     src_b = ROOT / args.round_b
-    print(f"Round A: {src_a.name} | Round B: {src_b.name}", file=sys.stderr)
+    print(
+        f"Round A: {src_a.name} | Round B: {src_b.name} | "
+        f"randomize_order={args.randomize_pair_order} | seed={args.seed}",
+        file=sys.stderr,
+    )
 
     with open(src_a, "r", encoding="utf-8") as f:
         data_a = {e["id"]: e for e in json.load(f)}
@@ -269,6 +279,8 @@ async def run_pairwise(args) -> None:
 
     conn = sqlite3.connect(str(DB))
     cur = conn.cursor()
+
+    rng = random.Random(args.seed)
 
     # Build per-query task list (only queries present in both rounds)
     query_ids = sorted(set(data_a.keys()) & set(data_b.keys()))
@@ -282,6 +294,7 @@ async def run_pairwise(args) -> None:
         entry_b = data_b[qid]
         snips_a = [load_snippet(cur, h) for h in entry_a.get("top5", [])]
         snips_b = [load_snippet(cur, h) for h in entry_b.get("top5", [])]
+        flip = rng.random() < 0.5 if args.randomize_pair_order else False
         tasks.append({
             "qid": qid,
             "axis": entry_a.get("axis", entry_b.get("axis")),
@@ -289,6 +302,8 @@ async def run_pairwise(args) -> None:
             "negative": entry_a.get("negative", False),
             "snips_a": snips_a,
             "snips_b": snips_b,
+            "_flip": flip,
+            "shown_first": "real_B" if flip else "real_A",
         })
     conn.close()
 
@@ -300,11 +315,19 @@ async def run_pairwise(args) -> None:
 
     sem = asyncio.Semaphore(CONCURRENCY)
     t0 = time.time()
-    coros = [judge_pairwise(sem, t["query"], t["snips_a"], t["snips_b"]) for t in tasks]
+    coros = [
+        judge_pairwise(
+            sem,
+            t["query"],
+            t["snips_b"] if t["_flip"] else t["snips_a"],
+            t["snips_a"] if t["_flip"] else t["snips_b"],
+        )
+        for t in tasks
+    ]
     results = await asyncio.gather(*coros, return_exceptions=True)
     wall = time.time() - t0
 
-    # Attach results
+    # Attach raw results
     for t, r in zip(tasks, results):
         if isinstance(r, Exception):
             t["pairwise"] = {"_error": str(r)[:200]}
@@ -315,22 +338,68 @@ async def run_pairwise(args) -> None:
         json.dumps(tasks, ensure_ascii=False, indent=2), encoding="utf-8"
     )
 
-    # Aggregate
-    counts = {"A": 0, "B": 0, "tie": 0, "error": 0}
+    # Aggregate — both real-attributed (post-flip) and position-only (raw)
+    counts = {"A": 0, "B": 0, "tie": 0, "error": 0}  # real attribution
+    position_only = {"first_shown": 0, "second_shown": 0, "tie": 0, "error": 0}
     axis_counts: dict[int, dict] = {}
+    shown_first_split = {"real_A": 0, "real_B": 0}
     for t in tasks:
+        shown_first_split[t["shown_first"]] += 1
         pw = t.get("pairwise", {})
-        verdict = pw.get("verdict") if isinstance(pw, dict) else None
-        if verdict in ("A", "B", "tie"):
-            counts[verdict] += 1
+        raw = pw.get("verdict") if isinstance(pw, dict) else None
+        flip = t["_flip"]
+        if raw == "tie":
+            real = "tie"
+        elif raw == "A":
+            real = "B" if flip else "A"
+        elif raw == "B":
+            real = "A" if flip else "B"
+        else:
+            real = None
+
+        # Real-attributed counts
+        if real in ("A", "B", "tie"):
+            counts[real] += 1
         else:
             counts["error"] += 1
+
+        # Position-only audit (raw, ignoring flip)
+        if raw == "tie":
+            position_only["tie"] += 1
+        elif raw == "A":
+            position_only["first_shown"] += 1
+        elif raw == "B":
+            position_only["second_shown"] += 1
+        else:
+            position_only["error"] += 1
+
+        # Per-axis (real-attributed)
         ax = t["axis"]
         ac = axis_counts.setdefault(ax, {"A": 0, "B": 0, "tie": 0, "error": 0})
-        if verdict in ("A", "B", "tie"):
-            ac[verdict] += 1
+        if real in ("A", "B", "tie"):
+            ac[real] += 1
         else:
             ac["error"] += 1
+
+    # Persist real_verdict back into tasks file for audit
+    for t in tasks:
+        pw = t.get("pairwise", {})
+        raw = pw.get("verdict") if isinstance(pw, dict) else None
+        flip = t["_flip"]
+        if raw == "tie":
+            real = "tie"
+        elif raw == "A":
+            real = "B" if flip else "A"
+        elif raw == "B":
+            real = "A" if flip else "B"
+        else:
+            real = None
+        if isinstance(pw, dict):
+            pw["real_verdict"] = real
+
+    (ROOT / args.out).write_text(
+        json.dumps(tasks, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
 
     summary = {
         "n_queries": len(tasks),
@@ -341,15 +410,21 @@ async def run_pairwise(args) -> None:
         "model": MODEL,
         "round_a": args.round_a,
         "round_b": args.round_b,
-        "verdicts": counts,
-        "verdicts_by_axis": axis_counts,
+        "randomize_pair_order": args.randomize_pair_order,
+        "seed": args.seed,
+        "shown_first_split": shown_first_split,
+        "verdicts_real": counts,
+        "verdicts_position_only": position_only,
+        "verdicts_by_axis_real": axis_counts,
         "per_query": [
             {
                 "qid": t["qid"],
                 "axis": t["axis"],
                 "query": t["query"],
                 "negative": t["negative"],
-                "verdict": t.get("pairwise", {}).get("verdict") if isinstance(t.get("pairwise"), dict) else None,
+                "shown_first": t["shown_first"],
+                "raw_verdict": t.get("pairwise", {}).get("verdict") if isinstance(t.get("pairwise"), dict) else None,
+                "real_verdict": t.get("pairwise", {}).get("real_verdict") if isinstance(t.get("pairwise"), dict) else None,
                 "reason": t.get("pairwise", {}).get("reason") if isinstance(t.get("pairwise"), dict) else None,
             }
             for t in tasks
@@ -360,8 +435,10 @@ async def run_pairwise(args) -> None:
     )
 
     print(
-        f"pairwise A={counts['A']} B={counts['B']} tie={counts['tie']} err={counts['error']} | "
-        f"wall={wall:.1f}s | n_queries={len(tasks)} | provider={provider} | model={MODEL}"
+        f"pairwise[real] A={counts['A']} B={counts['B']} tie={counts['tie']} err={counts['error']} | "
+        f"[position-only] 1st={position_only['first_shown']} 2nd={position_only['second_shown']} tie={position_only['tie']} | "
+        f"split A_first/B_first={shown_first_split['real_A']}/{shown_first_split['real_B']} | "
+        f"wall={wall:.1f}s | seed={args.seed} | randomize={args.randomize_pair_order}"
     )
 
 
@@ -375,6 +452,10 @@ async def main() -> None:
     # pairwise args
     parser.add_argument("--round-a", default="results_round3_a06_v2.json")
     parser.add_argument("--round-b", default="results_round4_a06_rr_v2.json")
+    parser.add_argument("--randomize-pair-order", action="store_true",
+                        help="Randomize A/B prompt slot per query for position-bias control")
+    parser.add_argument("--seed", type=int, default=42,
+                        help="Random seed for --randomize-pair-order (default 42)")
     # shared
     parser.add_argument("--out", default="round_5_results.json")
     parser.add_argument("--summary", default="round_5_summary.json")

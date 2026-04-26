@@ -1,0 +1,350 @@
+{
+  "n_queries": 30,
+  "n_judge_calls": 30,
+  "wall_clock_seconds": 21.08,
+  "concurrency": 24,
+  "provider": "okaoi",
+  "model": "MiniMax-M2.7",
+  "round_a": "results_round3_a06_v2.json",
+  "round_b": "results_round4_a06_rr_v2.json",
+  "randomize_pair_order": true,
+  "seed": 42,
+  "shown_first_split": {
+    "real_A": 14,
+    "real_B": 16
+  },
+  "verdicts_real": {
+    "A": 13,
+    "B": 8,
+    "tie": 7,
+    "error": 2
+  },
+  "verdicts_position_only": {
+    "first_shown": 11,
+    "second_shown": 10,
+    "tie": 7,
+    "error": 2
+  },
+  "verdicts_by_axis_real": {
+    "1": {
+      "A": 3,
+      "B": 2,
+      "tie": 4,
+      "error": 1
+    },
+    "2": {
+      "A": 6,
+      "B": 3,
+      "tie": 0,
+      "error": 1
+    },
+    "3": {
+      "A": 4,
+      "B": 3,
+      "tie": 3,
+      "error": 0
+    }
+  },
+  "per_query": [
+    {
+      "qid": "A1",
+      "axis": 1,
+      "query": "ObsidianAdapter",
+      "negative": false,
+      "shown_first": "real_A",
+      "raw_verdict": "A",
+      "real_verdict": "A",
+      "reason": "A includes the main class definition while B only has test duplicates"
+    },
+    {
+      "qid": "A10",
+      "axis": 1,
+      "query": "OAuth2Provider",
+      "negative": true,
+      "shown_first": "real_B",
+      "raw_verdict": "B",
+      "real_verdict": "A",
+      "reason": "Set B includes token provision/extraction logic (provided) more relevant to OAuth2Provider"
+    },
+    {
+      "qid": "A2",
+      "axis": 1,
+      "query": "VaultBrainAdapter",
+      "negative": false,
+      "shown_first": "real_B",
+      "raw_verdict": "tie",
+      "real_verdict": "tie",
+      "reason": "Both sets contain identical results: same class declaration and same lexical declarations. Both have duplicate entries in top 5."
+    },
+    {
+      "qid": "A3",
+      "axis": 1,
+      "query": "assertRealPathInsideVault",
+      "negative": false,
+      "shown_first": "real_B",
+      "raw_verdict": "tie",
+      "real_verdict": "tie",
+      "reason": "Both have exact matches ranked 1-2, same results in different order"
+    },
+    {
+      "qid": "A4",
+      "axis": 1,
+      "query": "PROTECTED_DIRS",
+      "negative": false,
+      "shown_first": "real_A",
+      "raw_verdict": "tie",
+      "real_verdict": "tie",
+      "reason": "Identical results with same relevance, only ordering differs"
+    },
+    {
+      "qid": "A5",
+      "axis": 1,
+      "query": "concept_graph run function",
+      "negative": false,
+      "shown_first": "real_A",
+      "raw_verdict": "A",
+      "real_verdict": "A",
+      "reason": "A has no irrelevant hits; B includes unrelated wechat collector"
+    },
+    {
+      "qid": "A6",
+      "axis": 1,
+      "query": "validatedArgs",
+      "negative": false,
+      "shown_first": "real_A",
+      "raw_verdict": "B",
+      "real_verdict": "B",
+      "reason": "B has same 2 validatedArgs hits plus usage context showing result = op.handler(ctx, validatedArgs)"
+    },
+    {
+      "qid": "A7",
+      "axis": 1,
+      "query": "kb_meta",
+      "negative": false,
+      "shown_first": "real_B",
+      "raw_verdict": "tie",
+      "real_verdict": "tie",
+      "reason": "Both sets share same top 2 hits (kbMeta, loadInitialDirty). Remaining hits unrelated in each."
+    },
+    {
+      "qid": "A8",
+      "axis": 1,
+      "query": "Node tags field",
+      "negative": false,
+      "shown_first": "real_B",
+      "raw_verdict": null,
+      "real_verdict": null,
+      "reason": null
+    },
+    {
+      "qid": "A9",
+      "axis": 1,
+      "query": "parseYAMLFrontmatter",
+      "negative": true,
+      "shown_first": "real_B",
+      "raw_verdict": "A",
+      "real_verdict": "B",
+      "reason": "Set A includes dedicated parseYaml and parseFrontmatter methods; Set B has mostly variable declarations"
+    },
+    {
+      "qid": "B1",
+      "axis": 2,
+      "query": "filesystem fallback when obsidian not running",
+      "negative": false,
+      "shown_first": "real_B",
+      "raw_verdict": "A",
+      "real_verdict": "B",
+      "reason": "A shows Obsidian unavailability checks and FilesystemAdapter fallback registration with actual fallback logic"
+    },
+    {
+      "qid": "B10",
+      "axis": 2,
+      "query": "aggregate metadata across multiple notes",
+      "negative": false,
+      "shown_first": "real_A",
+      "raw_verdict": "A",
+      "real_verdict": "A",
+      "reason": "A includes fetchAllNotes pagination and timestamps metadata extraction"
+    },
+    {
+      "qid": "B2",
+      "axis": 2,
+      "query": "preflight check for protected directories",
+      "negative": false,
+      "shown_first": "real_B",
+      "raw_verdict": "B",
+      "real_verdict": "A",
+      "reason": "B includes walk function showing actual preflight check logic in operations.ts"
+    },
+    {
+      "qid": "B3",
+      "axis": 2,
+      "query": "search files by tag",
+      "negative": false,
+      "shown_first": "real_B",
+      "raw_verdict": "B",
+      "real_verdict": "A",
+      "reason": "B has tag-specific code (extractTags, fmTags)"
+    },
+    {
+      "qid": "B4",
+      "axis": 2,
+      "query": "build concept graph from notes",
+      "negative": false,
+      "shown_first": "real_A",
+      "raw_verdict": "A",
+      "real_verdict": "A",
+      "reason": "Set A has GraphNode/GraphEdge interfaces directly relevant to concept graphs"
+    },
+    {
+      "qid": "B5",
+      "axis": 2,
+      "query": "rate limiting middleware",
+      "negative": true,
+      "shown_first": "real_A",
+      "raw_verdict": null,
+      "real_verdict": null,
+      "reason": null
+    },
+    {
+      "qid": "B6",
+      "axis": 2,
+      "query": "safe file deletion with dry run",
+      "negative": false,
+      "shown_first": "real_B",
+      "raw_verdict": "B",
+      "real_verdict": "A",
+      "reason": "B shows actual file operations with dry run implementations; A is 5 identical duplicates of one sweep function"
+    },
+    {
+      "qid": "B7",
+      "axis": 2,
+      "query": "register MCP tool handler",
+      "negative": false,
+      "shown_first": "real_A",
+      "raw_verdict": "A",
+      "real_verdict": "A",
+      "reason": "Set A contains register method and toolName handlers; Set B is mostly doc generation code"
+    },
+    {
+      "qid": "B8",
+      "axis": 2,
+      "query": "handle concurrent writes to the same vault file",
+      "negative": false,
+      "shown_first": "real_A",
+      "raw_verdict": "B",
+      "real_verdict": "B",
+      "reason": "B shows test code with concurrent same-slug writes, directly addressing concurrent writes"
+    },
+    {
+      "qid": "B9",
+      "axis": 2,
+      "query": "detect conflicting edits between adapters",
+      "negative": false,
+      "shown_first": "real_B",
+      "raw_verdict": "A",
+      "real_verdict": "B",
+      "reason": "A has operational methods (getByCapability, unregister) more relevant to conflict detection than B's basic setup code"
+    },
+    {
+      "qid": "C1",
+      "axis": 3,
+      "query": "who calls assertRealPathInsideVault",
+      "negative": false,
+      "shown_first": "real_A",
+      "raw_verdict": "tie",
+      "real_verdict": "tie",
+      "reason": "Both sets show method definitions not callers; nearly identical content"
+    },
+    {
+      "qid": "C10",
+      "axis": 3,
+      "query": "what does GitNexusAdapter call during indexing",
+      "negative": false,
+      "shown_first": "real_A",
+      "raw_verdict": "B",
+      "real_verdict": "B",
+      "reason": "B includes method implementations showing init and constructor behavior"
+    },
+    {
+      "qid": "C2",
+      "axis": 3,
+      "query": "what operations does ObsidianAdapter implement",
+      "negative": false,
+      "shown_first": "real_B",
+      "raw_verdict": "B",
+      "real_verdict": "A",
+      "reason": "B includes VaultMindAdapter interface showing full contract"
+    },
+    {
+      "qid": "C3",
+      "axis": 3,
+      "query": "which adapter calls FilesystemAdapter as fallback",
+      "negative": false,
+      "shown_first": "real_B",
+      "raw_verdict": "A",
+      "real_verdict": "B",
+      "reason": "A includes enabledAdapters showing filesystem as default fallback adapter"
+    },
+    {
+      "qid": "C4",
+      "axis": 3,
+      "query": "what error handler runs when vault_create fails preflight",
+      "negative": false,
+      "shown_first": "real_A",
+      "raw_verdict": "tie",
+      "real_verdict": "tie",
+      "reason": "Neither set directly addresses vault_create preflight error handlers; A has ValidationError class, B has vault:create event maps, both tangential"
+    },
+    {
+      "qid": "C5",
+      "axis": 3,
+      "query": "what does concept_graph run call internally",
+      "negative": false,
+      "shown_first": "real_B",
+      "raw_verdict": "A",
+      "real_verdict": "B",
+      "reason": "Set A has equivalent relevant hits without Set B's duplicate noise"
+    },
+    {
+      "qid": "C6",
+      "axis": 3,
+      "query": "who produces kb_meta records",
+      "negative": false,
+      "shown_first": "real_B",
+      "raw_verdict": "B",
+      "real_verdict": "A",
+      "reason": "Both share top kb_meta hits; Set B has more metadata-relevant results"
+    },
+    {
+      "qid": "C7",
+      "axis": 3,
+      "query": "what reads Node tags field",
+      "negative": false,
+      "shown_first": "real_B",
+      "raw_verdict": "B",
+      "real_verdict": "A",
+      "reason": "B shows actual tag field reads; A has mostly empty arrays"
+    },
+    {
+      "qid": "C8",
+      "axis": 3,
+      "query": "what runs after MemUAdapter sync completes",
+      "negative": false,
+      "shown_first": "real_A",
+      "raw_verdict": "A",
+      "real_verdict": "A",
+      "reason": "A includes MemUAdapter class and syncAfter variable, more relevant to sync operations than B's duplicate instantiations"
+    },
+    {
+      "qid": "C9",
+      "axis": 3,
+      "query": "who calls OAuth2Provider",
+      "negative": true,
+      "shown_first": "real_A",
+      "raw_verdict": "tie",
+      "real_verdict": "tie",
+      "reason": "Neither set contains OAuth2Provider calls, both show variable declarations, relevance equivalent"
+    }
+  ]
+}
