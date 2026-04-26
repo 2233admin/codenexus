@@ -21,7 +21,7 @@ Code + knowledge graph tool. A Rust core (parser/embedder/storage/git overlay) t
 <!-- Current scope. Building toward these. -->
 
 - [ ] **REQ-01** — tree-sitter pipeline parses TypeScript repo into SymbolNode[] (Functions, Classes, Methods, Interfaces, Type Aliases, Enums, Top-level Constants/Lexical Declarations, Arrow-fn Variables, Files). _Refined 2026-04-27 from poc-retrieval Round 1: original wording omitted Interfaces/TypeAliases/Enums/Constants and made A4/A6/A8 architecturally unanswerable._
-- [ ] **REQ-02** — CALLS edge graph built from parsed symbols (skip IMPORTS/EXTENDS for MVP)
+- [ ] **REQ-02** — Symbol graph: 4 edge kinds (Calls + Imports + Implements + Extends). Overrides deferred to Phase 3+. Resolver = naive 3-step (same-file → import-file → global-unique). _Scope expanded 2026-04-27 from CALLS-only after upstream review; details in REQUIREMENTS.md REQ-02_
 - [ ] **REQ-03** — candle embedder produces vectors for all symbols (Snowflake/BERT-family, no external API)
 - [ ] **REQ-04** — Storage layer: redb OR rusqlite+sqlite-vec (decided in Phase 2 spike)
 - [ ] **REQ-05** — Hybrid search: SQLite FTS5 BM25 + vector cosine + RRF fusion

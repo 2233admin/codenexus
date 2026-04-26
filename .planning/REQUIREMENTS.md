@@ -9,10 +9,28 @@ Tracked here in canonical form; cross-referenced from PROJECT.md (active list) a
 **Description**: tree-sitter Rust crate parses a TS repo into `SymbolNode[]` with kinds: Function, Class, Method, File. Each node carries source range, name, parent reference.
 **Acceptance**: Given a 50-file TS corpus, the parser produces ≥ 95% symbol coverage compared to a manual reference set.
 
-### REQ-02: CALLS edge graph
+### REQ-02: Symbol graph edges (4 kinds)
 **Phase**: 3 (MVP)
-**Description**: From parsed SymbolNodes, derive `CALLS` edges (function/method call sites). Skip IMPORTS/EXTENDS/IMPLEMENTS for MVP.
-**Acceptance**: Hand-verified call graph for a 5-file sample matches expected edges with ≥ 90% precision.
+**Description**: From parsed SymbolNodes, derive 4 edge kinds covering call relations, module structure, and inheritance. Scope refined 2026-04-27 (was CALLS-only):
+
+| EdgeKind | Priority | Source syntax (TS) | Why |
+|----------|----------|---------------------|-----|
+| `Calls` | ★★★★★ must | `foo()` / `obj.method()` call expressions | Highest axis-3 value (who-calls-X / what-X-calls) |
+| `Imports` | ★★★★★ must | `import { X } from "..."` / `require("...")` | Cross-file resolution baseline; without it Calls edges across files lose target accuracy |
+| `Implements` | ★★★★☆ must | `class X implements Y` | Architecture queries ("which classes satisfy interface Y") common in TS code |
+| `Extends` | ★★★★ must | `class X extends Y` / `interface X extends Y` | Inheritance impact analysis ("subclasses of X"). Many projects retrofit this — adopt up-front |
+
+**Deferred to Phase 3+** (post-MVP observation):
+- `Overrides` (★★★☆) — method-override edges. Requires class-hierarchy walking + method-resolution-order. Deferrable: Calls + Extends already covers most "subtype dispatch" queries indirectly. Add after Calls + Extends measured stable on real corpus.
+
+**Resolver strategy (locked, naive 3-step)**:
+1. Same-file lookup — exact name match in current file's symbol set
+2. Import-file lookup — follow Import edge from current file, exact name match in target file
+3. Global unique-name lookup — exact name match across all symbols, only if exactly one global match exists
+
+No alias resolution, no re-export chain follow, no barrel-file expansion. Documented limitation: TS projects using barrel files (`index.ts` re-exports) will under-resolve Imports — accept noise for MVP, fix in Phase 3+ as `import_alias_resolver` enhancement.
+
+**Acceptance**: Hand-verified edges for a 5-file sample match expected edges with ≥ 90% precision **per edge kind**. Imports kind allowed lower precision floor (≥ 80%) due to re-export blind spot.
 
 ### REQ-03: candle embedding
 **Phase**: 2 (spike) → 3 (MVP)

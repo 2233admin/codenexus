@@ -523,19 +523,35 @@ Until this exists, retrieval changes that involve reranking, embedder swaps, or 
 
 Selection lands in Phase 3 as a measured pick, not pre-decided here. R4 reranker.rs scaffolding is generic over endpoint — only the request shape and model header change per candidate.
 
-### 9.7 CALLS edge graph traversal (REQ-02 implementation spec)
+### 9.7 Symbol graph traversal (REQ-02 implementation spec)
 
-REQ-02 is locked at requirement level (`.planning/REQUIREMENTS.md`). The traversal spec for Phase 2/3 build, copied from GitNexus' production tuning (proven on multi-million-LOC repos):
+REQ-02 is locked at requirement level with **4 edge kinds** (`.planning/REQUIREMENTS.md` REQ-02, scope expanded 2026-04-27): `Calls`, `Imports`, `Implements`, `Extends`. `Overrides` is deferred to Phase 3+. Traversal parameters copied from GitNexus' production tuning (proven on multi-million-LOC repos), generalized to per-edge-kind:
 
-| Parameter | Value | Source / rationale |
-|-----------|-------|---------------------|
-| `calls_edge.confidence_min` | `0.5` | GitNexus default — filters dynamic-dispatch / unresolved-import edges with low static-analysis confidence |
-| `calls_edge.bfs_depth_limit` | `10` | GitNexus default — covers typical query horizon ("who calls X 5 hops away"), prevents pathological full-graph walks |
-| `calls_edge.bfs_branching_limit` | `4` per node | GitNexus default — caps fan-out at popular call-sites (e.g. `register()`, `log()`); first 4 per node is empirically the high-signal slice |
-| `calls_edge.terminal_kinds` | `[file_root, exported_api, test_function]` | stops at semantically-meaningful boundaries |
-| `calls_edge.cycle_detection` | visited-set per traversal | prevents recursive-call infinite loops |
+| Parameter | Value | Applies to | Source / rationale |
+|-----------|-------|-----------|---------------------|
+| `graph.confidence_min` | `0.5` | all kinds | GitNexus default — filters dynamic-dispatch / unresolved-import edges with low static-analysis confidence |
+| `graph.bfs_depth_limit` | `10` | all kinds | GitNexus default — covers typical query horizon ("who calls X 5 hops away"), prevents pathological full-graph walks |
+| `graph.bfs_branching_limit` | `4` per node | all kinds | GitNexus default — caps fan-out at popular call-sites (`register()`, `log()`) and at root classes; first 4 per node is empirically high-signal slice |
+| `graph.terminal_kinds` | `[file_root, exported_api, test_function]` | all kinds | stops at semantically-meaningful boundaries |
+| `graph.cycle_detection` | visited-set per traversal | all kinds | prevents recursive-call / cyclic-inheritance infinite loops |
+| `graph.allowed_edge_kinds` | per-query subset | query-specific | e.g. `list_callers` uses `[Calls]`, `subclasses_of` uses `[Extends]`, `impact_of` uses `[Calls, Extends, Implements]` |
 
-Algorithm: BFS from entry symbol → follow CALLS edges where `confidence ≥ 0.5` → at each node take first 4 outgoing edges → halt at `bfs_depth_limit` or terminal kind. Identical traversal serves both `list_callers` (reverse direction) and "what does X call" forward queries.
+Algorithm: BFS from entry symbol → follow edges where `confidence ≥ 0.5` AND `kind ∈ allowed_edge_kinds` → at each node take first 4 outgoing edges per allowed kind → halt at `bfs_depth_limit` or terminal kind.
+
+**Per-query default `allowed_edge_kinds`**:
+- `list_callers(X)` → `[Calls]` reverse direction
+- `what_X_calls` / `transitive_callees(X)` → `[Calls]` forward
+- `subclasses_of(X)` / `subinterfaces_of(X)` → `[Extends]` reverse
+- `implementations_of(I)` → `[Implements]` reverse
+- `impact_of(X)` → `[Calls, Extends, Implements]` reverse (find everything that depends on X)
+- `cross_file_resolution(symbol)` → `[Imports]` (path-finding from current file)
+
+**Resolver (naive 3-step, locked)** — used during edge construction at index time:
+1. **Same-file lookup** — exact name match within the current file's symbol set
+2. **Import-file lookup** — follow Import edge from current file, exact name match in target file
+3. **Global unique-name lookup** — exact name match across all symbols, only if exactly one global match exists
+
+No alias resolution, no re-export chain follow, no barrel-file (`index.ts`) expansion. **Known limitation**: TS projects with heavy barrel-file re-exports (e.g. `obsidian-llm-wiki` corpus) will under-resolve Imports edges → propagate to under-resolved cross-file Calls. Accept noise for MVP; Phase 3+ followup is `import_alias_resolver` enhancement (estimate +200 LOC, decoupled from MVP).
 
 **Why these specific numbers**: GitNexus tuned them across multi-million-LOC repos and surfaced them in their docs. Adopting their default avoids re-tuning from scratch and lets us focus Phase 2/3 measurement on CodeNexus-specific deviations. Re-tune only when an axis-3 query empirically fails on a CodeNexus corpus that GitNexus' params can't handle.
 
