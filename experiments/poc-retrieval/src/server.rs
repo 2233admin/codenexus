@@ -9,7 +9,7 @@
 //! rusqlite is sync. Store is opened per-call (cheap ~1ms) — no shared
 //! Connection across async handlers.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::path::Path as FsPath;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -124,8 +124,27 @@ fn dispatch(db_path: String, op: OperationRequest) -> anyhow::Result<OperationRe
                 return Ok(OperationResponse::ListCallers { callers: vec![] });
             }
             // Reverse Calls edges: PPR from target finds incoming callers.
+            // ARCHITECTURE.md §9.7 confidence_min default = 0.5; hardcoded here
+            // since list_callers is the only consumer and the magic number has
+            // a single canonical home (the spec). Phase 4: lift to a const if a
+            // second consumer appears.
             let edges_with_conf = store.edges_of_kinds(&["Calls"], 0.5)?;
             let edges: Vec<(i64, i64)> = edges_with_conf.iter().map(|(u, v, _)| (*v, *u)).collect();
+            // Edge-confidence map keyed by (caller_id, target_id), reversed
+            // direction matches the `edges` vec above. Fold-take-max so when
+            // multiple Calls edges exist between the same pair we surface the
+            // strongest evidence — never silently overwrite. Phase 4 Leiden
+            // community detection can read this directly as edge weight.
+            let edge_conf: HashMap<(i64, i64), f64> = edges_with_conf.iter().fold(
+                HashMap::new(),
+                |mut map, (u, v, c)| {
+                    let entry = map.entry((*v, *u)).or_insert(0.0);
+                    if *c > *entry {
+                        *entry = *c;
+                    }
+                    map
+                },
+            );
             let ranked = graph_ppr::ppr_from_edge_list(&edges, &entry_ids, 0.85, 30);
             let entry_set: HashSet<i64> = entry_ids.iter().copied().collect();
             let mut seen: HashSet<(String, String)> = HashSet::new();
@@ -140,11 +159,18 @@ fn dispatch(db_path: String, op: OperationRequest) -> anyhow::Result<OperationRe
                         continue;
                     }
                     seen.insert(key);
+                    // Highest confidence over all entry_ids targets — caller
+                    // may PPR-rank via multiple targets simultaneously.
+                    let confidence = entry_ids
+                        .iter()
+                        .filter_map(|t| edge_conf.get(&(*id, *t)).copied())
+                        .fold(0.0_f64, f64::max);
                     callers.push(CallerView {
                         path,
                         name,
                         kind,
                         ppr_score: *score,
+                        confidence,
                     });
                     if callers.len() >= top {
                         break;

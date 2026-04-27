@@ -275,10 +275,12 @@ POST /tasks/send
 
 ```json
 {"operation": "list_callers", "callers": [
-  {"symbol_id": "sym_caller1", "name": "main", "path": "src/main.ts", "edge_kind": "CALLS"},
-  {"symbol_id": "sym_caller2", "name": "init", "path": "src/init.ts", "edge_kind": "CALLS"}
+  {"symbol_id": "sym_caller1", "name": "main", "path": "src/main.ts", "edge_kind": "CALLS", "confidence": 1.0},
+  {"symbol_id": "sym_caller2", "name": "init", "path": "src/init.ts", "edge_kind": "CALLS", "confidence": 0.9}
 ]}
 ```
+
+`confidence` is the **highest** edge confidence observed on any Calls edge from this caller to the queried target (see §9.7 for resolver step → confidence mapping; default filter `confidence_min = 0.5`). When multiple Calls edges exist between the same pair (different resolver passes), we surface the maximum so consumers see the strongest evidence — never silently overwrite. Phase 4 Leiden community detection reuses this directly as edge weight, so the field is forward-compatible at zero added cost.
 
 **Failure codes:** `SYMBOL_NOT_FOUND` or `RESOLVER_PARTIAL` (latter retryable: false, partial results in `details.partial_callers`).
 

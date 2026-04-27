@@ -125,6 +125,14 @@ pub struct CallerView {
     pub name: String,
     pub kind: String,
     pub ppr_score: f64,
+    /// Highest edge confidence observed on any Calls edge from this caller to
+    /// the queried target (per ARCHITECTURE.md §9.7; default filter ≥ 0.5).
+    /// When multiple edges between the same pair exist (different EdgeKind or
+    /// resolver passes), we surface the maximum so consumers see the strongest
+    /// evidence for "X calls Y". Phase 4 Leiden can reuse this directly as
+    /// edge weight — adding it now is the cheapest window in the project's
+    /// lifetime (no Go-side deserializer in flight).
+    pub confidence: f64,
 }
 
 /// Wrapper struct for POST /tasks/send body. Keeps `operation` keyed at

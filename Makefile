@@ -18,32 +18,32 @@ help:
 build: build-core build-server
 
 build-core:
-	cd core && cargo build --release
+	cd experiments/poc-retrieval && cargo build --release
 
 build-server: build-core
 	mkdir -p $(EMBED_DIR)
-	cp core/target/release/$(CORE_BIN)$(if $(filter Windows_NT,$(OS)),.exe,) $(EMBED_DIR)/
+	cp experiments/poc-retrieval/target/release/$(CORE_BIN)$(if $(filter Windows_NT,$(OS)),.exe,) $(EMBED_DIR)/
 	mkdir -p $(BIN_DIR)
 	cd server && go build -o ../$(BIN_DIR)/$(SERVER_BIN)$(if $(filter Windows_NT,$(OS)),.exe,) .
 
 test: test-core test-server
 
 test-core:
-	cd core && cargo test
+	cd experiments/poc-retrieval && cargo test
 
 test-server:
 	cd server && go test ./...
 
 fmt:
-	cd core && cargo fmt
+	cd experiments/poc-retrieval && cargo fmt
 	cd server && gofmt -w .
 
 lint:
-	cd core && cargo clippy -- -D warnings
+	cd experiments/poc-retrieval && cargo clippy -- -D warnings
 	cd server && go vet ./...
 
 clean:
-	cd core && cargo clean
+	cd experiments/poc-retrieval && cargo clean
 	cd server && go clean
 	rm -rf $(BIN_DIR)
 	rm -f $(EMBED_DIR)/$(CORE_BIN) $(EMBED_DIR)/$(CORE_BIN).exe

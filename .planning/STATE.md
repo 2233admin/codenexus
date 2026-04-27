@@ -72,6 +72,8 @@ Recent decisions affecting current work:
 - 2026-04-27: Phase 2 storage spike SKIPPED — research-conclusive verdict (rusqlite+sqlite-vec) per .planning/research/storage_backend.md; micro-bench recommended but not blocking; ship-it directive prefers building over re-validating.
 - 2026-04-27: REQ-06 A2A endpoint ✓ — commit e0727c2; axum 0.7 + tokio 1.40 + 3 new src/ files (a2a, server, task_state); 4 operations (Query/GetSymbol/ListCallers/IndexRepo) working end-to-end; smoke green on existing poc.db (52 files / 2116 symbols / 877+ edges).
 
+  **NOTE for future-you:** REQ-06 is implemented in `experiments/poc-retrieval/` (Phase 3 ship path — see `experiments/poc-retrieval/src/main.rs:71` "Phase 3 MVP entry point" comment). The `core/` directory is a 13-line `println!` placeholder that was never updated post-spike — it is **superseded**, not the build target. Makefile targets (build-core / test-core / fmt / lint / clean) point at `experiments/poc-retrieval/` as of 2026-04-27 (see commit `confidence-uplift`). Phase 4 cleanup: delete `core/` or alias it to `experiments/poc-retrieval/` via cargo workspace, whichever is cleaner.
+
 ### Pending Todos
 
 - REQ-09 embedded HTML/JS UI (vanilla + HTMX + cytoscape.js); pattern: `//go:embed all:ui` in server/cmd/serve.go (or new server/internal/ui/embed.go); chi mounts `http.FS(uiFS)` at /ui/*. Simpler than REQ-08 — no extraction needed

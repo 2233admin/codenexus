@@ -164,11 +164,19 @@ type SymbolResult struct {
 }
 
 // CallerHit is one row of operation=list_callers results.
+//
+// Confidence is the highest edge confidence observed on any Calls edge from
+// this caller to the queried target (per ARCHITECTURE.md §9.7; default filter
+// ≥ 0.5). Surfacing it lets agents distinguish high-confidence direct calls
+// (e.g. resolver step 1, conf 1.0) from softer matches (e.g. step 3 same-file
+// fallback, conf 0.9). Phase 4 Leiden community detection can reuse this as
+// edge weight.
 type CallerHit struct {
-	SymbolID string `json:"symbol_id"`
-	Name     string `json:"name"`
-	Path     string `json:"path"`
-	EdgeKind string `json:"edge_kind"`
+	SymbolID   string  `json:"symbol_id"`
+	Name       string  `json:"name"`
+	Path       string  `json:"path"`
+	EdgeKind   string  `json:"edge_kind"`
+	Confidence float64 `json:"confidence,omitempty"`
 }
 
 // CallersResult is the operation=list_callers response body.
