@@ -118,6 +118,8 @@ Recent decisions affecting current work:
 | 260427-j9g | REQ-10: Phase 3 MVP precision gate met (B1-B7 mean=67.9% vs gate 60% +7.9pp; +24.3pp over GitNexus 1.6.3 baseline 43.6%) — Phase 3 CLOSED | 2026-04-27 | 226c50f | [260427-j9g-req-10-closure-phase-3-mvp-precision-gat](./quick/260427-j9g-req-10-closure-phase-3-mvp-precision-gat/) |
 | 260427-nz9 | Phase 3.5 robustness slice (alpha sweep plateau confirmed, B10 rubric corrected, cross-corpus FSC strict 50%/generous 71.4% on 5-of-107 partial index; full re-index BLOCKED by ollama instability after ~130 sequential calls) | 2026-04-27 | 8f5d48c | [260427-nz9-phase-3-5-robustness-b10-rubric-fix-join](./quick/260427-nz9-phase-3-5-robustness-b10-rubric-fix-join/) |
 | 260427-e7r | Phase 3.5b embedder retry + fail-loud micro-slice (engineering complete; bailed cleanly at 132/2307; retry CANNOT recover ollama 60s send-timeout × 5 = 5min/symbol = 20min/fail-cluster with zero recovery; ARCH §9.9 D-W9 + EVAL Rule 7 + PROJECT.md Phase 4 P2 backlog all locked; Phase 4 candle migration triggered by hard evidence) | 2026-04-27 | 8f4da66 | [260427-e7r-phase-3-5b-embed-retry-fail-loud-cli-index](./quick/260427-e7r-phase-3-5b-embed-retry-fail-loud-cli-index/) |
+| (no-id) | Phase 4 prep: e7r PENDING backfill + ARCH §9.10 candle migration anchor (new section, §9.5 reranker untouched) + PROJECT.md Phase 4+ Backlog P0 entry with GGUF cheap-path kickoff notes (`llama.cpp/convert_hf_to_gguf.py` → `candle-transformers quantized::llama` saves day-1 spike exploration) | 2026-04-27 | 63cf312 + e553471 | (no quick dir — closure backfill + doc-only commits) |
+| (no-id) | MiniMax 官方 concurrency probe: cold-burst N=40 clean, N=64 hits 70% 429 wall, sustained ~30 RPM token-bucket. ARCH §9.4 LLM-judge sizing breadcrumb + findings doc landed. Operational posture: okaoi (3.79 QPS) for inner-loop iteration, 官方 (0.5 QPS) for gate-flipping final eval. Cross-validation of okaoi-vs-官方 grader agreement queued as prerequisite before any Gate-flipping run. | 2026-04-27 | af39bdc | (no quick dir — cheap probe per feedback rule 36) |
 
 ## Deferred Items
 
@@ -130,15 +132,18 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-27 evening (Phase 3.5b embedder retry + fail-loud — quick task 260427-e7r; engineering correctness landed cleanly; hard-evidenced negative result on retry hypothesis: real ollama failure is per-call 60s reqwest send-timeout, total retry budget per fail-cluster ~20min wall-clock with zero recovery; ARCH §9.9 D-W9 + PROJECT.md Phase 4 P2 backlog + EVAL_DESIGN_NOTES Rule 7 all locked; Phase 4 candle in-process migration triggered by hard evidence; Phase 3 stays prelim_complete pending Phase 4 unblock)
-Stopped at: Phase 3 PRELIM CLOSED, Phase 3.5 sub-checks 1-3 pass, sub-check 4 still blocked but root cause now hard-evidenced (not just observed). Phase 3.5b discharged its micro-slice obligation — engineering correctness landed, decision triggered for Phase 4.
-Resume file: progress.txt + this STATE.md + .planning/quick/260427-e7r-.../260427-e7r-SUMMARY.md (full Phase 3.5b verdict + Phase 4 candle migration trigger rationale)
+Last session: 2026-04-27 evening + late evening — three threads landed:
+  (1) Phase 3.5b verdict (260427-e7r, commit 8f4da66): retry+fail-loud engineering correctness; ollama burst-failure hard-evidenced as unrecoverable.
+  (2) Phase 4 prep (commits 63cf312 + e553471): e7r PENDING backfill, ARCH §9.10 candle migration anchor (§9.5 reranker untouched), PROJECT.md Phase 4 P0 entry with GGUF cheap-path kickoff notes (`convert_hf_to_gguf.py` + `quantized::llama` loader).
+  (3) Phase 3 Gate prep (commit af39bdc): MiniMax 官方 concurrency probe — 0.5 QPS sustained / N=40 cold-burst safe; LLM-judge eval throughput sizing now numeric not vibes.
+Stopped at: Phase 3 stays PRELIM CLOSED. Phase 4 candle migration is the locked unblock for full FSC re-index. Phase 3 Gate (NDCG@5 graded relevance ≥100 queries × ≥2 corpora per ARCH §9.4) is independently unblocked at the infrastructure layer — judge endpoint capacity is now known, awaits okaoi-vs-官方 grader cross-validation before any gate-flipping run.
+Resume files: progress.txt + this STATE.md + `.planning/quick/260427-e7r-.../260427-e7r-SUMMARY.md` + `experiments/poc-retrieval/eval/probe_minimax_concurrency_findings.md` (LLM-judge sizing).
 Next-session entry: user says "继续" or "Phase 4" → **`/gsd-add-phase` to formalize Phase 4 candle in-process migration as milestone-scoped phase**:
-  - Sub-task 1: source qwen3-embedding-0.6b in candle-compatible format (GGUF or safetensors); validate dim=1024 + instruction prefix bit-equivalent (else §9.8 version-hash mismatch)
-  - Sub-task 2: write candle model loader replacing `embed_once` HTTP body with in-process tensor inference; retry wrapper becomes "defensive only" since no network
-  - Sub-task 3: re-index obsidian-llm-wiki (regression test, cosine-distance equivalence on 30-query set), then re-index FSC to full 2307 symbols + re-run F1-F10 hand-eval per EVAL_DESIGN_NOTES Rule 7 (generous denominator, locked before run)
-  Estimated 1-2 days. NOT a quick task. Phase 3 → truly closed gate now depends on this phase completing + cross-corpus re-eval passing ≥50% generous-denominator on F1-F10.
-  Concurrent low-priority: ARCH §9.5 reference disambiguation (Curry's session-opening prompt referenced "ARCH §9.5" expecting candle content; actual §9.5 is reranker. Decide: write candle spec INTO §9.5, or clarify the mental map of where candle lives).
+  - Sub-task 1: source qwen3-embedding-0.6b in candle-compatible format. Cheap path locked in PROJECT.md backlog: GGUF via `llama.cpp/convert_hf_to_gguf.py` → `candle-transformers` `quantized::llama` loader. Validate dim=1024 + instruction-prefix bit-equivalence on 30-query regression set (else §9.8 version-hash mismatch).
+  - Sub-task 2: write candle model loader replacing `embed_once` HTTP body with in-process tensor inference; retry wrapper becomes "defensive only" since no network.
+  - Sub-task 3: re-index obsidian-llm-wiki (cosine-distance equivalence on 30-query set), then re-index FSC to full 2307 symbols + re-run F1-F10 hand-eval per EVAL_DESIGN_NOTES Rule 7 (generous denominator, locked before run).
+  Estimated: code ≈ 1d, decision/spec landing ≈ 0.5d fixed cost (per PROJECT.md backlog two-axis estimate). Total ≈ 1.5d minimum; +1d spike if GGUF route fails equivalence check.
+Parallel-track entry: user says "Phase 3 Gate" or "LLM-judge" → run okaoi-vs-官方 grader cross-validation on 30-call sample (e.g. seed-42 axis-3 hits) using `r7b_llm_judge_axis3.py --smoke` against both providers, compare per-hit grades, decide whether okaoi is interchangeable for inner-loop iteration. Prerequisite for any §9.4 gate-flipping run.
 
 ## Linear cross-reference
 
