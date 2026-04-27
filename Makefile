@@ -3,7 +3,7 @@
 BIN_DIR := bin
 CORE_BIN := codenexus-core
 SERVER_BIN := codenexus
-EMBED_DIR := server/embed
+EMBED_DIR := server/internal/supervisor/bin
 
 help:
 	@echo "CodeNexus build entry. Phase -1 / 0 will refine."
@@ -45,4 +45,5 @@ lint:
 clean:
 	cd core && cargo clean
 	cd server && go clean
-	rm -rf $(BIN_DIR) $(EMBED_DIR)
+	rm -rf $(BIN_DIR)
+	rm -f $(EMBED_DIR)/$(CORE_BIN) $(EMBED_DIR)/$(CORE_BIN).exe

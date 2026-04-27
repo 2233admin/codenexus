@@ -41,3 +41,7 @@ vendor/
 *.db-journal
 *.sqlite
 *.sqlite-journal
+
+# REQ-08 embedded Rust binary (built artifact, do NOT commit; .gitkeep stays tracked)
+server/internal/supervisor/bin/codenexus-core
+server/internal/supervisor/bin/codenexus-core.exe
