@@ -34,6 +34,22 @@ tokenizers = "0.22"
 fastembed = { version = "5.13", features = ["qwen3"] }
 sha2 = "0.10"
 
+# Phase 03.6 task 2.5.2: explicit lib + bin layout. Library facade exposes
+# `embedder` so `src/bin/compute_version_hash.rs` can import QUERY_INSTRUCT
+# without copy-paste (single source of truth for ARCH §9.8 version-hash).
+# main.rs continues to use file-local `mod embedder;` -- both bin and lib
+# share `src/embedder.rs` which is normal Rust idiom.
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "poc-retrieval"
+path = "src/main.rs"
+
+[[bin]]
+name = "compute_version_hash"
+path = "src/bin/compute_version_hash.rs"
+
 [profile.release]
 opt-level = 3
 lto = "thin"
