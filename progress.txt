@@ -329,3 +329,95 @@ KEY DOCS POINTERS:
 
 Session ended: 2026-04-27, REQ-10 PASS, Phase 3 MVP CLOSED.
 Next session: REQ-08 plumbing fix (option A) or Phase 4 kickoff (option B).
+
+==========================================================================
+2026-04-27 post-closure review -- REFRAME: prelim PASS, Phase 3.5 needed
+==========================================================================
+
+REVIEWER PUSHBACK (Curry, post-commit):
+  "but you should be careful that this could be the eval set's problem,
+   things like this could be a local optimum"
+
+ANALYSIS DONE THIS SESSION (NO new commits beyond docs follow-up):
+
+Held-out slicing of the existing 30-query eval JSON revealed:
+  B1-B7 (sweep-tuned, in-distribution)         = 67.9%   weak signal
+  A1-A10 axis-1 exact symbol (low overfit)     = 70.0%   medium signal
+  B8 held-out NL (concurrent writes)           = 0%      REAL MISS
+                                                         (corpus has 19 lock
+                                                         symbols, retrieval
+                                                         returned generic
+                                                         file-write noise)
+  B9 held-out NL (conflict detection)          = 0%      RUBRIC NOISE
+                                                         (concept barely
+                                                         exists in corpus:
+                                                         0 conflict, 0 diff,
+                                                         3 version, 2 merge
+                                                         -- query is
+                                                         effectively an
+                                                         unmarked negative)
+  B10 held-out NL (aggregate metadata)         = 0%      RUBRIC FAILURE
+                                                         (retrieval found
+                                                         buildDigest /
+                                                         fetchAllNotes /
+                                                         digest -- right
+                                                         answer; but
+                                                         expected_paths was
+                                                         too narrow, didn't
+                                                         include those
+                                                         tokens, scored 0)
+
+HONEST READ:
+  - 1 of 3 held-out queries (B8) is a real generalization failure
+  - 1 of 3 (B9) is a query-set construction problem
+  - 1 of 3 (B10) is a rubric-too-narrow problem
+  Held-out failure rate is ~1 of 3 real, not 3 of 3 as raw 0% suggests.
+  But N=1 real miss out of 1 valid held-out query is not enough to
+  conclude anything statistically.
+
+ROOT METHODOLOGICAL ISSUE:
+  alpha=0.6 was selected by R3 sweep across {0.5, 0.6, 0.7, 0.8} on the
+  SAME B1-B7 query set. R5 locked it. So 67.9% is a best-of-sweep number
+  on the tuning set, not an out-of-sample number. Goodhart fully applies:
+  the gate became the tuning target, so passing the gate doesn't validate
+  the system. This is a local-optimum-by-construction.
+
+REFRAME:
+  STATE.md flipped from `phase_3_complete` to `phase_3_prelim_complete`.
+  SUMMARY.md (260427-j9g) added a Robustness caveat section documenting
+  the held-out analysis + reframing the verdict from PASS to PRELIM PASS.
+  Phase 3.5 robustness micro-slice is now the explicit next-session top
+  priority, NOT REQ-08 plumbing or Phase 4 kickoff.
+
+PHASE 3.5 ROBUSTNESS SCOPE (next session, 30-60min):
+  1. Fix B10 rubric: expand expected_paths from
+     [meta, aggregate, frontmatter, kb_meta] to include
+     [digest, buildDigest, fetchAllNotes, collector]; re-score
+  2. Joint alpha sweep on B1-B7 + B8-B10 over alpha in {0.4..0.8 step 0.1};
+     verify alpha=0.6 still optimum on the joint set or shift it
+  3. Index a SECOND corpus (claude-code-custodian or full-self-coding),
+     author 5-10 fresh NL queries blind to corpus content, hand-eval
+  4. Write Phase 3.5 verdict in a new quick task. Pass-bar suggestion:
+     cross-corpus mean >= 50% (relaxed for harder OOD conditions). If pass:
+     flip Phase 3 to truly closed and open Phase 4. If fail: 3.5 expands
+     to fix retrieval (rerank default on, embedder swap to Nomic Embed
+     Code on AU 5090, etc.)
+
+NEW DOCS COMMIT:
+  Single follow-up commit lands the SUMMARY.md robustness caveat +
+  STATE.md reframe + this progress.txt block. No source code change.
+  No revert of 226c50f or e0d0cf2 -- the literal gate as written in
+  REQUIREMENTS.md WAS met; reframe is at the verdict-narrative layer,
+  not the gate layer.
+
+KEY DOCS POINTERS (updated for next session):
+  .planning/STATE.md                                      -- phase_3_prelim_complete,
+                                                             Phase 3.5 = next priority
+  .planning/quick/260427-j9g-.../260427-j9g-SUMMARY.md    -- Robustness caveat section
+  experiments/poc-retrieval/eval/queries.json             -- B10 expected_paths to expand
+  experiments/poc-retrieval/eval/req10_alpha06.json       -- 30-query baseline; B8-B10 are the held-out signal
+
+Session ended: 2026-04-27 post-closure review.
+Next session: Phase 3.5 robustness micro-slice (rubric fix + joint alpha
+sweep + cross-corpus eval). Curry directive "下个 session 干". Do NOT
+start Phase 4 or REQ-08 plumbing until robustness verdict is in.

@@ -138,13 +138,41 @@ print(f'PASS: B1-B7 mean = {mean:.4f}')
 "
 ```
 
-## Phase 3 status: CLOSED 2026-04-27
+## Robustness caveat (2026-04-27 post-closure analysis)
 
-5 of 5 REQs done:
+**The 67.9% number is the literal gate-pass figure but its provenance is compromised.** Reviewer (Curry) flagged the local-optimum risk after the closure commit landed; held-out slicing was done in-place against the existing 30-query eval JSON. Findings:
+
+| Slice | Score | Signal | Read |
+|---|---|---|---|
+| B1-B7 (in-distribution, sweep-tuned) | 67.9% | weak | alpha=0.6 was selected by R3 sweep on these same 7 queries; n=7 means 1 query flip costs -14.3pp |
+| A1-A10 axis-1 exact symbol | 70.0% | medium | different task (exact lookup), low overfit risk; system not broken on this corpus generally |
+| B8 held-out NL (concurrent writes) | 0% | real miss | corpus has 19 `lock` symbols; retrieval returned generic `write/writeFile/operations` instead — genuine concept-level miss |
+| B9 held-out NL (conflict detection) | 0% | rubric noise | corpus has 0 `conflict` / 0 `diff` / 3 `version` / 2 `merge`; concept barely exists in repo, query is effectively an unmarked negative |
+| B10 held-out NL (aggregate metadata) | 0% | rubric failure | retrieval found `buildDigest / fetchAllNotes / digest` (semantically correct), but `expected_paths` was `[meta, aggregate, frontmatter, kb_meta]` — too narrow, right answer rejected |
+| Axis-3 graph traversal | 30% | weak | known retrieval-only ceiling, Phase 4 graph augmentation needed |
+
+**Honest read of the held-out signal:**
+- 1 of 3 held-out queries (B8) shows real generalization failure
+- 1 of 3 (B9) is a query-set construction problem (concept not in corpus)
+- 1 of 3 (B10) is a rubric-too-narrow problem (right answer found, scored 0)
+
+So held-out failure rate is **~1 of 3 real**, not 3 of 3 as the raw 0% suggests. But 1 sample is not enough to say anything statistically.
+
+**Reframing**: this slice is a **PRELIMINARY PASS** on the literal gate as written in REQUIREMENTS.md. The gate's ability to predict cross-corpus + truly-out-of-distribution performance is **untested**. Phase 3.5 robustness slice is required before claiming Phase 3 truly closed.
+
+**Phase 3.5 robustness slice scope** (next session, 30-60min):
+1. Fix B10 rubric (expand `expected_paths` to include `digest/buildDigest/fetchAllNotes/collector`); re-score
+2. Run alpha sweep on B1-B7 ∪ B8-B10 joint set, verify alpha=0.6 is still optimal (or shift it)
+3. Index a second corpus (claude-code-custodian or full-self-coding); author 5-10 fresh NL queries; hand-eval
+4. Write robustness verdict in a new quick task; only THEN flip Phase 3 from prelim to truly closed (or open Phase 3.5 to fix retrieval if cross-corpus tanks)
+
+## Phase 3 status: PRELIMINARY CLOSED 2026-04-27 (pending Phase 3.5 robustness)
+
+5 of 5 REQs done **on the literal gates as written**:
 - REQ-06 ✓ Rust core A2A endpoint (e0727c2 marathon)
 - REQ-07 ✓ Go server scaffold (8ff8e11 + 54f23b1 + 01efa75)
 - REQ-08 ✓ //go:embed plumbing (f5b6621 + 59b725b + bbf11ee) — note: plumbing bugs deferred
 - REQ-09 ✓ embedded UI bundle (ec3849e + dfdcb95 + 68fb008)
-- REQ-10 ✓ MVP precision gate met (this slice)
+- REQ-10 ⚠ MVP precision gate met (this slice) — see Robustness caveat above
 
-Phase 4+ backlog (tactical + Software 3.0 strategic) lives in PROJECT.md.
+Phase 3.5 robustness slice required before Phase 4 opens; recommended scope captured above. Phase 4+ backlog (tactical + Software 3.0 strategic) lives in PROJECT.md but should not be opened until Phase 3.5 verdict is in.
