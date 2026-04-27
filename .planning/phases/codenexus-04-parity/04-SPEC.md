@@ -34,7 +34,7 @@ Pin the Qwen3-Embedding-0.6B model load to a specific HuggingFace Hub commit SHA
 - **Current**: `embedder.rs:39` defines `const MODEL_REPO: &str = "Qwen/Qwen3-Embedding-0.6B";` with no revision; `from_hf(MODEL_REPO, ...)` resolves to whatever HEAD commit HuggingFace serves. Phase 03.6 03.6-RESEARCH.md (line 560) explicitly flagged this as deferred to Phase 4 hardening.
 - **Target**: `embedder.rs` defines `const QWEN3_REVISION: &str = "<40-char-sha>"`; the model load path uses this SHA via the fetch primitive chosen by planner (see `04-PRE-PLAN-NOTES.md`); `docs/ARCHITECTURE.md` §9.8 gets a new history row appending the pinned SHA (per §9.8 protocol's "version-hash-affecting changes" discipline).
 - **Acceptance** (all three required):
-  - (a) `grep -E 'const QWEN3_REVISION = "[a-f0-9]{40}"' experiments/poc-retrieval/src/embedder.rs` → 1 hit
+  - (a) `grep -E 'const QWEN3_REVISION: &str = "[a-f0-9]{40}"' experiments/poc-retrieval/src/embedder.rs` → 1 hit
   - (b) `grep -E '<sha-from-(a)>' docs/ARCHITECTURE.md` → 1 hit (in §9.8 history row)
   - (c) **Reload test**: `rm -rf ~/.cache/huggingface/hub/models--Qwen--Qwen3-Embedding-0.6B/snapshots/<sha>/` followed by `./poc-retrieval index --repo <small-test-repo>` re-creates the same SHA snapshot directory and exits 0; verifier confirms `ls ~/.cache/huggingface/hub/models--Qwen--Qwen3-Embedding-0.6B/snapshots/` lists exactly the const SHA.
 
@@ -99,7 +99,7 @@ The current `embedder.embed()` retry wrapper (5 attempts × exponential 250ms-ba
 - `EmbedError` enum (Transient / Permanent / Timeout) design and 33 caller-site arm-match -- Q5=B locked deferred to a future production-grade phase
 - Progress indicator (R2 (c)) -- DEFERRED unless implementation path naturally exposes it
 - Fork of fastembed-rs to add revision support -- explicit anti-pattern (see `04-PRE-PLAN-NOTES.md`)
-- Any change to `core/`, `server/` (Go), `ui/` -- co-location rule: this slice modifies ONLY `experiments/poc-retrieval/src/{embedder,server,search}.rs` + `docs/embedder-offline-bootstrap.md` + `docs/ARCHITECTURE.md` (§9.8 row) + `README.md` (Quick start link)
+- Any change to `core/`, `server/` (Go), `ui/` -- co-location rule: this slice modifies ONLY `experiments/poc-retrieval/src/{embedder,server,search,a2a}.rs` + `experiments/poc-retrieval/Cargo.toml` (only if hf-hub feature flags require) + `experiments/poc-retrieval/eval/e2e_first_run_smoke.sh` (NEW) + `docs/embedder-offline-bootstrap.md` (NEW) + `docs/ARCHITECTURE.md` (§9.8 row) + `README.md` (Quick start link). NOTE: `a2a.rs` added 2026-04-28 post-discuss-phase to enumerate the file required by D-05 envelope-override (G-04 PASS) — `OperationRequest::IndexRepo` lives there.
 
 **Co-location boundary protector**: Any future request to extend "P2 resilience" / "first-run UX" beyond `experiments/poc-retrieval/src/` belongs in a separate SPEC. Same-crate is the geometric anti-scope-creep rule for this slice.
 
@@ -116,7 +116,7 @@ The current `embedder.embed()` retry wrapper (5 attempts × exponential 250ms-ba
 Verifier runs each checkbox as a single command (or short command sequence) and records PASS / FAIL.
 
 **R1 -- HF revision pin:**
-- [ ] (R1.a) `grep -E 'const QWEN3_REVISION = "[a-f0-9]{40}"' experiments/poc-retrieval/src/embedder.rs` returns 1 hit
+- [ ] (R1.a) `grep -E 'const QWEN3_REVISION: &str = "[a-f0-9]{40}"' experiments/poc-retrieval/src/embedder.rs` returns 1 hit
 - [ ] (R1.b) Same SHA appears in a new `docs/ARCHITECTURE.md` §9.8 history row (`grep -F '<sha>' docs/ARCHITECTURE.md` returns >= 1 hit; row format matches §9.8 protocol)
 - [ ] (R1.c) Reload test: delete the snapshot subdir, rerun `index`, observe the same SHA subdir reborn, exit code 0
 
