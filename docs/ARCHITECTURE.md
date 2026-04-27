@@ -582,7 +582,7 @@ Reference: this is a documented failure mode in production RAG systems (`embeddi
 
 | Date | model_id | dim | prefix | version_hash (12-char SHA-256 prefix) | commit | notes |
 |------|----------|-----|--------|---------------------------------------|--------|-------|
-| 2026-04-28 | `Qwen/Qwen3-Embedding-0.6B` (safetensors via fastembed-rs/candle) | 1024 | `QUERY_INSTRUCT` (incl. trailing space, byte-preserved from prior poc.db) | `f2b47aa16b17` | `<closure-commit-sha>` | Replaces ollama HTTP qwen3-embedding:0.6b. Prefix retains trailing space "Query: " — empirical config that produced poc.db's 67.9% B1-B7 baseline; preserved byte-identically in Plan 1 to avoid invalidating the baseline. `compute_version_hash` bin (Plan 1 Task 2.5) is the single source of truth — recompiles pick up any prefix change automatically. |
+| 2026-04-28 | `Qwen/Qwen3-Embedding-0.6B` (safetensors via fastembed-rs/candle) | 1024 | `QUERY_INSTRUCT` (incl. trailing space, byte-preserved from prior poc.db) | `f2b47aa16b17` | `67320ec` | Replaces ollama HTTP qwen3-embedding:0.6b. Prefix retains trailing space "Query: " — empirical config that produced poc.db's 67.9% B1-B7 baseline; preserved byte-identically in Plan 1 to avoid invalidating the baseline. `compute_version_hash` bin (Plan 1 Task 2.5) is the single source of truth — recompiles pick up any prefix change automatically. |
 
 ### 9.9 Embedder resilience layer ownership (D-W9, Phase 3.5b)
 
