@@ -23,6 +23,17 @@ tower-http = { version = "0.6", features = ["trace", "cors"] }
 uuid = { version = "1.10", features = ["v4", "serde"] }
 chrono = { version = "0.4", features = ["serde"] }
 
+# Phase 03.6: in-process embedder via candle (replaces ollama HTTP).
+# See .planning/phases/03.6-.../03.6-RESEARCH.md for stack rationale.
+# fastembed first (~1-2hr cap); fall back to direct candle if config knobs inadequate.
+candle-core = "0.10"
+candle-nn = "0.10"
+candle-transformers = "0.10"
+hf-hub = "0.5"
+tokenizers = "0.22"
+fastembed = { version = "5.13", features = ["qwen3"] }
+sha2 = "0.10"
+
 [profile.release]
 opt-level = 3
 lto = "thin"

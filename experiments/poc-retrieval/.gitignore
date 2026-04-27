@@ -3,6 +3,15 @@ target/
 *.db-journal
 *.db-shm
 *.db-wal
+# Phase 03.6: forensic db backups -- exist on disk for rollback,
+# but 10MB+ binary blobs do not belong in git history. SHA256 + provenance
+# captured in 03.6-01-SUMMARY.md. Pattern: <name>.<source-tag>.bak
+*.ollama.bak
+*.candle.bak
+*.partial*.bak
+.planning_tmp/
 eval/results.json
 eval/results_round*.json
 eval/queries.json
+eval/embed_snapshot_ollama.json
+eval/embed_equivalence_30q.json

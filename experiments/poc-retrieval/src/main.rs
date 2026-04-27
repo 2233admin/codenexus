@@ -108,6 +108,16 @@ enum Cmd {
         #[arg(long)]
         json: bool,
     },
+    /// Phase 03.6 Plan 1 step 1.3: One-shot capture of current ollama embeddings
+    /// for the 30-query regression set (both query-side and passage-side). Used
+    /// as baseline by EmbedEquivalence. Run BEFORE migrating embedder.rs while
+    /// ollama still works.
+    EmbedSnapshot {
+        #[arg(long)]
+        queries: PathBuf,
+        #[arg(long, default_value = "eval/embed_snapshot_ollama.json")]
+        out: PathBuf,
+    },
 }
 
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -428,6 +438,36 @@ async fn main() -> Result<()> {
                     println!("#{} [{:.6}] {} {} {}", i + 1, score, kind, name, path);
                 }
             }
+        }
+        Cmd::EmbedSnapshot { queries, out } => {
+            // Phase 03.6 Plan 1 step 1.3: Pre-migration ollama baseline capture.
+            // Reads queries.json (30 entries A1-A10/B1-B10/C1-C10), embeds each
+            // both as Query (with QUERY_INSTRUCT prefix) and as Passage (raw),
+            // dumps 60 entries x 1024 dim to JSON. Plan 1 task 3 (EmbedEquivalence)
+            // consumes this snapshot to validate candle migration.
+            let raw = std::fs::read_to_string(&queries)?;
+            let qs: Vec<EvalQuery> = serde_json::from_str(&raw)?;
+            let embedder = embedder::Embedder::new();
+            let mut results: Vec<serde_json::Value> = Vec::with_capacity(qs.len() * 2);
+            eprintln!("capturing ollama baseline for {} queries...", qs.len());
+            for (i, q) in qs.iter().enumerate() {
+                let qv = embedder.embed(&q.query, embedder::Role::Query)?;
+                anyhow::ensure!(qv.len() == 1024, "expected 1024-dim Query vec, got {}", qv.len());
+                results.push(serde_json::json!({
+                    "id": q.id, "role": "Query", "vec": qv,
+                }));
+                let pv = embedder.embed(&q.query, embedder::Role::Passage)?;
+                anyhow::ensure!(pv.len() == 1024, "expected 1024-dim Passage vec, got {}", pv.len());
+                results.push(serde_json::json!({
+                    "id": q.id, "role": "Passage", "vec": pv,
+                }));
+                if (i + 1) % 5 == 0 {
+                    eprintln!("  [{}/{}] captured", i + 1, qs.len());
+                }
+            }
+            std::fs::create_dir_all(out.parent().unwrap_or(std::path::Path::new(".")))?;
+            std::fs::write(&out, serde_json::to_string_pretty(&results)?)?;
+            eprintln!("wrote {} entries to {}", results.len(), out.display());
         }
     }
     Ok(())
