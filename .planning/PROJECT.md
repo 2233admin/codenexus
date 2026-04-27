@@ -62,9 +62,23 @@ Code + knowledge graph tool. A Rust core (parser/embedder/storage/git overlay) t
 
 <!-- Things we will build, design space already locked. Differs from "Out of Scope" (never) and "Active" (now). -->
 
+### Tactical (incremental wins on existing surface)
+
 - **Leiden community detection** — `petgraph` Rust binding (~30 lines) in graph builder. Inputs: existing edge list. Outputs: community labels for graph clustering. Reuses `confidence: f64` directly as edge weight — zero added cost since the field already exists from REQ-06 spike. Useful for "show me the call graph clusters" queries and downstream PPR teleport-set construction.
 - **Confidence-as-Leiden-weight** — already plumbed (see Differentiation #4). Phase 4 Leiden flips a switch, doesn't add a column.
 - **Spike → core/ promotion or alias** — `core/` is currently a 13-line `println!` placeholder superseded by `experiments/poc-retrieval/` since REQ-06. Cleanup options: (a) cargo workspace with `core` aliasing `poc-retrieval`, (b) `git mv experiments/poc-retrieval core` and delete the placeholder, (c) leave as-is with STATE.md note (current state). Decision deferred; not blocking MVP.
+
+### Strategic (Software 3.0 framing — reframe of project's long-term value)
+
+CodeNexus is not "a better code search tool." It is **the LLM's external long-term memory and structured perception layer for code** in Karpathy's Software 3.0 era (natural language as programming language, LLM as the new computer, agents as the new developers). LLMs have language understanding, reasoning, and generation. They lack persistent, precise structural perception of a specific codebase. CodeNexus closes that gap.
+
+Three concrete bets, all things Sourcegraph is building and GitNexus / CodeFlow are not — we can be lighter and faster than Sourcegraph because we accept Software 3.0 from day one (no IDE plugin, no enterprise SSO, no human-team UX baggage):
+
+- **Agent behavioral alignment** — Make Claude Code (and other agents) actually invoke `list_callers` / `query` / `get_symbol` at the right moments instead of guessing. CodeCompass (arxiv) measured agents skipping graph tools 58% of the time when the right answer required them. Target: drive that to ≤5%. Mechanism: MCP tool descriptions that score on retrieval-as-affordance, not just "tool exists." Phase 4 deliverable: A/B harness measuring tool-invocation rate on a curated task set, not just precision.
+- **Cross-session codebase understanding accumulation** — Every Claude Code session learns things about the codebase ("this function is dangerous, always check callers before editing it", "this module owns the locking discipline, breaking its invariants causes deadlocks under load"). Today that knowledge dies at session end. CodeNexus + memU integration should persist these per-symbol annotations and surface them on next access. This is the real value of memU coupling — not "remember user preferences" but "remember codebase intelligence accumulated over agent-hours." Phase 5 (Bridge) territory; spec lives in `obsidian-llm-wiki` integration plan.
+- **Architectural decision semantic indexing** — `ARCHITECTURE.md §9.4` contains the line "MUST NOT introduce reranker without LLM-judge." If an agent edits retrieval code, it should encounter that constraint *automatically* via search — not require humans to remember it exists. Index ADR-style decisions (MUST/MUST NOT/SHOULD/should-not statements) as first-class graph nodes; expose via a new A2A operation `query_constraints` that returns relevant decisions for a given file/function/topic. Phase 4 deliverable: the indexer + the operation; Phase 5 wires it into the IDE/MCP affordance layer above.
+
+These three are interlocked: (1) makes the agent willing to ask, (3) makes the answer authoritative, (2) makes the answer compound over time. Each one alone is a feature; together they form the moat.
 
 ## Context
 
