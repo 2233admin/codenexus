@@ -547,3 +547,181 @@ KEY DOCS POINTERS:
 Session ended: 2026-04-27, Phase 3.5 sub-checks 1-3 PASS, 4 BLOCKED.
 Next session: Phase 3.5b unblock ollama embedding instability, then
 re-run cross-corpus on full FSC index to flip Phase 3 to truly closed.
+
+==========================================================================
+2026-04-27 evening -- Phase 3.5b embedder retry+fail-loud (1 commit)
+==========================================================================
+
+QUICK TASK: 260427-e7r
+SCOPE EXECUTED: Two-layer fix per Curry's session-opening directive
+  (option 1 retry+backoff combined with option 0 fail-loud abort, NOT
+  option 2 candle migration which is Phase 4 architecture work).
+
+WHAT DONE:
+  PENDING-COMMIT  Phase 3.5b atomic commit lands:
+                    - experiments/poc-retrieval/src/embedder.rs  (split
+                      embed_once + 5-attempt exp-backoff retry wrapper,
+                      250ms base, BASE_DELAY_MS << attempt; preserves
+                      pub fn embed signature so all 4 callers compile
+                      unchanged)
+                    - experiments/poc-retrieval/src/main.rs  (Cmd::Index
+                      gains --max-consecutive-fail flag default=5;
+                      consecutive_fails counter resets on Ok, increments
+                      on Err; anyhow::bail with structured error message
+                      identifying count + last symbol + last error)
+                    - experiments/poc-retrieval/eval/EVAL_DESIGN_NOTES.md
+                      (Rule 7: N/A handling on cross-corpus blind eval --
+                      generous denominator as headline metric, must be
+                      locked before ANY retrieval result inspected,
+                      forward-locking note acknowledges F1-F10 first run
+                      was post-hoc)
+                    - .planning/PROJECT.md  (Phase 4 P2 backlog entry
+                      expanded with EmbedError enum design hint
+                      Transient/Permanent/Timeout three-state taxonomy +
+                      counter location rationale: do not relocate during
+                      Phase 4 refactor)
+                    - docs/ARCHITECTURE.md  (NEW section 9.9 D-W9
+                      "Embedder resilience layer ownership" -- locked
+                      design contract: 5-row layer ownership table,
+                      single-call retry @ Embedder, error class
+                      discrimination @ Embedder, per-error policy +
+                      counter + abort action @ Caller; explicit
+                      anti-pattern: any PR moving consecutive_fails into
+                      Embedder struct state is review-blocked)
+
+SMOKE RUN OUTCOME (FSC corpus, fsc.db rebuilt):
+  parsed 2307 symbols
+  [128/2307] embed fail cmd: ollama http (consecutive=1/5)
+  [129/2307] embed fail toolWriteFile: ollama http (consecutive=2/5)
+  [130/2307] embed fail p: ollama http (consecutive=3/5)
+  [131/2307] embed fail dir: ollama http (consecutive=4/5)
+  [132/2307] embed fail cmd: ollama http (consecutive=5/5)
+  Error: aborting indexer: 5 consecutive embed failures (threshold 5),
+    last symbol=cmd, last error=ollama http: error sending request for url
+    (http://localhost:11434/api/embeddings): operation timed out
+
+  Wall-clock ~20 minutes (4 fail-cluster symbols * 5 attempts * 60s
+  reqwest timeout each = ~308s/symbol = ~1232s total). Exit code 1
+  (anyhow::bail), fsc.db final size 713k = 4 successful inserts at
+  i=124-127 immediately before fail cluster, no silent partial state.
+
+CRITICAL INSIGHT:
+  Real ollama burst-failure mode is per-call 60s reqwest send-timeout
+  -- TCP connection accepts but no response body within 60s. Means
+  ollama's worker thread is HUNG (not crashed, not rate-limiting).
+  Consequence: any retry budget short of restarting the ollama daemon
+  cannot recover. The 7.75s sleep chain in retry wrapper is a rounding
+  error against the 60s-per-attempt timeout budget. Phase 3.5b retry
+  was a deliberate cheap probe of "ollama failure is transient";
+  hypothesis falsified on three independent dimensions:
+    (a) deterministic boundary at i~128 across two runs (delta=1)
+    (b) sustained beyond 60s per attempt (worker hangs not slow)
+    (c) silent hang not API error (TCP accepts, no response body)
+
+DECISION TRIGGERED:
+  Phase 4 candle in-process migration is now required, not optional.
+  Subjective frustration ("ollama is flaky") converted to objective
+  architectural argument ("20min wall-clock retry budget per fail-
+  cluster cannot recover ollama, this is process-state hang not
+  transient slowness, no retry policy can fix it"). Decisions move
+  better on evidence than on vibes; this micro-slice was an evidence-
+  generation slice, not a fix.
+
+PHASE STATUS:
+  Phase 1 (Foundation Design)  [x] closed (ARCH 9.1-9.9 locked, +D-W9)
+  Phase 2 (Stack Spike)        [x] research-conclusive (sqlite-vec)
+  Phase 3 (MVP)                [x] PRELIM CLOSED 2026-04-27
+                                   (still phase_3_prelim_complete;
+                                   truly-closed gate now blocked on
+                                   Phase 4 candle migration completing)
+  Phase 3.5  sub-checks 1-3    [x] PASS (260427-nz9)
+  Phase 3.5  sub-check 4       [-] still blocked but root cause hard-
+                                   evidenced (260427-e7r)
+  Phase 3.5b retry + fail-loud [x] COMPLETE (260427-e7r)
+                                   engineering correctness all PASS;
+                                   business outcome = planned negative
+                                   triggering Phase 4
+  Phase 4    candle migration  [ ] NEXT (route via /gsd-add-phase, NOT
+                                       a quick task -- multi-day arch
+                                       change with section 9.8 version-
+                                       hash compatibility validation)
+
+WHAT BLOCKED:
+  - Full FSC index still unbuildable until Phase 4 candle migration
+  - F1-F10 cross-corpus re-eval still cannot run (blocked on full
+    FSC index above)
+  - Phase 3 truly-closed status flip gated on F1-F10 re-eval passing
+    >=50% generous-denominator per EVAL Rule 7 (locked this session)
+  - server.rs:198 A2A endpoint Index handler has same silent-partial
+    risk as fixed CLI Index but is OUT OF SCOPE for this micro-slice
+    (PROJECT.md Phase 4 P2 backlog covers it)
+  - search.rs:31 Query path now retries 5 attempts blocking ~7.75s on
+    transient failure -- UX REGRESSION accepted as Phase 3.5b cost,
+    Phase 4 EmbedError enum splits the policy
+
+PROCESS NOTES (worth remembering):
+  - Two-layer fix proved its layering value at runtime: retry layer
+    ran 5 attempts * 4 fail-cluster = 20 retry events INSIDE embed(),
+    counter layer in main.rs got clean 4-event view (one per failed
+    symbol, not 20 retry-noise events). Validates D-W9 row 1.
+  - 60s reqwest timeout dominates retry budget. If anyone tries the
+    throttle workaround in interim before Phase 4 lands, FIRST
+    shorten the timeout to 5-10s -- otherwise even one stuck call
+    burns minutes.
+  - fsc.db cross-check: 713k final vs 688k pre-run = 25k diff = 4
+    rows at ~6k each (1024 floats * 4 bytes + symbol metadata + bm25
+    column) = matches i=128 boundary exactly. Worth formalizing in
+    CI smoke: "indexer exited but db unchanged -> alert".
+
+KEY DOCS POINTERS:
+  .planning/quick/260427-e7r-.../260427-e7r-SUMMARY.md  Phase 3.5b
+                                                         verdict
+  .planning/quick/260427-e7r-.../260427-e7r-PLAN.md     micro-slice
+                                                         scope + truths
+  docs/ARCHITECTURE.md section 9.9 D-W9                  embedder
+                                                         resilience
+                                                         layer ownership
+  .planning/PROJECT.md "Production-grade embedding       Phase 4 P2
+    resilience" entry                                    backlog
+  experiments/poc-retrieval/eval/EVAL_DESIGN_NOTES.md    Rule 7 locks
+    Rule 7                                               generous denom
+  experiments/poc-retrieval/fsc.db.partial127.bak       backup of pre-
+                                                         run partial
+                                                         (NOT in git --
+                                                         local only)
+
+NEXT SESSION RESUME:
+  $ cd /d/projects/codenexus
+  $ git log --oneline -5             # confirm 260427-e7r commit on top
+  $ cat .planning/STATE.md           # phase_3_prelim_complete, P0 =
+                                       Phase 4 candle migration
+  $ cat .planning/quick/260427-e7r-.../260427-e7r-SUMMARY.md
+                                     # full Phase 3.5b verdict +
+                                       Phase 4 trigger rationale
+
+  User says "continue" or "Phase 4" or "candle":
+    -> Route through /gsd-add-phase to formalize Phase 4 candle in-
+       process migration as milestone-scoped phase. NOT a quick task.
+       Three sub-tasks per STATE.md Pending Todos:
+         1. Source qwen3-embedding-0.6b in candle-compatible format
+            (GGUF or safetensors). Validate dim=1024 + instruction
+            prefix bit-equivalence (else section 9.8 version-hash
+            mismatch -> full reindex required).
+         2. Write candle model loader in embedder.rs replacing
+            embed_once HTTP body with in-process tensor inference.
+            Retry wrapper becomes "defensive only" -- no network.
+         3. Validate end-to-end: re-index obsidian-llm-wiki (cosine-
+            distance equivalence on 30-query set) THEN re-index FSC to
+            full 2307 symbols THEN re-run F1-F10 hand-eval per EVAL
+            Rule 7 (generous denom, locked before run).
+
+  CONCURRENT LOW-PRIORITY:
+    - ARCH section 9.5 reference disambiguation (Curry's session-
+      opening prompt referenced "ARCH 9.5" expecting candle content;
+      actual 9.5 is reranker. Decide: write candle spec INTO 9.5, or
+      clarify mental map).
+
+Session ended: 2026-04-27 evening, Phase 3.5b complete with hard-
+evidenced negative result. Phase 4 candle migration triggered.
+Next session: /gsd-add-phase Phase 4 candle migration (NOT another
+quick task -- multi-day milestone-scoped phase).

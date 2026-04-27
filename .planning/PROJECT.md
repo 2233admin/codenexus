@@ -67,6 +67,20 @@ Code + knowledge graph tool. A Rust core (parser/embedder/storage/git overlay) t
 - **Leiden community detection** — `petgraph` Rust binding (~30 lines) in graph builder. Inputs: existing edge list. Outputs: community labels for graph clustering. Reuses `confidence: f64` directly as edge weight — zero added cost since the field already exists from REQ-06 spike. Useful for "show me the call graph clusters" queries and downstream PPR teleport-set construction.
 - **Confidence-as-Leiden-weight** — already plumbed (see Differentiation #4). Phase 4 Leiden flips a switch, doesn't add a column.
 - **Spike → core/ promotion or alias** — `core/` is currently a 13-line `println!` placeholder superseded by `experiments/poc-retrieval/` since REQ-06. Cleanup options: (a) cargo workspace with `core` aliasing `poc-retrieval`, (b) `git mv experiments/poc-retrieval core` and delete the placeholder, (c) leave as-is with STATE.md note (current state). Decision deferred; not blocking MVP.
+- **Production-grade embedding resilience (P2)** — Phase 3.5b micro-slice landed `--max-consecutive-fail` + retry-with-backoff on the **CLI Index path only** (`main.rs:156`). Two more call sites have the same `embedder.embed()` pattern and currently inherit retry but lack the fail counter / structured abort: `server.rs:198` (A2A endpoint Index handler — same silent-partial-state risk as fixed CLI Index) and `search.rs:31` (Query path — single failure should surface as clean user-visible error, not a silent retry storm). Phase 4 task: unify all three under a shared resilience primitive (retry policy + counter + structured `EmbedderError` enum), expose threshold knobs in `config.toml` rather than CLI flag, and add metrics emission (consecutive_fails gauge, total_embed_calls counter) for the eventual Prometheus / OpenTelemetry hookup. Not blocking on Phase 3 acceptance but blocks any "production-ready" claim.
+
+  **Required error taxonomy (locked design hint, not yet implemented):**
+  ```rust
+  pub enum EmbedError {
+      Transient(String),   // queue overflow, GPU pressure, ollama 5xx — retry-eligible at embedder layer
+      Permanent(String),   // bad input, model not loaded, schema mismatch — bubble to caller, do NOT retry
+      Timeout,             // caller decides retry policy; Query path should return 503 immediately,
+                           // Index path can swallow into consecutive_fails counter
+  }
+  ```
+  Embedder layer retries ONLY `Transient`. `Permanent` and `Timeout` pass through untouched, letting Query / Index / Server callers apply different policies on the same primitive. Phase 3.5b's blanket 5-attempt retry on every error type is intentionally wrong-but-cheap: it eats UX latency on Query path failures (~7.5s sleep chain) but unblocks Index path immediately. Phase 4 splits the policy by error class.
+
+  **Counter location rationale (do not relocate during Phase 4 refactor):** the consecutive-fails counter belongs in the **caller's loop body** (`main.rs Index`), not in the embedder. Embedder is stateless — each `embed()` call is independent. "N consecutive failures" is loop semantics, owned by the loop. Pushing the counter down into the embedder violates single-responsibility (embedder would need to know it's being called from a loop) and breaks reuse (Query path is one-shot, has no "consecutive" notion). When Phase 4 unifies the three call sites, the counter pattern duplicates per loop; that duplication is correct because the loops have different abort semantics (Index: bail and exit, A2A Server: bail and respond 503, future BatchEval: bail and write partial-results-file). Resist the temptation to refactor `consecutive_fails` into shared embedder state.
 
 ### Strategic (Software 3.0 framing — reframe of project's long-term value)
 

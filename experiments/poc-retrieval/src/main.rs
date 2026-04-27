@@ -28,6 +28,10 @@ enum Cmd {
         repo: PathBuf,
         #[arg(long, default_value = "poc.db")]
         db: String,
+        /// Abort indexer after N consecutive embedder failures.
+        /// Counter resets on success. Prevents silent partial state.
+        #[arg(long, default_value_t = 5)]
+        max_consecutive_fail: usize,
     },
     Query {
         text: String,
@@ -141,22 +145,37 @@ async fn main() -> Result<()> {
             axum::serve(listener, app).await?;
             return Ok(());
         }
-        Cmd::Index { repo, db } => {
+        Cmd::Index { repo, db, max_consecutive_fail } => {
             let store = storage::Store::open(&db)?;
             store.clear()?;
             let embedder = embedder::Embedder::new();
             let symbols = parser::parse_repo(&repo)?;
             eprintln!("parsed {} symbols", symbols.len());
             let total = symbols.len();
+            let mut consecutive_fails: usize = 0;
             for (i, s) in symbols.iter().enumerate() {
                 let dn = search::decompose(&s.name);
                 let ds = search::decompose(&s.snippet);
                 let blob = format!("{} {}", dn, ds);
                 let text = format!("{} {} {}", s.kind, s.name, s.snippet);
                 let emb = match embedder.embed(&text, embedder::Role::Passage) {
-                    Ok(v) => v,
+                    Ok(v) => {
+                        consecutive_fails = 0;
+                        v
+                    }
                     Err(e) => {
-                        eprintln!("[{}/{}] embed fail {}: {}", i + 1, total, s.name, e);
+                        consecutive_fails += 1;
+                        eprintln!(
+                            "[{}/{}] embed fail {}: {} (consecutive={}/{})",
+                            i + 1, total, s.name, e,
+                            consecutive_fails, max_consecutive_fail
+                        );
+                        if consecutive_fails >= max_consecutive_fail {
+                            anyhow::bail!(
+                                "aborting indexer: {} consecutive embed failures (threshold {}), last symbol={}, last error={:#}",
+                                consecutive_fails, max_consecutive_fail, s.name, e
+                            );
+                        }
                         continue;
                     }
                 };

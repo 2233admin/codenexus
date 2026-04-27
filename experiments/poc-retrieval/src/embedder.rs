@@ -38,6 +38,25 @@ impl Embedder {
     }
 
     pub fn embed(&self, text: &str, role: Role) -> Result<Vec<f32>> {
+        const MAX_ATTEMPTS: u32 = 5;
+        const BASE_DELAY_MS: u64 = 250;
+        let mut last_err: Option<anyhow::Error> = None;
+        for attempt in 0..MAX_ATTEMPTS {
+            match self.embed_once(text, role) {
+                Ok(v) => return Ok(v),
+                Err(e) => {
+                    last_err = Some(e);
+                    if attempt + 1 < MAX_ATTEMPTS {
+                        let delay = BASE_DELAY_MS << attempt;
+                        std::thread::sleep(std::time::Duration::from_millis(delay));
+                    }
+                }
+            }
+        }
+        Err(last_err.unwrap())
+    }
+
+    fn embed_once(&self, text: &str, role: Role) -> Result<Vec<f32>> {
         let prompt: String = match role {
             Role::Query => format!("{}{}", QUERY_INSTRUCT, text),
             Role::Passage => text.to_string(),

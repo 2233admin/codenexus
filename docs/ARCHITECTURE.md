@@ -576,6 +576,29 @@ The embedder model is **pinned in config**. Changing the model requires a **full
 
 Reference: this is a documented failure mode in production RAG systems (`embedding version drift` posts on r/MachineLearning, summer 2025). Catching it at startup beats debugging mysterious recall regressions later.
 
+### 9.9 Embedder resilience layer ownership (D-W9, Phase 3.5b)
+
+**Locked design contract** — applies to any future refactor of the embedder retry / abort / counter primitives. Captures the rationale behind the Phase 3.5b split so Phase 4 unification doesn't relitigate it.
+
+**Layer ownership table:**
+
+| Concern | Layer | Reason |
+|---------|-------|--------|
+| Single-call HTTP/RPC retry on transient failure | **Embedder** (`embed()` wraps `embed_once()`) | All callers benefit identically; transient = ollama queue overflow, GPU pressure, network blip. Stateless — embedder doesn't need to know which caller is calling. |
+| Error class discrimination (`Transient` / `Permanent` / `Timeout`) | **Embedder** (Phase 4 P2 task; Phase 3.5b uses anyhow blanket) | The classification IS the embedder's job — only it knows whether an error is retry-eligible. Caller policy varies, but classification is canonical. |
+| Per-error retry policy decision | **Caller** | Query path returns 503 on `Timeout` immediately (UX); Index path swallows `Timeout` into `consecutive_fails`; A2A Server path returns 503 on `consecutive_fails` threshold (different from CLI Index which exits process). Same primitive, three policies. |
+| Consecutive-failure counter | **Caller's loop body**, never embedder | "N consecutive failures" is loop semantics, not call semantics. Embedder is stateless — each `embed()` is independent of every other. Pushing the counter into embedder would (a) violate single-responsibility (embedder gets aware of caller's iteration pattern), (b) break Query path (one-shot, has no "consecutive" notion), (c) couple unrelated callers (Index N=5, BatchEval N=20, Server N=3 would all share embedder state, requiring per-caller config indirection). |
+| Abort action (exit / 503 / partial-write) | **Caller** | Each loop has different cleanup needs: CLI Index exits process with anyhow::bail, A2A Server returns HTTP 503 + structured error body, future BatchEval writes `partial_results.json` for resumability. Cannot be unified at embedder layer. |
+
+**Phase 3.5b explicit non-decisions** (do NOT treat as locked):
+- Blanket 5-attempt retry on every error type → wrong-but-cheap; Phase 4 splits by error class.
+- CLI flag `--max-consecutive-fail` → migrate to `config.toml` `[embedder.resilience]` table once unified.
+- Single counter in `main.rs:155` → duplicate-not-extract when Phase 4 lands the A2A Server fix; the duplication is correct because the abort actions diverge.
+
+**Anti-pattern (block at review):** any PR that moves `consecutive_fails` into `Embedder` struct state, or makes `embed()` aware of "this is the Nth call in a sequence." The right shape stays: stateless embedder + caller-owned loop counters + classified errors flowing through.
+
+Provenance: Phase 3.5b micro-slice (`260427-e7r`), Curry review 2026-04-27.
+
 ### 9.6 Pending storage backend pick (Phase 2 Spike)
 
 The storage trait shape is locked (D-R2). The implementation choice between `redb` (pure KV) and `rusqlite + sqlite-vec` (SQL + vector + FTS5 in one file) is a Phase 2 Spike output, not a Phase 1 decision. POC currently uses rusqlite + FTS5 + Rust-side cosine (no sqlite-vec extension); Phase 2 bench will determine the production pick. The trait abstraction allows either to land without re-architecting downstream code.

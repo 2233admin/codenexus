@@ -51,6 +51,19 @@ Eval matcher MUST normalize:
 
 A single character mismatch silently scores 0. Discovered in R4 when `mcp-server\src\adapters\obsidian.test.ts` failed to match expected `adapters/obsidian` — the backslash-vs-slash gap had been hidden in earlier rounds because R3's top-1 had a name match that bypassed the path check.
 
+### Rule 7 — N/A handling on cross-corpus blind eval: generous denominator, locked before run (Phase 3.5 finding)
+
+When authoring a blind NL query set against a fresh corpus (e.g. F1-F10 against full-self-coding), some queries will turn out to address concepts that the indexed corpus subset does not contain (F2 worker-pool scheduling, F7 retry logic, F10 parallel merge — none in FSC's 5-file daemon subset). These are **architecturally unanswerable for this corpus**, not retrieval failures.
+
+**Headline metric uses the generous denominator: `score / valid_queries`** (N/A excluded), not the strict `score / total_queries`. Rationale: strict scoring penalizes the choice of corpus, not the quality of retrieval. Reporting both is fine; the headline number must be the generous one.
+
+**Discipline (must hold to keep this honest):**
+- The `expected_outcome: architecturally_unanswerable` tag (Rule 5 candidate from "Future Query Set Expansion Rules" section, point 4) **MUST be locked before any retrieval results are inspected for that query**. Authoring the query, indexing the corpus, then deciding which queries to mark N/A based on the numbers is motivated reasoning — drop it.
+- Acceptable workflow: write all queries → index corpus → glance at corpus structure (file list, top-level symbol counts) to mark unanswerable queries → freeze flags in queries.json with a commit → THEN run retrieval and score.
+- Forbidden workflow: write queries → run retrieval → look at scores → decide which 0% scores were "actually N/A".
+
+**Provenance & forward-locking note**: This rule was authored 2026-04-27 *after* the F1-F10 first run (Phase 3.5 sub-check 3) completed with 5/10 strict and 5/7 generous. The 7-valid count (F2/F7/F10 marked N/A) was determined by the eval author after seeing the scores, which technically violates the discipline above. The decision to use generous as headline was reaffirmed by Curry post-hoc on architectural grounds (corpus subset choice, not retrieval failure), and locked here as the standard for **all future cross-corpus runs starting with the post-Phase-3.5b full-FSC re-eval**. The first F1-F10 run remains valid as a directional signal but its 5/7=71.4% number should be re-derived under this rule against the full 2307-symbol index, not the 127-symbol partial.
+
 ### Rule 6 — LLM-judge graded 0-3 is primary metric, hand-annotation is cross-check (R5 finding)
 
 After R5 spike (3-run LLM-judge over R4 retrieval output via okaoi MiniMax-M2.7 pool, see `round_5_results.md`), the eval primary metric is:
