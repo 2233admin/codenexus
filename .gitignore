@@ -45,3 +45,8 @@ vendor/
 # REQ-08 embedded Rust binary (built artifact, do NOT commit; .gitkeep stays tracked)
 server/internal/supervisor/bin/codenexus-core
 server/internal/supervisor/bin/codenexus-core.exe
+
+# Phase 03.6 closure: orchestrator/agent transient state — handoff notes, OMC artifacts.
+# These are session-scoped: useful for next-session debugging, never useful in git history.
+.planning_tmp/
+.omc/
