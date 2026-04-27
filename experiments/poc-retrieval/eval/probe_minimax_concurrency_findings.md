@@ -2,9 +2,11 @@
 
 **Date:** 2026-04-27
 **Probe script:** `probe_minimax_concurrency.py`
-**Endpoint:** `EVAL_PROVIDER=minimax_official` (Anthropic-shape, Bearer auth, model=`MiniMax-M2.5`)
+**Endpoint:** `EVAL_PROVIDER=minimax_official` (Anthropic-shape, Bearer auth)
+**Model under test:** `MiniMax-M2.7-highspeed` (mmx-cli `default-text-model`, ~18% faster p50 than M2.5). Endpoint also serves `MiniMax-M2.7` / `MiniMax-M2` / `MiniMax-M2-highspeed` / `MiniMax-M2.5` — all 5 verified 200 OK. Rate limit is account-bound, not model-bound.
 **Methodology:** cheap probe per `~/.claude/rules/common/feedback-graduated.md` Rule 36
 **Anchors:** ARCH §9.4 Phase 3 Gate (LLM-judge eval batch sizing)
+**Official CLI:** `mmx-cli` (https://github.com/MiniMax-AI/cli, MIT) — multimodal generation toolkit, not Claude-Code-equivalent. Install as agent skill: `npx skills add MiniMax-AI/cli -y -g`. Separate concern from this probe.
 
 ## Bottom line
 
@@ -12,7 +14,7 @@ The 官方 endpoint enforces a **classic token-bucket**: capacity ≈ **80 token
 
 | Axis | Empirical ceiling | Interpretation |
 |------|-------------------|----------------|
-| Cold-burst (single in-flight burst from full bucket) | **N=64 clean** (64/64 OK, p50=1.95s, p95=2.32s). **N=96 = 80/96** (16 × 429). | Bucket capacity ≈ 80 — burst of 80 from cold passes; anything beyond 80 in <2s 429s. |
+| Cold-burst (single in-flight burst from full bucket) | **N=64 clean** on M2.5: 64/64 OK, p50=1.95s, p95=2.32s. **N=64 clean** on M2.7-highspeed: 64/64 OK, **p50=1.60s** (~18% faster), p95=2.29s. **N=96 on M2.5 = 80/96** (16 × 429). | Bucket capacity ≈ 80 — burst of 80 from cold passes regardless of model; latency profile differs (highspeed wins). |
 | Sustained 1 QPS × 30s | **30/30 OK** (5/5 per 5s bucket, no 429) | 1 QPS sustained well below ceiling. |
 | Sustained 2 QPS × 30s | **60/60 OK** (10/10 per 5s bucket, no 429) | 2 QPS sustained also clean *for the 30s window* — works because (bucket 80) + (refill 30s × 0.5 = 15) = 95 ≥ 60. |
 | Sustained 4 QPS × 30s | 80/120 OK, 19 × 429, 21 × err. **Wall hits at exactly t=20s**, the moment bucket exhausts: 4 QPS × 20s = 80 calls = bucket capacity. | At 4 QPS, consumption (4/s) > refill (0.5/s), bucket drains in 80/3.5 ≈ 23s. Matches observation. |
@@ -22,7 +24,7 @@ The 官方 endpoint enforces a **classic token-bucket**: capacity ≈ **80 token
 
 | Endpoint | Auth | Model | Sustained QPS (forever) | Cold-burst peak | Best for |
 |----------|------|-------|------------------------|-----------------|----------|
-| 官方 minimaxi | Bearer | MiniMax-M2.5 | **0.5 QPS (= 30 RPM)** | **80** | Final gate-locking eval (authoritative, independent) |
+| 官方 minimaxi | Bearer | MiniMax-M2.7-highspeed (mmx-cli default; M2.5 also serves) | **0.5 QPS (= 30 RPM)** | **80** | Final gate-locking eval (authoritative, independent) |
 | okaoi 3-key pool | x-api-key | MiniMax-M2.7 | 3.79 QPS (N=60) | ~90 | Dev iteration / smoke (faster but relay, non-authoritative) |
 
 Sustained delta is ~8x; burst delta is ~1.1x (comparable). The relay's value is for >5-minute sustained workloads; for time-bounded eval cycles, 官方 is competitive thanks to the 80-token burst headroom.
@@ -30,7 +32,7 @@ Sustained delta is ~8x; burst delta is ~1.1x (comparable). The relay's value is 
 ## Raw observations
 
 ```
-provider=minimax_official model=MiniMax-M2.5
+provider=minimax_official model=MiniMax-M2.7-highspeed (mmx-cli default; M2.5 also serves)
 
 # Pass 1-2 (warm-up + stress, bucket gradually depleting)
 N=1   1/1   ok   p50=1.91
