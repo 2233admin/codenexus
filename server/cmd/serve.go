@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log/slog"
 	"net/http"
 	"os"
@@ -22,6 +21,7 @@ import (
 	"github.com/2233admin/codenexus/internal/mcpsrv"
 	"github.com/2233admin/codenexus/internal/proxy"
 	"github.com/2233admin/codenexus/internal/supervisor"
+	"github.com/2233admin/codenexus/internal/ui"
 	"github.com/go-chi/chi/v5"
 	"github.com/spf13/cobra"
 )
@@ -77,9 +77,13 @@ func runServe(cmd *cobra.Command, args []string) error {
 	r := chi.NewRouter()
 	r.Mount("/healthz", health.NewHandler(sup, rustPort))
 	r.Mount("/mcp", mcpsrv.NewHTTPHandler())
-	r.Mount("/ui", uiPlaceholderHandler())
+	r.Mount("/ui/", http.StripPrefix("/ui/", http.FileServer(http.FS(ui.UIFS))))
+	r.Get("/", func(w http.ResponseWriter, req *http.Request) {
+		http.Redirect(w, req, "/ui/", http.StatusFound)
+	})
 	r.Post("/api/v1/query", apiPassthrough(client, "query"))
 	r.Post("/api/v1/index", apiPassthrough(client, "index_repo"))
+	r.Post("/api/v1/list_callers", apiPassthrough(client, "list_callers"))
 
 	if os.Getenv("CODENEXUS_MCP_STDIO") == "1" {
 		go func() {
@@ -198,23 +202,6 @@ func defaultDataDir() string {
 	default:
 		return filepath.Join(home, ".local", "share", "codenexus")
 	}
-}
-
-// uiPlaceholderHandler returns the /ui/* mount stub. REQ-09 will replace this
-// with http.FileServer(http.FS(uiFS)) once the embedded UI lands.
-//
-// TODO(REQ-09): replace with embedded UI:
-//
-//	//go:embed ui/dist
-//	var uiFS embed.FS
-//	sub, _ := fs.Sub(uiFS, "ui/dist")
-//	return http.StripPrefix("/ui/", http.FileServer(http.FS(sub)))
-func uiPlaceholderHandler() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		w.WriteHeader(http.StatusOK)
-		_, _ = io.WriteString(w, "UI not embedded yet (REQ-09 pending)")
-	})
 }
 
 // apiPassthrough wires POST /api/v1/{op} to proxy.SendTask. Body is treated as

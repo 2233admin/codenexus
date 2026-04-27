@@ -16,5 +16,5 @@ import "embed"
 // harmless — it just becomes a fetchable static resource. When adding new
 // asset types (e.g. .png, .svg) extend this list.
 //
-//go:embed *.html *.css *.md
+//go:embed *.html *.js *.css *.md
 var UIFS embed.FS
