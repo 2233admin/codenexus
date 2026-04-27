@@ -102,6 +102,16 @@ Plans:
   7. NOTICE file lists all CodeFlow attribution lines
 **Plans**: TBD (likely 5-7 plans)
 
+### Phase 04.1: Graph Clustering and Evolution Layer (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 4
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 04.1 to break down)
+
 ### Phase 5: Bridge
 **Goal**: Connect CodeNexus to obsidian-llm-wiki vault layer; produce three-way viz (code ↔ vault ↔ memU memory); resolve memU integration question (self-contained vs shared PG)
 **Depends on**: Phase 4
