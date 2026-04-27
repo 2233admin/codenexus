@@ -77,6 +77,16 @@ Plans:
 - [ ] 03-04: Go server — mcp-go MCP stdio handler wrapping A2A calls
 - [ ] 03-05: UI — embedded HTML/JS bundle with search box + cytoscape graph view + acceptance benchmark
 
+### Phase 03.6: Candle in-process embedder migration (qwen3-embedding-0.6b GGUF replacing ollama HTTP) -- Phase 3 TRULY CLOSED unblock (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 3
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 03.6 to break down)
+
 ### Phase 4: Parity
 **Goal**: Reach functional parity with GitNexus for the features users actually use; port CodeFlow MIT modules under Apache 2.0 with NOTICE attribution
 **Depends on**: Phase 3

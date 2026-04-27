@@ -121,6 +121,10 @@ Recent decisions affecting current work:
 | (no-id) | Phase 4 prep: e7r PENDING backfill + ARCH §9.10 candle migration anchor (new section, §9.5 reranker untouched) + PROJECT.md Phase 4+ Backlog P0 entry with GGUF cheap-path kickoff notes (`llama.cpp/convert_hf_to_gguf.py` → `candle-transformers quantized::llama` saves day-1 spike exploration) | 2026-04-27 | 63cf312 + e553471 | (no quick dir — closure backfill + doc-only commits) |
 | (no-id) | MiniMax 官方 concurrency probe: token-bucket characterized — capacity=80, refill=0.5/s (= 30 RPM steady). Sustained 2 QPS × 30s clean (60/60 ok); 4 QPS walls at exactly t=20s when 4×20=80 = bucket capacity. Initial "wall at N=64" reading retracted — was bucket-already-depleted, not concurrent ceiling. Sizing: 600-call eval = 17 min wall on 官方 (fits §9.4 30-min budget); 1500-call (3-seed) = 47 min, decision queued. Cross-validation of okaoi-vs-官方 grader agreement queued as prerequisite before any Gate-flipping run. | 2026-04-27 | af39bdc + 133a141 | (no quick dir — cheap probe per feedback rule 36) |
 
+### Roadmap Evolution
+
+- 2026-04-27: Phase 03.6 inserted after Phase 3 — Candle in-process embedder migration (qwen3-embedding-0.6b GGUF replacing ollama HTTP) (URGENT, INSERTED). Triggered by hard evidence in commit 8f4da66 (Phase 3.5b retry+fail-loud micro-slice: 20min wall-clock retry budget × 0 recovery on ollama 60s send-timeout hang). Phase 4 Parity unchanged.
+
 ## Deferred Items
 
 | Category | Item | Status | Deferred At |
