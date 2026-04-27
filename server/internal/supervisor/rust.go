@@ -5,17 +5,13 @@
 // bookkeeping. CLI subcommands and the chi /healthz handler observe its state
 // via the Supervisor.State() snapshot accessor.
 //
-// REQ-08 (deferred): //go:embed will replace cfg.RustBinPath:
-//
-//	//go:embed bin/codenexus-core
-//	var rustBinFS embed.FS
-//	At Start(): extract rustBinFS to <XDG_CACHE_HOME>/codenexus/bin/codenexus-core-<version>/
-//	Set cfg.RustBinPath = extracted path. Everything below stays the same.
+// REQ-08: when cfg.RustBinPath is empty, Start() calls extractRustBinary()
+// (see embed.go) to materialize the embedded Rust core binary into the user
+// cache dir.
 package supervisor
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -66,7 +62,11 @@ type Supervisor struct {
 // On failure it kills any half-started child before returning.
 func Start(ctx context.Context, cfg Config) (*Supervisor, error) {
 	if cfg.RustBinPath == "" {
-		return nil, errors.New("supervisor: RustBinPath empty (set --rust-bin or CODENEXUS_RUST_BIN)")
+		extracted, err := extractRustBinary()
+		if err != nil {
+			return nil, fmt.Errorf("supervisor: RustBinPath empty and embed extraction failed (set --rust-bin or CODENEXUS_RUST_BIN to override): %w", err)
+		}
+		cfg.RustBinPath = extracted
 	}
 	s := &Supervisor{
 		cfg:    cfg,

@@ -49,8 +49,8 @@ func runServe(cmd *cobra.Command, args []string) error {
 
 	rustBin := resolveRustBinPath(RustBin())
 	if rustBin == "" {
-		slog.Warn("serve: rust binary path unresolved; supervisor.Start will fail visibly",
-			"hint", "set --rust-bin or CODENEXUS_RUST_BIN, or build ../core/target/release/codenexus-core")
+		slog.Debug("serve: no explicit rust binary path; supervisor will extract from embed",
+			"hint", "set --rust-bin or CODENEXUS_RUST_BIN for dev override")
 	}
 
 	cfg := supervisor.Config{
