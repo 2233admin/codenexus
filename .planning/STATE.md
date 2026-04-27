@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Phase 3 stays PRELIM CLOSED. Phase 4 candle migration is the locked unblock for full FSC re-index. Phase 3 Gate (NDCG@5 graded relevance ≥100 queries × ≥2 corpora per ARCH §9.4) is independently unblocked at the infrastructure layer — judge endpoint capacity is now known, awaits okaoi-vs-官方 grader cross-validation before any gate-flipping run.
-last_updated: "2026-04-27T13:23:05.331Z"
-last_activity: 2026-04-27 -- Phase 03.6 planning complete
+status: phase_3_complete
+stopped_at: Phase 3 fully closed via Phase 03.6 candle in-process migration. REQ-10 re-eval B1-B7 mean=67.9% (literal 60% gate PASS, byte-identical to ollama baseline), full FSC reindex 2307 symbols clean (Phase 3.5b's 132/2307 burst-hang resolved), F1-F10 generous-denominator=72% (Rule 7 gate ≥50% PASS), cosine equivalence mean=0.9994/p10=0.9993 (Plan 1 hard gate PASS). ARCH §9.10 rewritten to safetensors path (negative rationale: GGUF returns logits via lm_head, not hidden states); §9.8 history row appended (version_hash=f2b47aa16b17). PROJECT.md Phase 4+ Backlog P0 candle entry CLOSED.
+last_updated: "2026-04-28T00:00:00.000Z"
+last_activity: 2026-04-28 -- Phase 03.6 candle migration COMPLETE. Plan 1 landed in-process embedder via fastembed-rs 5.13 / candle-transformers 0.10 (cosine equivalence mean=0.9994 p10=0.9993 on 30-query set, gate ≥0.97/≥0.95 PASS). Plan 2 reindexed poc.db (2116 symbols, 0% drift) + fsc.db FULL (2307 symbols, no burst-hang) and ran REQ-10 (B1-B7=67.9%, +0.0pp vs baseline) + F1-F10 hand-eval (generous=72%). All hard gates PASS. ARCH §9.8/§9.10 + PROJECT.md backlog updated. Phase 3 status: phase_3_prelim_complete → phase_3_complete. Next: Phase 4 Parity (multi-language tree-sitter / multi-repo registry / git overlay / CodeFlow port).
 progress:
-  total_phases: 7
-  completed_phases: 0
+  total_phases: 6
+  completed_phases: 3
   total_plans: 2
   completed_plans: 0
-  percent: 0
+  percent: 50
 ---
 
 # Project State
@@ -20,17 +20,17 @@ progress:
 
 See: .planning/PROJECT.md (updated 2026-04-26)
 
-**Core value:** Top-5 NL search precision ≥ 60% on the spike-001 query set, exposed as an open A2A endpoint that any agent can call. **PRELIM MET 2026-04-27 — B1-B7 mean=67.9% on literal gate; cross-corpus + held-out generalization untested.**
-**Current focus:** Phase 3 (MVP) **PRELIM CLOSED 2026-04-27**, awaiting Phase 3.5 robustness verdict. Next session: Phase 3.5 robustness micro-slice (rubric fix + joint alpha sweep + second-corpus eval). Phase 4+ backlog (tactical + Software 3.0 strategic) NOT opened until Phase 3.5 closes.
+**Core value:** Top-5 NL search precision ≥ 60% on the spike-001 query set, exposed as an open A2A endpoint that any agent can call. **MET 2026-04-28 — B1-B7 mean=67.9% (literal gate, byte-identical to ollama baseline post-candle migration); cross-corpus FSC F1-F10 generous=72% (≥50% gate PASS).**
+**Current focus:** Phase 3 (MVP) **CLOSED 2026-04-28 via Phase 03.6**. Embedder runtime migration ollama → in-process fastembed/candle COMPLETE (all 4 hard gates PASS: cosine equivalence, REQ-10 ≥60%, fsc.db FULL 2307, F1-F10 ≥50%). Next session: Phase 4 Parity entry — multi-language tree-sitter + multi-repo registry + git overlay + CodeFlow port. Phase 4+ backlog (tactical + Software 3.0 strategic) now openable.
 
 ## Current Position
 
-Phase: 3 of 6 (MVP) — **CLOSED 2026-04-27**
-Plan: REQ-06 + REQ-07 + REQ-08 + REQ-09 + REQ-10 done (5 of 5)
-Status: Ready to execute
-Last activity: 2026-04-27 -- Phase 03.6 planning complete
+Phase: 3 of 6 (MVP) — **CLOSED 2026-04-28 via Phase 03.6**
+Plan: REQ-06 + REQ-07 + REQ-08 + REQ-09 + REQ-10 done (5 of 5); Phase 03.6 Plan 1 (loader + equivalence) + Plan 2 (cross-corpus eval + closure) done
+Status: phase_3_complete (ready for Phase 4 entry)
+Last activity: 2026-04-28 -- Phase 03.6 candle in-process embedder migration COMPLETE
 
-Progress: [██████████] 50% (Phase 1 closed + Phase 2 research-conclusive + Phase 3 MVP closed; Phases 4-6 ahead)
+Progress: [██████████] 50% (Phase 1 closed + Phase 2 research-conclusive + Phase 3 MVP closed via Phase 03.6 candle migration; Phases 4-6 ahead)
 
 ## Performance Metrics
 
@@ -80,12 +80,11 @@ Recent decisions affecting current work:
 
 - 2026-04-27: Phase 3.5b embedder retry + fail-loud micro-slice (quick task 260427-e7r) — engineering complete, hard-evidenced negative result on retry hypothesis. Built embedder.rs retry wrapper (5 attempts × exponential 250ms-base backoff, total ~7.75s sleep budget per failed symbol BETWEEN attempts) + main.rs Cmd::Index `--max-consecutive-fail` flag (default 5, counter+anyhow::bail). Smoke run on FSC corpus failed cleanly at i=132/2307 with consecutive_fails 5/5. **Critical finding**: real ollama burst-failure mode is per-call 60s reqwest send-timeout (TCP accepts → no response body → giveup at 60s) — meaning per-failed-symbol retry cost is 5 × 60s = 5min, and a 4-symbol fail-cluster burns ~20min wall-clock with zero recovery. Boundary i=128 vs prior i=127 (Δ=1) confirms deterministic failure point. **Decision triggered**: Phase 4 candle in-process migration is required, not optional — retry budget can't compete with sustained worker-thread hang. ARCH §9.9 D-W9 locked layer ownership table (single-call retry @ Embedder, error class @ Embedder, per-error policy + counter + abort @ Caller, anti-pattern: do not move counter into Embedder struct state). PROJECT.md Phase 4 P2 backlog entry expanded with EmbedError enum (`Transient`/`Permanent`/`Timeout`) design hint + counter location rationale. EVAL_DESIGN_NOTES Rule 7 locks generous-denominator + must-lock-before-eval-runs discipline for ALL future cross-corpus runs. Phase 3 stays `phase_3_prelim_complete`; Phase 4 candle migration is the unblock path. Next: `/gsd-add-phase` to draft Phase 4 candle migration as milestone-scoped phase, NOT another quick task.
 
+- 2026-04-28: **Phase 03.6 candle in-process embedder migration COMPLETE.** Pivoted from GGUF cheap path (per ARCH §9.10 rewrite — `quantized_qwen3::forward()` returns logits via `lm_head` not hidden states; verified via candle source inspection in RESEARCH.md §"Summary" finding #1) to safetensors via `fastembed::Qwen3TextEmbedding` (which wraps `candle-transformers::models::qwen3::Model`; direct candle held in reserve, not needed). Plan 1 spike: cosine equivalence on 30-query set mean=0.9994 / p10=0.9993 (gate ≥0.97/≥0.95 PASS). Plan 2 closure: poc.db reindexed 2116 symbols (0% drift, byte-identical to baseline), REQ-10 B1-B7=67.9% (literal 60% gate PASS, +0.0pp vs Phase 3 baseline 67.9% — inside ±5pp informational band), fsc.db FULL 2307-symbol reindex clean in 8m22s wall-clock (vs Phase 3.5b 132/2307 burst-hang at i=128 deterministic failure point), F1-F10 hand-eval generous-denominator=72% (Rule 7 gate ≥50% PASS, N/A flags locked at 2026-04-27T14:55:28Z BEFORE retrieval per locked decision #2). ARCH §9.10 rewritten with negative-rationale block (logits-via-lm_head + GGUF-tokenizer ~10× slower); ARCH §9.8 history row appended with version_hash=`f2b47aa16b17` (computed via Plan 1 Task 2.5 source-of-truth Rust binary, deterministic across re-runs). PROJECT.md Phase 4+ Backlog P0 entry CLOSED via Phase 03.6 commit `<closure-commit>`. Phase 3 status flipped phase_3_prelim_complete → phase_3_complete. Stack shipped: candle-core/nn/transformers 0.10 + hf-hub 0.5 + tokenizers 0.22 + fastembed 5.13 (qwen3 feature, Apache-2.0), F32 weights, last-token pool + L2 normalize. ollama HTTP dependency removed from CodeNexus runtime path. Phase 03.6 SUMMARY: `.planning/phases/03.6-candle-in-process-embedder-migration-qwen3-embedding-0-6b-gg/03.6-SUMMARY.md`.
+
 ### Pending Todos
 
-- **(P0, NEXT SESSION) Phase 4 candle in-process migration** — Phase 3.5b proved retry CANNOT recover ollama burst hang (60s timeout × 5 attempts = 5min/symbol, 4-symbol fail-cluster = 20min budget consumed with zero recovery). Three sub-tasks:
-  1. Source qwen3-embedding-0.6b in candle-compatible format (GGUF or safetensors). Confirm dim=1024 + instruction prefix bit-equivalent to current ollama output (else §9.8 version-hash mismatch + full reindex required).
-  2. Write candle model loader in `experiments/poc-retrieval/src/embedder.rs` (or new module). Replace `embed_once` body with in-process tensor inference. Keep retry wrapper; should be effectively unused since no network involved (mark as "defensive only" or remove for non-network embedders).
-  3. Validate end-to-end: re-index obsidian-llm-wiki (poc.db) — confirm same 2116 symbols, same query results within tolerance (cosine-distance equivalence test on 30-query set). Then re-index FSC (fsc.db) to full 2307 symbols, re-run F1-F10 hand-eval per EVAL_DESIGN_NOTES Rule 7 (generous denominator, locked before run). Estimated 1-2 days, NOT a quick task. Use `/gsd-add-phase`.
+- **(P0 done) Phase 03.6 candle in-process migration** — COMPLETE 2026-04-28 via Plan 1 (loader + cosine equivalence) + Plan 2 (cross-corpus eval + closure). All 4 hard gates PASS: cosine equivalence mean=0.9994/p10=0.9993, REQ-10 B1-B7=67.9% (gate ≥60%), fsc.db FULL=2307 (no burst-hang), F1-F10 generous=72% (gate ≥50%). Shipped via fastembed-rs 5.13 wrapping candle-transformers 0.10 (NOT the GGUF cheap path the original Phase 4 plan locked — pivoted per RESEARCH.md §"Summary" finding #1: `quantized_qwen3::forward()` returns logits via lm_head, not hidden states). See `.planning/phases/03.6-.../03.6-SUMMARY.md`. ollama HTTP dependency removed from CodeNexus runtime path.
 - **(P0 done) Phase 3.5b — embedder retry + fail-loud**: COMPLETE per quick task 260427-e7r. Retry wrapper landed in embedder.rs; --max-consecutive-fail flag landed in main.rs Index; bailed cleanly at 132/2307. See `.planning/quick/260427-e7r-.../260427-e7r-SUMMARY.md` for full verdict. Hard-evidence outcome: retry insufficient → triggers Phase 4 candle migration above.
 - **(P1) Phase 3.5 follow-ups (epistemic gap closure)**:
   - B8 "concurrent writes" remains a real miss in original corpus even after rubric correction; investigate why (embedding mismatch? alpha insufficient? rerank needed?)
@@ -120,10 +119,12 @@ Recent decisions affecting current work:
 | 260427-e7r | Phase 3.5b embedder retry + fail-loud micro-slice (engineering complete; bailed cleanly at 132/2307; retry CANNOT recover ollama 60s send-timeout × 5 = 5min/symbol = 20min/fail-cluster with zero recovery; ARCH §9.9 D-W9 + EVAL Rule 7 + PROJECT.md Phase 4 P2 backlog all locked; Phase 4 candle migration triggered by hard evidence) | 2026-04-27 | 8f4da66 | [260427-e7r-phase-3-5b-embed-retry-fail-loud-cli-index](./quick/260427-e7r-phase-3-5b-embed-retry-fail-loud-cli-index/) |
 | (no-id) | Phase 4 prep: e7r PENDING backfill + ARCH §9.10 candle migration anchor (new section, §9.5 reranker untouched) + PROJECT.md Phase 4+ Backlog P0 entry with GGUF cheap-path kickoff notes (`llama.cpp/convert_hf_to_gguf.py` → `candle-transformers quantized::llama` saves day-1 spike exploration) | 2026-04-27 | 63cf312 + e553471 | (no quick dir — closure backfill + doc-only commits) |
 | (no-id) | MiniMax 官方 concurrency probe: token-bucket characterized — capacity=80, refill=0.5/s (= 30 RPM steady). Sustained 2 QPS × 30s clean (60/60 ok); 4 QPS walls at exactly t=20s when 4×20=80 = bucket capacity. Initial "wall at N=64" reading retracted — was bucket-already-depleted, not concurrent ceiling. Sizing: 600-call eval = 17 min wall on 官方 (fits §9.4 30-min budget); 1500-call (3-seed) = 47 min, decision queued. Cross-validation of okaoi-vs-官方 grader agreement queued as prerequisite before any Gate-flipping run. | 2026-04-27 | af39bdc + 133a141 | (no quick dir — cheap probe per feedback rule 36) |
+| 03.6-01 + 03.6-02 | Phase 03.6 candle in-process embedder migration COMPLETE. Plan 1: in-process embedder via fastembed-rs/candle-transformers 0.10 (cosine equivalence mean=0.9994/p10=0.9993 PASS); compute_version_hash source-of-truth bin (hash=f2b47aa16b17). Plan 2: poc.db reindex 2116 symbols (0% drift) + REQ-10 B1-B7=67.9% (gate PASS, byte-identical to ollama baseline) + fsc.db FULL 2307 in 8m22s (Phase 3.5b 132/2307 hang resolved) + F1-F10 hand-eval generous=72% (gate PASS) + ARCH §9.8/§9.10 rewrite + PROJECT.md backlog CLOSED + STATE.md flip phase_3_complete. | 2026-04-28 | f327d3a + 117746a + 0ff4a6a + fc9dfc6 + 3c0a323 + 0054804 + 30dcb56 + a13bf08 + b1fa94b + 19983fc + `<task-6-sha>` + `<task-7-sha>` + `<closure-commit-sha>` | [03.6-...](./phases/03.6-candle-in-process-embedder-migration-qwen3-embedding-0-6b-gg/) |
 
 ### Roadmap Evolution
 
 - 2026-04-27: Phase 03.6 inserted after Phase 3 — Candle in-process embedder migration (qwen3-embedding-0.6b GGUF replacing ollama HTTP) (URGENT, INSERTED). Triggered by hard evidence in commit 8f4da66 (Phase 3.5b retry+fail-loud micro-slice: 20min wall-clock retry budget × 0 recovery on ollama 60s send-timeout hang). Phase 4 Parity unchanged.
+- 2026-04-28: Phase 03.6 SHIPPED via safetensors path (fastembed-rs 5.13 wraps candle-transformers 0.10), NOT the GGUF path that the planning narrative had locked. Pivot rationale: candle's `quantized_qwen3::ModelWeights::forward()` returns vocab logits (lm_head projection), not the hidden states required for last-token pooling. RESEARCH.md §"Summary" finding #1 documents the source inspection that triggered the pivot. Phase 4 Parity entry now unblocked: full 2307-symbol FSC index achievable in <10min wall-clock with zero burst-hang.
 
 ## Deferred Items
 
@@ -136,13 +137,12 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-27 evening + late evening — three threads landed:
-  (1) Phase 3.5b verdict (260427-e7r, commit 8f4da66): retry+fail-loud engineering correctness; ollama burst-failure hard-evidenced as unrecoverable.
-  (2) Phase 4 prep (commits 63cf312 + e553471): e7r PENDING backfill, ARCH §9.10 candle migration anchor (§9.5 reranker untouched), PROJECT.md Phase 4 P0 entry with GGUF cheap-path kickoff notes (`convert_hf_to_gguf.py` + `quantized::llama` loader).
-  (3) Phase 3 Gate prep (commit af39bdc): MiniMax 官方 concurrency probe — 0.5 QPS sustained / N=40 cold-burst safe; LLM-judge eval throughput sizing now numeric not vibes.
-Stopped at: Phase 3 stays PRELIM CLOSED. Phase 4 candle migration is the locked unblock for full FSC re-index. Phase 3 Gate (NDCG@5 graded relevance ≥100 queries × ≥2 corpora per ARCH §9.4) is independently unblocked at the infrastructure layer — judge endpoint capacity is now known, awaits okaoi-vs-官方 grader cross-validation before any gate-flipping run.
-Resume files: progress.txt + this STATE.md + `.planning/quick/260427-e7r-.../260427-e7r-SUMMARY.md` + `experiments/poc-retrieval/eval/probe_minimax_concurrency_findings.md` (LLM-judge sizing).
-Next-session entry: user says "继续" or "Phase 4" → **`/gsd-add-phase` to formalize Phase 4 candle in-process migration as milestone-scoped phase**:
+Last session: 2026-04-28 — Phase 03.6 candle in-process embedder migration COMPLETE.
+  (1) Plan 1 (loader + cosine equivalence): commits f327d3a + 117746a + 0ff4a6a + fc9dfc6 + 3c0a323. In-process embedder via fastembed-rs 5.13 / candle-transformers 0.10; cosine equivalence on 30-query set mean=0.9994 / p10=0.9993 (gate ≥0.97/≥0.95 PASS). compute_version_hash source-of-truth bin: deterministic hex `f2b47aa16b17`.
+  (2) Plan 2 (cross-corpus eval + closure): commits 0054804 + 30dcb56 + a13bf08 + b1fa94b + 19983fc + this STATE.md commit. poc.db reindex 2116 symbols (0% drift) + REQ-10 B1-B7=67.9% (literal 60% gate PASS, byte-identical to ollama) + fsc.db FULL 2307 in 8m22s (Phase 3.5b 132/2307 burst-hang resolved) + F1-F10 hand-eval generous=72% (Rule 7 gate PASS) + ARCH §9.8/§9.10 rewrite + PROJECT.md P0 backlog CLOSED.
+Stopped at: Phase 3 (MVP) CLOSED. Phase 03.6 SUMMARY file landed; orchestrator will backfill `<closure-commit-sha>` placeholders in ARCH §9.8 + PROJECT.md + this STATE.md + 03.6-SUMMARY.md after the final closure commit. Phase 4 Parity is next: multi-language tree-sitter (Python/Go/Rust/Java) + multi-repo registry + git overlay + CodeFlow MIT-port (vis/blame/diff/security).
+Resume files: this STATE.md + `.planning/phases/03.6-.../03.6-SUMMARY.md` + `.planning/PROJECT.md` Phase 4+ Backlog (P2 production-grade resilience entry still active).
+Next-session entry: user says "继续" or "Phase 4" → **`/gsd-add-phase` to formalize Phase 4 Parity as milestone-scoped phase** (multi-language tree-sitter + multi-repo registry + git overlay + CodeFlow port). Or:
 
   - Sub-task 1: source qwen3-embedding-0.6b in candle-compatible format. Cheap path locked in PROJECT.md backlog: GGUF via `llama.cpp/convert_hf_to_gguf.py` → `candle-transformers` `quantized::llama` loader. Validate dim=1024 + instruction-prefix bit-equivalence on 30-query regression set (else §9.8 version-hash mismatch).
   - Sub-task 2: write candle model loader replacing `embed_once` HTTP body with in-process tensor inference; retry wrapper becomes "defensive only" since no network.
