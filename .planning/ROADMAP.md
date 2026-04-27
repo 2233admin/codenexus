@@ -77,15 +77,16 @@ Plans:
 - [ ] 03-04: Go server — mcp-go MCP stdio handler wrapping A2A calls
 - [ ] 03-05: UI — embedded HTML/JS bundle with search box + cytoscape graph view + acceptance benchmark
 
-### Phase 03.6: Candle in-process embedder migration (qwen3-embedding-0.6b GGUF replacing ollama HTTP) -- Phase 3 TRULY CLOSED unblock (INSERTED)
+### Phase 03.6: Candle in-process embedder migration (qwen3-embedding-0.6b safetensors replacing ollama HTTP) -- Phase 3 TRULY CLOSED unblock (INSERTED)
 
-**Goal:** [Urgent work - to be planned]
-**Requirements**: TBD
+**Goal**: Replace ollama HTTP embedder (Phase 3.5b proved unrecoverable burst-failure: 60s send-timeout x 5 retries = 5min/symbol with zero recovery) with in-process candle inference loading Qwen3-Embedding-0.6B safetensors. Pivoted from GGUF cheap path (proved infeasible: quantized_qwen3.forward returns logits via lm_head, NOT hidden states) to safetensors via candle-transformers::models::qwen3::Model (or fastembed 5.13 wrapper, decided at spike). Full FSC corpus (2307 symbols) reindex unblocked; REQ-10 + F1-F10 cross-corpus re-eval close Phase 3.
+**Requirements**: 03.6-T1 (source qwen3-embedding-0.6b), 03.6-T2 (write candle loader replacing embed_once), 03.6-T3 (validate end-to-end: cosine equivalence + REQ-10 re-eval + F1-F10 hand-eval)
 **Depends on:** Phase 3
-**Plans:** 0 plans
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 03.6 to break down)
+- [ ] 03.6-01-PLAN.md -- Loader + ollama equivalence snapshot (Wave 1: candle deps compile smoke + ollama baseline + fastembed-first/direct-candle loader + 4 unit tests + cosine equivalence gate >= 0.97 mean / 0.95 p10)
+- [ ] 03.6-02-PLAN.md -- Cross-corpus eval + Phase 3 closure (Wave 2: poc.db reindex + REQ-10 re-eval >= 60% literal gate + fsc.db FULL 2307-symbol reindex + F1-F10 generous-denominator >= 50% + ARCH 9.8/9.10 update + PROJECT.md backlog clear + STATE.md status flip phase_3_complete + 03.6-SUMMARY.md)
 
 ### Phase 4: Parity
 **Goal**: Reach functional parity with GitNexus for the features users actually use; port CodeFlow MIT modules under Apache 2.0 with NOTICE attribution

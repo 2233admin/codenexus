@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: phase_3_prelim_complete
-stopped_at: Phase 3 REQ-10 ⚠ PRELIM PASS — literal B1-B7 gate met (67.9%) but post-closure analysis (Curry review) flagged local-optimum risk (alpha=0.6 sweep-tuned on the same 7 queries; held-out B8-B10 = 0% before correcting for rubric noise). Phase 3.5 robustness slice required before truly closing.
-last_updated: "2026-04-27T18:55:00.000Z"
-last_activity: 2026-04-27 — Completed quick task 260427-e7r (Phase 3.5b embedder retry + fail-loud micro-slice). Engineering correctness all PASS: embedder.rs split into embed_once + 5-attempt exp-backoff retry wrapper; main.rs Cmd::Index gained --max-consecutive-fail flag (default=5) + counter + anyhow::bail. Smoke run on FSC corpus bailed cleanly at 132/2307 (consecutive_fails 5/5) after ~20min wall-clock — silent partial state ELIMINATED. Hard-evidenced negative result: actual ollama failure mode is per-call 60s reqwest send-timeout (TCP-accepts then hangs), so 5 retries × 60s = 5min/symbol × 4-symbol fail-cluster = 20min retry budget exhausted with zero recovery. Phase 4 candle in-process migration triggered by hard evidence. ARCH §9.9 D-W9 + EVAL_DESIGN_NOTES Rule 7 + PROJECT.md Phase 4 P2 backlog all locked. Phase 3 stays phase_3_prelim_complete. Next: /gsd-add-phase to formalize Phase 4 candle migration as milestone-scoped phase (multi-day arch change with §9.8 version-hash compatibility validation, NOT another quick task).
+status: executing
+stopped_at: Phase 3 stays PRELIM CLOSED. Phase 4 candle migration is the locked unblock for full FSC re-index. Phase 3 Gate (NDCG@5 graded relevance ≥100 queries × ≥2 corpora per ARCH §9.4) is independently unblocked at the infrastructure layer — judge endpoint capacity is now known, awaits okaoi-vs-官方 grader cross-validation before any gate-flipping run.
+last_updated: "2026-04-27T13:23:05.331Z"
+last_activity: 2026-04-27 -- Phase 03.6 planning complete
 progress:
-  total_phases: 6
-  completed_phases: 3
-  total_plans: 0
+  total_phases: 7
+  completed_phases: 0
+  total_plans: 2
   completed_plans: 0
-  percent: 50
+  percent: 0
 ---
 
 # Project State
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-04-26)
 
 Phase: 3 of 6 (MVP) — **CLOSED 2026-04-27**
 Plan: REQ-06 + REQ-07 + REQ-08 + REQ-09 + REQ-10 done (5 of 5)
-Status: Acceptance bar met. B1-B7 spike-001 baseline mean precision_at_5 = 67.9% (alpha=0.6, rerank=false) vs gate 60% (+7.9pp) and GitNexus 1.6.3 baseline 43.6% (+24.3pp). Evidence: experiments/poc-retrieval/eval/req10_alpha06.json.
-Last activity: 2026-04-27 — Quick task 260427-j9g closed Phase 3 with REQ-10 PASS. Eval run on existing release binary (poc-retrieval.exe from marathon session) reading poc.db (52 files / 2116 symbols / 877+ edges). 6 of 7 queries clear (B1/B2/B3/B6/B7=100%; B4=0% known Python miss; B5=-0.25 negative-test fp).
+Status: Ready to execute
+Last activity: 2026-04-27 -- Phase 03.6 planning complete
 
 Progress: [██████████] 50% (Phase 1 closed + Phase 2 research-conclusive + Phase 3 MVP closed; Phases 4-6 ahead)
 
@@ -143,6 +143,7 @@ Last session: 2026-04-27 evening + late evening — three threads landed:
 Stopped at: Phase 3 stays PRELIM CLOSED. Phase 4 candle migration is the locked unblock for full FSC re-index. Phase 3 Gate (NDCG@5 graded relevance ≥100 queries × ≥2 corpora per ARCH §9.4) is independently unblocked at the infrastructure layer — judge endpoint capacity is now known, awaits okaoi-vs-官方 grader cross-validation before any gate-flipping run.
 Resume files: progress.txt + this STATE.md + `.planning/quick/260427-e7r-.../260427-e7r-SUMMARY.md` + `experiments/poc-retrieval/eval/probe_minimax_concurrency_findings.md` (LLM-judge sizing).
 Next-session entry: user says "继续" or "Phase 4" → **`/gsd-add-phase` to formalize Phase 4 candle in-process migration as milestone-scoped phase**:
+
   - Sub-task 1: source qwen3-embedding-0.6b in candle-compatible format. Cheap path locked in PROJECT.md backlog: GGUF via `llama.cpp/convert_hf_to_gguf.py` → `candle-transformers` `quantized::llama` loader. Validate dim=1024 + instruction-prefix bit-equivalence on 30-query regression set (else §9.8 version-hash mismatch).
   - Sub-task 2: write candle model loader replacing `embed_once` HTTP body with in-process tensor inference; retry wrapper becomes "defensive only" since no network.
   - Sub-task 3: re-index obsidian-llm-wiki (cosine-distance equivalence on 30-query set), then re-index FSC to full 2307 symbols + re-run F1-F10 hand-eval per EVAL_DESIGN_NOTES Rule 7 (generous denominator, locked before run).
