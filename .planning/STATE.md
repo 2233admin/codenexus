@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: phase_3_complete
-stopped_at: Phase 3 fully closed via Phase 03.6 candle in-process migration. REQ-10 re-eval B1-B7 mean=67.9% (literal 60% gate PASS, byte-identical to ollama baseline), full FSC reindex 2307 symbols clean (Phase 3.5b's 132/2307 burst-hang resolved), F1-F10 generous-denominator=72% (Rule 7 gate ≥50% PASS), cosine equivalence mean=0.9994/p10=0.9993 (Plan 1 hard gate PASS). ARCH §9.10 rewritten to safetensors path (negative rationale: GGUF returns logits via lm_head, not hidden states); §9.8 history row appended (version_hash=f2b47aa16b17). PROJECT.md Phase 4+ Backlog P0 candle entry CLOSED.
-last_updated: "2026-04-28T00:00:00.000Z"
-last_activity: 2026-04-28 -- Phase 03.6 candle migration COMPLETE. Plan 1 landed in-process embedder via fastembed-rs 5.13 / candle-transformers 0.10 (cosine equivalence mean=0.9994 p10=0.9993 on 30-query set, gate ≥0.97/≥0.95 PASS). Plan 2 reindexed poc.db (2116 symbols, 0% drift) + fsc.db FULL (2307 symbols, no burst-hang) and ran REQ-10 (B1-B7=67.9%, +0.0pp vs baseline) + F1-F10 hand-eval (generous=72%). All hard gates PASS. ARCH §9.8/§9.10 + PROJECT.md backlog updated. Phase 3 status: phase_3_prelim_complete → phase_3_complete. Next: Phase 4 Parity (multi-language tree-sitter / multi-repo registry / git overlay / CodeFlow port).
+status: completed
+stopped_at: Phase 4 context gathered
+last_updated: "2026-04-27T22:27:14.314Z"
+last_activity: 2026-04-28 -- Phase 03.6 candle in-process embedder migration COMPLETE
 progress:
-  total_phases: 6
-  completed_phases: 3
+  total_phases: 8
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 0
-  percent: 50
+  completed_plans: 2
+  percent: 100
 ---
 
 # Project State
@@ -140,10 +140,10 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-28 — Phase 03.6 candle in-process embedder migration COMPLETE.
+Last session: 2026-04-27T22:27:14.308Z
   (1) Plan 1 (loader + cosine equivalence): commits f327d3a + 117746a + 0ff4a6a + fc9dfc6 + 3c0a323. In-process embedder via fastembed-rs 5.13 / candle-transformers 0.10; cosine equivalence on 30-query set mean=0.9994 / p10=0.9993 (gate ≥0.97/≥0.95 PASS). compute_version_hash source-of-truth bin: deterministic hex `f2b47aa16b17`.
   (2) Plan 2 (cross-corpus eval + closure): commits 0054804 + 30dcb56 + a13bf08 + b1fa94b + 19983fc + this STATE.md commit. poc.db reindex 2116 symbols (0% drift) + REQ-10 B1-B7=67.9% (literal 60% gate PASS, byte-identical to ollama) + fsc.db FULL 2307 in 8m22s (Phase 3.5b 132/2307 burst-hang resolved) + F1-F10 hand-eval generous=72% (Rule 7 gate PASS) + ARCH §9.8/§9.10 rewrite + PROJECT.md P0 backlog CLOSED.
-Stopped at: Phase 3 (MVP) CLOSED. Phase 03.6 SUMMARY file landed; orchestrator will backfill `67320ec` placeholders in ARCH §9.8 + PROJECT.md + this STATE.md + 03.6-SUMMARY.md after the final closure commit. Phase 4 Parity is next: multi-language tree-sitter (Python/Go/Rust/Java) + multi-repo registry + git overlay + CodeFlow MIT-port (vis/blame/diff/security).
+Stopped at: Phase 4 context gathered
 Resume files: this STATE.md + `.planning/phases/03.6-.../03.6-SUMMARY.md` + `.planning/PROJECT.md` Phase 4+ Backlog (P2 production-grade resilience entry still active).
 Next-session entry: user says "继续" or "Phase 4" → **`/gsd-add-phase` to formalize Phase 4 Parity as milestone-scoped phase** (multi-language tree-sitter + multi-repo registry + git overlay + CodeFlow port). Or:
 
