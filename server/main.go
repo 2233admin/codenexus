@@ -1,16 +1,20 @@
-// CodeNexus server — Go service layer.
-//
-// Phase -1 / 0 will fill:
-//   - Spawn embedded codenexus-core binary as A2A daemon (//go:embed)
-//   - chi HTTP router serving UI (//go:embed of ui/) + REST API
-//   - mark3labs/mcp-go MCP stdio handler, tools wrap A2A calls into Rust core
-//   - cobra CLI: codenexus index <repo>, codenexus query <text>, codenexus serve, codenexus mcp
-//   - subprocess lifecycle: spawn on serve start, healthcheck via A2A GET, restart on crash
+// SPDX-License-Identifier: Apache-2.0
 
+// CodeNexus Go service entrypoint. See cmd/ for subcommand wiring,
+// internal/supervisor for Rust core lifecycle, internal/proxy for A2A
+// client, and internal/mcpsrv for the MCP stdio handler.
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+
+	"github.com/2233admin/codenexus/cmd"
+)
 
 func main() {
-	fmt.Println("codenexus: pre-MVP placeholder. See .planning/ for status.")
+	if err := cmd.Execute(); err != nil {
+		fmt.Fprintf(os.Stderr, "codenexus: %v\n", err)
+		os.Exit(1)
+	}
 }
