@@ -16,7 +16,7 @@ landed_files:
   - progress.txt                                           # APPEND (session block)
   - .planning/quick/260427-e7r-.../*                       # NEW (PLAN.md + this SUMMARY.md)
 commits:
-  - PENDING (atomic commit prefix: "mvp(embedder): Phase 3.5b retry+fail-loud — retry insufficient, candle migration triggered")
+  - 8f4da66 "mvp(embedder): Phase 3.5b retry+fail-loud -- retry insufficient, candle migration triggered"
 gates:
   embedder_retry_wrapper_compiles: pass
   cli_max_consecutive_fail_flag_works: pass
