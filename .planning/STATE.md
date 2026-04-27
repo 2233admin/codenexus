@@ -103,7 +103,7 @@ Recent decisions affecting current work:
 | 260427-hoc | REQ-08: //go:embed Rust core binary plumbing (embed.go + extraction + Makefile EMBED_DIR) | 2026-04-27 | f5b6621 + 59b725b | [260427-hoc-req-08-go-embed-rust-core-binary-into-go](./quick/260427-hoc-req-08-go-embed-rust-core-binary-into-go/) |
 | (no-id) | Edge confidence on list_callers + Makefile/STATE realign + Software 3.0 reframe in PROJECT.md | 2026-04-27 | 4af9f4d + 7f6f44d + d98b16c | (no quick dir — micro-task + doc-only commits) |
 | 260427-i0c | REQ-09: UI bundle (vanilla JS + cytoscape.js, no build step, option B git mv) | 2026-04-27 | ec3849e + dfdcb95 | [260427-i0c-req-09-go-embed-ui-bundle-vanilla-js-htm](./quick/260427-i0c-req-09-go-embed-ui-bundle-vanilla-js-htm/) |
-| 260427-j9g | REQ-10: Phase 3 MVP precision gate met (B1-B7 mean=67.9% vs gate 60% +7.9pp; +24.3pp over GitNexus 1.6.3 baseline 43.6%) — Phase 3 CLOSED | 2026-04-27 | _pending_ | [260427-j9g-req-10-closure-phase-3-mvp-precision-gat](./quick/260427-j9g-req-10-closure-phase-3-mvp-precision-gat/) |
+| 260427-j9g | REQ-10: Phase 3 MVP precision gate met (B1-B7 mean=67.9% vs gate 60% +7.9pp; +24.3pp over GitNexus 1.6.3 baseline 43.6%) — Phase 3 CLOSED | 2026-04-27 | 226c50f | [260427-j9g-req-10-closure-phase-3-mvp-precision-gat](./quick/260427-j9g-req-10-closure-phase-3-mvp-precision-gat/) |
 
 ## Deferred Items
 

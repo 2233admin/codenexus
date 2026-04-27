@@ -238,7 +238,7 @@ running stack; blocker on make build-core). Strategic backlog (Software
 ==========================================================================
 
 WHAT DONE:
-  <hash>  REQ-10  CLI eval on poc.db: B1-B7 mean precision_at_5=67.9% vs
+  226c50f REQ-10  CLI eval on poc.db: B1-B7 mean precision_at_5=67.9% vs
                   GitNexus 1.6.3 baseline 43.6% (+24.3pp), gate 60% (+7.9pp).
                   6 of 7 queries clear (B1/B2/B3/B6/B7=100%; B4=0% expected
                   miss [Python target, POC TS-only]; B5=-0.25 negative-test

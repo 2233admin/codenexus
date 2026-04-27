@@ -11,7 +11,7 @@ landed_files:
   - .planning/quick/260427-j9g-.../260427-j9g-PLAN.md   # NEW
   - .planning/quick/260427-j9g-.../260427-j9g-SUMMARY.md# NEW (this file)
 commits:
-  - <fill-after-commit> "mvp(eval): REQ-10 PASS -- Phase 3 MVP precision gate met"
+  - 226c50f "mvp(eval): REQ-10 PASS -- Phase 3 MVP precision gate met"
 gates:
   acceptance_gate_60pct: pass
   spike_001_baseline_subset_b1_b7: 0.679
