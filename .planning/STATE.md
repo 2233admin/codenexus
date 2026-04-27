@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: phase_3_active
-stopped_at: Phase 3 REQ-06 A2A endpoint shipped (commit e0727c2); REQ-07 Go server scaffold pending next session
-last_updated: "2026-04-27T12:15:00.000Z"
-last_activity: Phase 3 first session — REQ-06 axum A2A endpoint serve+curl green smoke; storage research-conclusive (sqlite-vec) so Phase 2 micro-bench skipped per ship-it directive
+stopped_at: Phase 3 REQ-07 Go scaffold ✓ (commits 8ff8e11 + 54f23b1); REQ-08 fat-binary //go:embed pending next
+last_updated: "2026-04-27T04:30:00.000Z"
+last_activity: 2026-04-27 — Completed quick task 260427-h71: REQ-07 Go server scaffold (cobra+chi+mcp-go+supervisor) — 12 .go files, build/vet green, 7 plan invariants verified
 progress:
   total_phases: 6
   completed_phases: 1
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-26)
 
 **Core value:** Top-5 NL search precision ≥ 60% on the spike-001 query set, exposed as an open A2A endpoint that any agent can call.
-**Current focus:** Phase 3 (MVP) — REQ-06 ✓ done, REQ-07 Go server scaffold next
+**Current focus:** Phase 3 (MVP) — REQ-06 ✓, REQ-07 ✓; REQ-08 fat-binary //go:embed next
 
 ## Current Position
 
 Phase: 3 of 6 (MVP)
-Plan: REQ-06 done (1 of 5)
-Status: REQ-07 Go server scaffold next; REQ-08 fat-binary depends on REQ-07; REQ-09 UI depends on REQ-07
-Last activity: 2026-04-27 — Phase 3 REQ-06 axum A2A endpoint green smoke (commit e0727c2)
+Plan: REQ-06 + REQ-07 done (2 of 5)
+Status: REQ-08 fat-binary //go:embed next (Go scaffold ready, just needs embed.FS extraction); REQ-09 UI //go:embed depends on REQ-07 ✓
+Last activity: 2026-04-27 — Phase 3 REQ-07 Go scaffold green (commits 8ff8e11 + 54f23b1, build/vet pass)
 
-Progress: [██░░░░░░░░] 22% (Phase 1 closed + REQ-06 of 5 in Phase 3)
+Progress: [███░░░░░░░] 28% (Phase 1 closed + REQ-06 + REQ-07 of 5 in Phase 3)
 
 ## Performance Metrics
 
@@ -74,10 +74,10 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-- REQ-07 Go server scaffold (chi + mark3labs/mcp-go + cobra): server/{go.mod,main.go,cmd/serve.go,internal/...}
-- REQ-08 fat-binary go:embed Rust binary inside Go (depends on REQ-07)
-- REQ-09 embedded HTML/JS UI vanilla + HTMX + cytoscape.js (depends on REQ-07)
-- REQ-10 MVP precision ≥ 60% measurement on spike-001 7-query baseline (after REQ-06 stack runs)
+- REQ-08 fat-binary //go:embed Rust binary inside Go (Go scaffold ready in supervisor/rust.go, embed.FS placeholder comment marks the splice point)
+- REQ-09 embedded HTML/JS UI vanilla + HTMX + cytoscape.js (Go scaffold ready in cmd/serve.go, /ui/* placeholder marks the splice point)
+- REQ-10 MVP precision ≥ 60% measurement on spike-001 7-query baseline (after REQ-08+REQ-09 land + real Rust /healthz round-trip smoke)
+- Real spawn-and-restart smoke: REQ-07 was scaffold-only (build/vet green, no live Rust binary). After REQ-08 lands, smoke test 3 acceptance criteria: (1) `serve --port 8080` starts both, (2) Rust kill → 5s restart, (3) MCP query round-trip
 - (deferred) Phase 2 storage micro-bench: optional Criterion harness on insert/lookup/vector top-5/FTS5; skip per ship-it directive
 - (deferred) Nomic Embed Code shadow re-test on AU 5090 host (CPU segfault here)
 
@@ -87,6 +87,12 @@ Recent decisions affecting current work:
 - **candle model weight distribution** — Phase 2 spike must decide: bundle in binary (~80-120MB total) vs HuggingFace cache on first run. Affects cold-start UX.
 - **mcp-go maintainer health** — Phase 2 spike sub-task to confirm release cadence + responsiveness.
 - **Nomic Embed Code shadow eval blocked** — no-GPU on this host (per spike R5c). Retest needed on AU 5090.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commits | Directory |
+|---|-------------|------|---------|-----------|
+| 260427-h71 | REQ-07: Go server scaffold (cobra+chi+mcp-go+supervisor) per ARCH §2/§3.5/§5.5 | 2026-04-27 | 8ff8e11 + 54f23b1 | [260427-h71-req-07-go-server-scaffold-cobra-chi-mcp-](./quick/260427-h71-req-07-go-server-scaffold-cobra-chi-mcp-/) |
 
 ## Deferred Items
 
@@ -99,10 +105,10 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-27 (R5 → Phase 3 REQ-06, 11 commits, ship-it pivot done)
-Stopped at: Phase 3 REQ-06 ✓ green smoke; REQ-07 Go server scaffold pending
+Last session: 2026-04-27 (Phase 3 second session — REQ-07 quick task 260427-h71 done; build/vet green, 7 plan invariants verified by orchestrator independent grep)
+Stopped at: Phase 3 REQ-07 ✓ scaffold-only (no live Rust smoke); REQ-08 //go:embed next
 Resume file: progress.txt (root) + this STATE.md
-Next-session entry: user says "继续" or "REQ-07" → write Go scaffold per ARCHITECTURE.md §3+§5+§7 + REQ-07 acceptance
+Next-session entry: user says "继续" or "REQ-08" → //go:embed Rust core binary into Go server, splice point is the placeholder comment in server/internal/supervisor/rust.go
 
 ## Linear cross-reference
 
