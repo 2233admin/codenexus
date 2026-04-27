@@ -578,6 +578,12 @@ The embedder model is **pinned in config**. Changing the model requires a **full
 
 Reference: this is a documented failure mode in production RAG systems (`embedding version drift` posts on r/MachineLearning, summer 2025). Catching it at startup beats debugging mysterious recall regressions later.
 
+**Active hash.** As of Phase 03.6 close, current locked config:
+
+| Date | model_id | dim | prefix | version_hash (12-char SHA-256 prefix) | commit | notes |
+|------|----------|-----|--------|---------------------------------------|--------|-------|
+| 2026-04-28 | `Qwen/Qwen3-Embedding-0.6B` (safetensors via fastembed-rs/candle) | 1024 | `QUERY_INSTRUCT` (incl. trailing space, byte-preserved from prior poc.db) | `f2b47aa16b17` | `<closure-commit-sha>` | Replaces ollama HTTP qwen3-embedding:0.6b. Prefix retains trailing space "Query: " — empirical config that produced poc.db's 67.9% B1-B7 baseline; preserved byte-identically in Plan 1 to avoid invalidating the baseline. `compute_version_hash` bin (Plan 1 Task 2.5) is the single source of truth — recompiles pick up any prefix change automatically. |
+
 ### 9.9 Embedder resilience layer ownership (D-W9, Phase 3.5b)
 
 **Locked design contract** — applies to any future refactor of the embedder retry / abort / counter primitives. Captures the rationale behind the Phase 3.5b split so Phase 4 unification doesn't relitigate it.
@@ -601,25 +607,22 @@ Reference: this is a documented failure mode in production RAG systems (`embeddi
 
 Provenance: Phase 3.5b micro-slice (`260427-e7r`), Curry review 2026-04-27.
 
-### 9.10 Embedder Runtime: Candle Migration (Phase 4)
+### 9.10 Embedder Runtime: Candle Migration (Phase 03.6 — LANDED)
 
 **Decision trigger.** Phase 3.5b retry probe (commit `8f4da66`) confirmed ollama burst-failure mode is unrecoverable at the call layer: per-call 60s reqwest send-timeout × 5 attempts = 5 min/symbol, total ~20 min wall-clock per fail-cluster with zero recovery. Throttle and HTTP keep-alive workarounds explicitly considered and rejected as symptom-treatment; candle in-process inference is the architecturally locked direction since §9.1 D-W5.
 
-**Target.** Replace `embedder.rs` `embed_once()` HTTP call with candle in-process tensor inference. Preserve §9.8 version-hash discipline: must produce dim=1024 vectors, must apply the same instruction prefix, must be bit-equivalent (or explicitly version-bumped) to the current ollama qwen3-embedding-0.6b output. Retry wrapper from §9.9 stays as defensive-only — network is gone, so only OOM / CUDA-unavailable / model-load-failure transients remain.
+**Locked path (Phase 03.6).** Replace `embedder.rs` `embed_once()` HTTP call with in-process safetensors inference via `fastembed::Qwen3TextEmbedding` (which wraps `candle-transformers` under the hood; direct `candle-transformers::models::qwen3::Model` held in reserve as fallback but not needed — fastembed exposed the full surface required for our use case). Stack: `candle-core` 0.10 / `candle-nn` 0.10 / `candle-transformers` 0.10 + `hf-hub` 0.5 + `tokenizers` 0.22 + `fastembed` 5.13 (qwen3 feature, Apache-2.0), with `Qwen/Qwen3-Embedding-0.6B` from HF Hub. Last-token pool + L2 normalize → 1024-dim vectors. F32 weights for the equivalence milestone; F16 deferred to Phase 4+ as a measured optimization. Retry wrapper from §9.9 stays as defensive-only — network is gone, so only OOM / model-load-failure / dtype-shape transients remain.
 
-**Known unknown — model loader path.** Candle ships no native qwen3-embedding-0.6b loader. The model is Qwen2-family (GQA, custom BPE tokenizer); the standard candle BERT-family encoder examples target safetensors-formatted BERT and are not directly compatible. Cheap path to validate first:
+**Negative rationale (do not relitigate).** The previously-locked GGUF cheap path (`llama.cpp/convert_hf_to_gguf.py` → `candle-transformers` `quantized::llama` loader) was inverted by Phase 03.6 research:
 
-1. Convert HF weights to GGUF via `llama.cpp/convert_hf_to_gguf.py` (Qwen series is supported).
-2. Load via `candle-transformers` `quantized::llama` loader.
-3. Validate dim=1024 + instruction prefix bit-equivalence on a 30-query regression set against current ollama output.
+- `candle-transformers/src/models/quantized_qwen3.rs::ModelWeights::forward()` returns vocab logits via `lm_head` projection, NOT hidden states required for last-token pooling. Source: candle source via WebFetch, Phase 03.6 RESEARCH.md §"Summary" finding #1.
+- The GGUF-tokenizer is upstream-flagged broken with ~10× slower inference vs ONNX (HF `Qwen/Qwen3-Embedding-0.6B-GGUF` discussion #8).
 
-This avoids hand-writing both the forward pass and a custom BPE tokenizer. Self-written safetensors loader is the expensive fallback, only justified if the GGUF path fails the equivalence check.
+The expensive-fallback framing in PROJECT.md ("would require hand-writing forward pass + BPE tokenizer") was wrong: `tokenizers` crate + `candle-transformers::models::qwen3::Model` together solve both, and `fastembed-rs` 5.13 packages exactly that path behind a single `Qwen3TextEmbedding` constructor. Net cost equivalent to the GGUF path if it had worked; we adopted fastembed's wrapper rather than writing our own glue.
 
-**Phase 3 interim.** Keep §9.1 ollama config + Phase 3.5b retry+fail-loud (§9.9). Index path bails clean at threshold; Query path UX degraded by ~7.5s sleep chain on transient errors — acceptable until Phase 4 lands the `EmbedError` split per §9.9.
+**Anchor discipline.** Phase 4 PLAN's first sub-task locks this section number. All candle-related decisions — weight format pick (safetensors via fastembed locked), tokenizer source, version-hash refresh policy, regression-test methodology, optional ONNX fallback per §10.2 — hang here. Do not split into §9.11 / §9.12 until this anchor exceeds ~5 locked sub-decisions (Kolmogorov: collapse early, expand only when redundancy is observed).
 
-**Anchor discipline.** Phase 4 PLAN's first sub-task locks this section number. All candle-related decisions — weight format pick (GGUF vs safetensors), tokenizer source, version-hash refresh policy, regression-test methodology, optional ONNX fallback per §10.2 — hang here. Do not split into §9.11 / §9.12 until this anchor exceeds ~5 locked sub-decisions (Kolmogorov: collapse early, expand only when redundancy is observed).
-
-Provenance: Phase 3.5b SUMMARY § "Decision triggered" (commit `8f4da66`), Curry review 2026-04-27.
+Provenance: Phase 3.5b SUMMARY § "Decision triggered" (commit `8f4da66`), Phase 03.6 RESEARCH.md (2026-04-27), Phase 03.6 SUMMARY (2026-04-28), Curry review 2026-04-28.
 
 ### 9.6 Pending storage backend pick (Phase 2 Spike)
 
