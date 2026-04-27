@@ -1,14 +1,18 @@
+mod a2a;
 mod embedder;
 mod graph_build;
 mod graph_ppr;
 mod parser;
 mod reranker;
 mod search;
+mod server;
 mod storage;
+mod task_state;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
+use std::sync::Arc;
 
 #[derive(Parser)]
 #[command(version, about = "CodeNexus retrieval POC")]
@@ -64,6 +68,15 @@ enum Cmd {
         #[arg(long, default_value_t = 5)]
         limit: usize,
     },
+    /// Start the A2A v0.2 HTTP endpoint (REQ-06). Exposes /tasks/send,
+    /// /tasks/{id}, /healthz on the given port. Phase 3 MVP entry point —
+    /// Go server (REQ-07) spawns this and proxies MCP/HTTP requests.
+    Serve {
+        #[arg(long, default_value_t = 9876)]
+        port: u16,
+        #[arg(long, default_value = "poc.db")]
+        db: String,
+    },
     /// Graph-traversal query (axis-3 use case). Extracts subject from query
     /// text (or --subject override), runs Personalized PageRank on edges of
     /// allowed kinds, returns top-N symbols by PPR score. Bidirectional by
@@ -114,9 +127,20 @@ struct EvalResult {
     notes: String,
 }
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let cli = Cli::parse();
     match cli.cmd {
+        Cmd::Serve { port, db } => {
+            let task_store = Arc::new(task_state::TaskStore::new(db.clone()));
+            let app = server::router(task_store);
+            let addr = format!("0.0.0.0:{}", port);
+            let listener = tokio::net::TcpListener::bind(&addr).await?;
+            eprintln!("CodeNexus A2A endpoint listening on {} (db={})", addr, db);
+            eprintln!("  POST /tasks/send  GET /tasks/{{id}}  GET /healthz");
+            axum::serve(listener, app).await?;
+            return Ok(());
+        }
         Cmd::Index { repo, db } => {
             let store = storage::Store::open(&db)?;
             store.clear()?;
