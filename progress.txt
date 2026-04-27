@@ -81,3 +81,154 @@ KEY DOCS POINTERS:
 
 Session ended: 2026-04-27 ship-it pivot complete.
 Next session: REQ-07 Go server scaffold.
+
+==========================================================================
+2026-04-27 evening session — Phase 3 marathon (12 commits, 4-of-5 REQs done)
+==========================================================================
+
+WHAT DONE (chronological):
+  8ff8e11 REQ-07 Task 1   Go scaffold: cobra+chi+mcp-go+supervisor (10 .go
+                          files; +signal_unix.go +signal_windows.go build-tag
+                          helpers for Windows process-alive)
+  54f23b1 REQ-07 Task 2   main.go wire to cmd.Execute + go mod tidy resolved
+                          chi/v5 v5.2.5, cobra v1.10.2, mcp-go v0.49.0,
+                          uuid v1.6.0; toolchain auto-bumped go 1.23 → 1.25.5
+  01efa75 REQ-07 docs     PLAN.md + SUMMARY.md + STATE.md update
+                          (7 plan invariants grep-verified by orchestrator)
+
+  f5b6621 REQ-08 Task 1   //go:embed plumbing: embed.go + extractRustBinary
+                          (UserCacheDir + sha256 idempotency + 0o755 POSIX
+                          + bin/.gitkeep + rust.go splice + serve.go priority)
+  59b725b REQ-08 Task 2   Makefile EMBED_DIR := server/internal/supervisor/bin
+                          (sibling-path matches //go:embed parser); .gitignore
+                          codenexus-core(.exe) entries; clean target rm -f
+                          binaries only (preserve .gitkeep)
+  bbf11ee REQ-08 docs     PLAN.md + SUMMARY.md + STATE.md update
+                          (9 plan invariants verified; mid-execution handoff
+                          documented — executor returned post-Task-1, ortho
+                          finished Task 2 + caught clean-target bug)
+
+  4af9f4d Confidence      Edge confidence on list_callers: CallerView
+                          confidence: f64 (Rust spike) + CallerHit Confidence
+                          float64 (Go); fold-take-max HashMap so multiple
+                          edges between same pair never silently overwrite;
+                          ARCH §3.5.4 doc updated; Makefile cd core →
+                          cd experiments/poc-retrieval (5 targets); STATE
+                          note about core/ being superseded by spike since
+                          REQ-06 (was a hidden architectural mismatch)
+
+  7f6f44d PROJECT brag    Differentiation vs Prior Art (4 items, in-repo
+                          evidence anchors): graded LLM-judge eval pipeline,
+                          parameterized RRF fusion, incremental indexing
+                          readiness, edge-confidence on caller results;
+                          Phase 4+ Backlog tactical (Leiden + confidence-
+                          as-weight + spike→core promotion)
+  d98b16c Software 3.0    PROJECT.md strategic reframe section: CodeNexus
+                          as LLM external long-term memory + structured
+                          perception layer (Karpathy framing); 3 strategic
+                          bets — agent behavioral alignment (CodeCompass
+                          58% miss → ≤5%), cross-session codebase
+                          understanding via memU coupling, architectural
+                          decision semantic indexing (query_constraints
+                          A2A op); Sourcegraph as the real competitor
+
+  ec3849e REQ-09 Task 1   git mv ui/ → server/internal/ui/ (option B no
+                          dist/, no Makefile cp); embed.go (extension
+                          enumeration after //go:embed all:. rejected by
+                          parser); index.html (4 score columns BM25/Vector
+                          /RRF/Final per Differentiation #2); style.css
+                          (.conf-high/mid/low/poor color bands per
+                          Differentiation #4)
+  dfdcb95 REQ-09 Task 2   cytoscape 3.30.2 vendored (374 KB, source
+                          comment header); app.js (search/listCallers
+                          fetch + cytoscape render with confidence-
+                          colored nodes/edges); serve.go FileServer
+                          mount + /api/v1/list_callers route (was
+                          missing in REQ-07 stub) + root / 302 → /ui/
+                          + io import drop after uiPlaceholderHandler
+                          deletion
+  68fb008 REQ-09 docs     PLAN.md + SUMMARY.md + STATE.md update
+                          (12 plan invariants verified; second
+                          mid-execution handoff successfully recovered)
+
+PHASE STATUS:
+  Phase 1 (Foundation Design)  ✓ closed
+  Phase 2 (Stack Spike)        ✓ research-conclusive (sqlite-vec)
+  Phase 3 (MVP)                4/5 done — 44%
+    REQ-06 Rust core A2A          ✓ green smoke (in spike, not core/)
+    REQ-07 Go server scaffold     ✓ build/vet (real spawn smoke deferred)
+    REQ-08 fat-binary //go:embed  ✓ plumbing (real binary smoke deferred)
+    REQ-09 embedded HTML/JS UI    ✓ scaffold (real browser smoke deferred)
+    REQ-10 MVP precision ≥ 60%    — last gate, blocked on real Rust build
+
+ARCHITECTURE INSIGHT (CRITICAL FOR FUTURE-YOU):
+  Production "core/" is a 13-line println! placeholder. Phase 3 ship path
+  is experiments/poc-retrieval/. Makefile build-core/test-core/fmt/lint/
+  clean targets all point at experiments/poc-retrieval/ as of 4af9f4d.
+  Phase 4 cleanup task: cargo workspace alias OR git mv experiments/
+  poc-retrieval core. STATE.md REQ-06 entry has the long-form note.
+  PROJECT.md Phase 4+ tactical backlog tracks this.
+
+WHAT BLOCKED:
+  - REQ-10 acceptance (top-5 precision ≥ 60%) requires running the full
+    stack: make build-core (Rust release) → make build (fat binary) →
+    ./codenexus serve → spike-001 7-query eval harness. Build-core has
+    not been exercised this session; possible spike → production
+    promotion gap may surface.
+  - All REQ-07/08/09 acceptance criteria (real spawn-and-restart, real
+    extract-and-spawn, real browser load) are deferred behind the same
+    blocker. Build/vet only proves syntax.
+  - Nomic Embed Code shadow eval still needs AU 5090 host retest.
+
+PROCESS INSIGHT (worth formalizing):
+  Executor partial-return happened 2-of-3 quick tasks this session
+  (REQ-08 + REQ-09). Pattern: executor reports "Staged correctly...
+  Committing" then stops without showing commit hashes / final structured
+  output block. Recovery: orchestrator state-verify (git log + git status
+  + ls + independent build/vet + invariant grep), then write SUMMARY.md +
+  STATE.md update + final docs commit. Cost is low when state actually
+  landed; respawning a fresh executor only needed if work genuinely
+  incomplete. Worth a P2 entry in feedback-graduated.md as a known
+  pattern + recovery protocol.
+
+NEXT SESSION RESUME:
+  $ cd /d/projects/codenexus
+  $ git log --oneline -5            # confirm 68fb008 last commit
+  $ cat .planning/STATE.md          # 4-of-5 done, REQ-10 next
+  $ cat .planning/PROJECT.md        # Differentiation + Phase 4+ backlog
+                                    # tactical AND strategic (Software 3.0)
+
+  User says "继续" or "REQ-10" → first action is `make build-core`.
+  Possible outcomes:
+    (a) Rust compiles cleanly → run make build → ./codenexus serve →
+        eval harness against running stack → measure top-5 precision
+    (b) Rust fails to compile → spike code has unresolved deps or
+        api drift since last touch → triage + fix before eval
+    (c) Eval harness needs porting from spike CLI to A2A endpoint
+        (spike-001 7-queries.json was originally fed via stdin to
+        the standalone retrieval CLI; production path is POST
+        /tasks/send via Go server). Plan a small adapter slice.
+
+  STRATEGIC NOTE: Even if REQ-10 hits 60%, that's MVP-tier. Real moat
+  is in PROJECT.md Phase 4+ Strategic — Software 3.0 framing. Don't
+  conflate "MVP precision passes" with "we have a product." Sourcegraph
+  is the real competitor; the 3 strategic bets (agent affordance / cross-
+  session memory / decision indexing) are how we beat them on weight.
+
+KEY DOCS POINTERS:
+  .planning/STATE.md                  — phase pointer, decisions log
+  .planning/PROJECT.md                — Differentiation + Phase 4+ tactical
+                                        + Phase 4+ strategic Software 3.0
+  .planning/quick/*/                  — quick-task PLAN.md + SUMMARY.md
+                                        for h71, hoc, i0c
+  docs/ARCHITECTURE.md §3.5.4         — list_callers shape (with confidence)
+  docs/ARCHITECTURE.md §9.7           — confidence_min default = 0.5
+  experiments/poc-retrieval/          — Phase 3 ship path (NOT core/)
+  experiments/poc-retrieval/eval/     — eval rounds R5-R7c
+  server/internal/supervisor/         — Go supervisor + embed plumbing
+  server/internal/ui/                 — UI bundle (vanilla + cytoscape)
+
+Session ended: 2026-04-27 evening, Phase 3 marathon, 4-of-5 REQs done.
+Next session: REQ-10 — last Phase 3 gate (precision measurement against
+running stack; blocker on make build-core). Strategic backlog (Software
+3.0 reframe) is in PROJECT.md, surfaces only after MVP closes.
