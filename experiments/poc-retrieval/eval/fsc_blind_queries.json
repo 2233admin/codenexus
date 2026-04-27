@@ -1,0 +1,82 @@
+[
+  {
+    "id": "F1",
+    "axis": 2,
+    "query": "spawn agent subprocess",
+    "expected_paths": [],
+    "negative": false,
+    "_note": "blind query authored from MEMORY.md FSC = 单机执行引擎 + 7 agent kinds; expected_paths empty by design - hand-judged"
+  },
+  {
+    "id": "F2",
+    "axis": 2,
+    "query": "schedule task across worker pool",
+    "expected_paths": [],
+    "negative": false,
+    "_note": "blind"
+  },
+  {
+    "id": "F3",
+    "axis": 2,
+    "query": "report agent execution result back to coordinator",
+    "expected_paths": [],
+    "negative": false,
+    "_note": "blind"
+  },
+  {
+    "id": "F4",
+    "axis": 2,
+    "query": "abort running agent on timeout",
+    "expected_paths": [],
+    "negative": false,
+    "_note": "blind"
+  },
+  {
+    "id": "F5",
+    "axis": 2,
+    "query": "communicate between worker and coordinator over IPC",
+    "expected_paths": [],
+    "negative": false,
+    "_note": "blind"
+  },
+  {
+    "id": "F6",
+    "axis": 2,
+    "query": "capture stdout from spawned process",
+    "expected_paths": [],
+    "negative": false,
+    "_note": "blind"
+  },
+  {
+    "id": "F7",
+    "axis": 2,
+    "query": "retry failed agent execution",
+    "expected_paths": [],
+    "negative": false,
+    "_note": "blind, may be impossible if FSC has no retry logic"
+  },
+  {
+    "id": "F8",
+    "axis": 2,
+    "query": "load configuration from environment",
+    "expected_paths": [],
+    "negative": false,
+    "_note": "blind"
+  },
+  {
+    "id": "F9",
+    "axis": 2,
+    "query": "register agent capability or skill",
+    "expected_paths": [],
+    "negative": false,
+    "_note": "blind"
+  },
+  {
+    "id": "F10",
+    "axis": 2,
+    "query": "merge results from parallel agent executions",
+    "expected_paths": [],
+    "negative": false,
+    "_note": "blind"
+  }
+]

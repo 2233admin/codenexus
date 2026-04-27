@@ -1,0 +1,412 @@
+[
+  {
+    "id": "F1",
+    "query": "spawn agent subprocess",
+    "top5": [
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "execHost",
+        "kind": "method_definition",
+        "snippet_head": "private async execHost(\r",
+        "rrf_score": 0.016129032
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "Agent",
+        "kind": "class_declaration",
+        "snippet_head": "class Agent {\r",
+        "rrf_score": 0.01571842
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "AgentOptions",
+        "kind": "interface_declaration",
+        "snippet_head": "interface AgentOptions {\r",
+        "rrf_score": 0.015200919
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "destroy",
+        "kind": "method_definition",
+        "snippet_head": "async destroy(): Promise<void> {\r",
+        "rrf_score": 0.014929216
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "proc",
+        "kind": "lexical_declaration",
+        "snippet_head": "const proc = Bun.spawn([\"/usr/bin/bash\", \"-c\", command], {\r",
+        "rrf_score": 0.01489071
+      }
+    ]
+  },
+  {
+    "id": "F2",
+    "query": "schedule task across worker pool",
+    "top5": [
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "executeTask",
+        "kind": "method_definition",
+        "snippet_head": "private async executeTask(task: TaskPayload): Promise<{ output: string; success: boolean }> {\r",
+        "rrf_score": 0.015806215
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "execute",
+        "kind": "method_definition",
+        "snippet_head": "async execute(task: TaskPayload): Promise<TaskResult> {\r",
+        "rrf_score": 0.015474521
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "timeout",
+        "kind": "lexical_declaration",
+        "snippet_head": "const timeout = task.timeoutSeconds || 300;",
+        "rrf_score": 0.014786968
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "TaskResult",
+        "kind": "interface_declaration",
+        "snippet_head": "interface TaskResult {\r",
+        "rrf_score": 0.014710221
+      },
+      {
+        "path": "packages\\cli\\src\\index.ts",
+        "name": "tasks",
+        "kind": "lexical_declaration",
+        "snippet_head": "let tasks: import('@full-self-coding/core').Task",
+        "rrf_score": 0.014375
+      }
+    ]
+  },
+  {
+    "id": "F3",
+    "query": "report agent execution result back to coordinator",
+    "top5": [
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "TaskResult",
+        "kind": "interface_declaration",
+        "snippet_head": "interface TaskResult {\r",
+        "rrf_score": 0.015584417
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "execute",
+        "kind": "method_definition",
+        "snippet_head": "async execute(task: TaskPayload): Promise<TaskResult> {\r",
+        "rrf_score": 0.015559772
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "result",
+        "kind": "lexical_declaration",
+        "snippet_head": "const result: TaskResult = {\r",
+        "rrf_score": 0.0155288465
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\api-agent.ts",
+        "name": "runApiAgent",
+        "kind": "function_declaration",
+        "snippet_head": "async function runApiAgent(\r",
+        "rrf_score": 0.014655342
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "executeTask",
+        "kind": "method_definition",
+        "snippet_head": "private async executeTask(task: TaskPayload): Promise<{ output: string; success: boolean }> {\r",
+        "rrf_score": 0.014646465
+      }
+    ]
+  },
+  {
+    "id": "F4",
+    "query": "abort running agent on timeout",
+    "top5": [
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "timeout",
+        "kind": "lexical_declaration",
+        "snippet_head": "const timeout = setTimeout(() => proc.kill(), timeoutMs);",
+        "rrf_score": 0.015633166
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "Agent",
+        "kind": "class_declaration",
+        "snippet_head": "class Agent {\r",
+        "rrf_score": 0.015345149
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "AgentOptions",
+        "kind": "interface_declaration",
+        "snippet_head": "interface AgentOptions {\r",
+        "rrf_score": 0.015304431
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "timeout",
+        "kind": "lexical_declaration",
+        "snippet_head": "const timeout = task.timeoutSeconds || 300;",
+        "rrf_score": 0.015238096
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "execHost",
+        "kind": "method_definition",
+        "snippet_head": "private async execHost(\r",
+        "rrf_score": 0.014646465
+      }
+    ]
+  },
+  {
+    "id": "F5",
+    "query": "communicate between worker and coordinator over IPC",
+    "top5": [
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "autoCommitAndPush",
+        "kind": "method_definition",
+        "snippet_head": "private async autoCommitAndPush(task: TaskPayload): Promise<void> {\r",
+        "rrf_score": 0.015826613
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\api-prompt.ts",
+        "name": "buildSystemPrompt",
+        "kind": "function_declaration",
+        "snippet_head": "function buildSystemPrompt(): string {\r",
+        "rrf_score": 0.012118438
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "AgentOptions",
+        "kind": "interface_declaration",
+        "snippet_head": "interface AgentOptions {\r",
+        "rrf_score": 0.009836066
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "TaskResult",
+        "kind": "interface_declaration",
+        "snippet_head": "interface TaskResult {\r",
+        "rrf_score": 0.009677419
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "Agent",
+        "kind": "class_declaration",
+        "snippet_head": "class Agent {\r",
+        "rrf_score": 0.009523811
+      }
+    ]
+  },
+  {
+    "id": "F6",
+    "query": "capture stdout from spawned process",
+    "top5": [
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "execHost",
+        "kind": "method_definition",
+        "snippet_head": "private async execHost(\r",
+        "rrf_score": 0.016287677
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "proc",
+        "kind": "lexical_declaration",
+        "snippet_head": "const proc = Bun.spawn([\"/usr/bin/bash\", \"-c\", command], {\r",
+        "rrf_score": 0.016234796
+      },
+      {
+        "path": "packages\\cli\\src\\index.ts",
+        "name": "home",
+        "kind": "lexical_declaration",
+        "snippet_head": "const home = process.env.HOME || process.env.USERPROFILE || '/tmp';",
+        "rrf_score": 0.01425
+      },
+      {
+        "path": "packages\\cli\\src\\index.ts",
+        "name": "logDir",
+        "kind": "lexical_declaration",
+        "snippet_head": "const logDir = process.platform === 'darwin'\r",
+        "rrf_score": 0.013574661
+      },
+      {
+        "path": "packages\\cli\\src\\index.ts",
+        "name": "runFullAnalysis",
+        "kind": "function_declaration",
+        "snippet_head": "async function runFullAnalysis(): Promise<void> {\r",
+        "rrf_score": 0.01309078
+      }
+    ]
+  },
+  {
+    "id": "F7",
+    "query": "retry failed agent execution",
+    "top5": [
+      {
+        "path": "packages\\core\\src\\agent-daemon\\api-agent.ts",
+        "name": "runApiAgent",
+        "kind": "function_declaration",
+        "snippet_head": "async function runApiAgent(\r",
+        "rrf_score": 0.015469868
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "Agent",
+        "kind": "class_declaration",
+        "snippet_head": "class Agent {\r",
+        "rrf_score": 0.015345149
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "agentType",
+        "kind": "lexical_declaration",
+        "snippet_head": "const agentType = task.agentType || \"api\";",
+        "rrf_score": 0.015172737
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "AgentOptions",
+        "kind": "interface_declaration",
+        "snippet_head": "interface AgentOptions {\r",
+        "rrf_score": 0.01501583
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\api-agent.ts",
+        "name": "ApiAgentConfig",
+        "kind": "interface_declaration",
+        "snippet_head": "interface ApiAgentConfig {\r",
+        "rrf_score": 0.014929216
+      }
+    ]
+  },
+  {
+    "id": "F8",
+    "query": "load configuration from environment",
+    "top5": [
+      {
+        "path": "packages\\cli\\src\\index.ts",
+        "name": "runFullAnalysis",
+        "kind": "function_declaration",
+        "snippet_head": "async function runFullAnalysis(): Promise<void> {\r",
+        "rrf_score": 0.015788145
+      },
+      {
+        "path": "packages\\cli\\src\\index.ts",
+        "name": "createCLI",
+        "kind": "function_declaration",
+        "snippet_head": "function createCLI(): Command {\r",
+        "rrf_score": 0.014670791
+      },
+      {
+        "path": "packages\\cli\\src\\index.ts",
+        "name": "home",
+        "kind": "lexical_declaration",
+        "snippet_head": "const home = process.env.HOME || process.env.USERPROFILE || '/tmp';",
+        "rrf_score": 0.009836066
+      },
+      {
+        "path": "packages\\cli\\src\\index.ts",
+        "name": "config",
+        "kind": "lexical_declaration",
+        "snippet_head": "let config: Config;",
+        "rrf_score": 0.009677419
+      },
+      {
+        "path": "packages\\cli\\src\\index.ts",
+        "name": "configFilePath",
+        "kind": "lexical_declaration",
+        "snippet_head": "const configFilePath = process.argv[configFilePathIndex + 1];",
+        "rrf_score": 0.009523811
+      }
+    ]
+  },
+  {
+    "id": "F9",
+    "query": "register agent capability or skill",
+    "top5": [
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "agentType",
+        "kind": "lexical_declaration",
+        "snippet_head": "const agentType = task.agentType || \"api\";",
+        "rrf_score": 0.016287677
+      },
+      {
+        "path": "packages\\cli\\src\\index.ts",
+        "name": "agentTypeMap",
+        "kind": "lexical_declaration",
+        "snippet_head": "const agentTypeMap: Record<string, string> = {\r",
+        "rrf_score": 0.015647568
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "AgentOptions",
+        "kind": "interface_declaration",
+        "snippet_head": "interface AgentOptions {\r",
+        "rrf_score": 0.0155288465
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "AgentState",
+        "kind": "type_alias_declaration",
+        "snippet_head": "type AgentState = \"idle\" | \"busy\" | \"dead\";",
+        "rrf_score": 0.015304431
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "Agent",
+        "kind": "class_declaration",
+        "snippet_head": "class Agent {\r",
+        "rrf_score": 0.015291375
+      }
+    ]
+  },
+  {
+    "id": "F10",
+    "query": "merge results from parallel agent executions",
+    "top5": [
+      {
+        "path": "packages\\core\\src\\agent-daemon\\api-agent.ts",
+        "name": "runApiAgent",
+        "kind": "function_declaration",
+        "snippet_head": "async function runApiAgent(\r",
+        "rrf_score": 0.015391621
+      },
+      {
+        "path": "packages\\cli\\src\\index.ts",
+        "name": "results",
+        "kind": "lexical_declaration",
+        "snippet_head": "const results = options.interactive\r",
+        "rrf_score": 0.01489071
+      },
+      {
+        "path": "packages\\cli\\src\\index.ts",
+        "name": "agentTypeMap",
+        "kind": "lexical_declaration",
+        "snippet_head": "const agentTypeMap: Record<string, string> = {\r",
+        "rrf_score": 0.014888011
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "TaskResult",
+        "kind": "interface_declaration",
+        "snippet_head": "interface TaskResult {\r",
+        "rrf_score": 0.014872225
+      },
+      {
+        "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+        "name": "AgentOptions",
+        "kind": "interface_declaration",
+        "snippet_head": "interface AgentOptions {\r",
+        "rrf_score": 0.014793679
+      }
+    ]
+  }
+]

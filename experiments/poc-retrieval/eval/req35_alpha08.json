@@ -1,0 +1,452 @@
+[
+  {
+    "id": "A1",
+    "axis": 1,
+    "query": "ObsidianAdapter",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\index.ts:obsAdapter",
+      "mcp-server\\src\\index.ts:obsidianAdapter",
+      "mcp-server\\src\\adapters\\obsidian.ts:ObsidianAdapter",
+      "mcp-server\\src\\adapters\\obsidian.test.ts:adapter",
+      "mcp-server\\src\\adapters\\obsidian.test.ts:adapter"
+    ],
+    "precision_at_5": 0.5,
+    "notes": "top1_rrf=0.0162"
+  },
+  {
+    "id": "A2",
+    "axis": 1,
+    "query": "VaultBrainAdapter",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\index.ts:vbAdapter",
+      "mcp-server\\src\\adapters\\vaultbrain\\index.ts:VaultBrainAdapter",
+      "mcp-server\\tests\\vaultbrain.test.ts:adapter",
+      "mcp-server\\src\\index.ts:vaultBrainAdapter",
+      "mcp-server\\src\\core\\operations.ts:vba"
+    ],
+    "precision_at_5": 0.5,
+    "notes": "top1_rrf=0.0162"
+  },
+  {
+    "id": "A3",
+    "axis": 1,
+    "query": "assertRealPathInsideVault",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\connector\\fs-transport.ts:assertRealPathInsideVault",
+      "mcp-server\\src\\index.ts:assertRealPathInsideVault",
+      "mcp-server\\src\\connector\\fs-transport.ts:resolve",
+      "mcp-server\\src\\index.ts:VaultFs",
+      "mcp-server\\src\\index.ts:normalizeVaultPath"
+    ],
+    "precision_at_5": 1.0,
+    "notes": "top1_rrf=0.0163"
+  },
+  {
+    "id": "A4",
+    "axis": 1,
+    "query": "PROTECTED_DIRS",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\connector\\fs-transport.ts:PROTECTED_DIRS",
+      "mcp-server\\src\\core\\operations.ts:PROTECTED_DIRS",
+      "mcp-server\\src\\index.ts:PROTECTED_DIRS",
+      "mcp-server\\src\\index.ts:subDirs",
+      "mcp-server\\src\\core\\operations.ts:walk"
+    ],
+    "precision_at_5": 1.0,
+    "notes": "top1_rrf=0.0164"
+  },
+  {
+    "id": "A5",
+    "axis": 1,
+    "query": "concept_graph run function",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\compile-trigger.ts:run",
+      "mcp-server\\src\\core\\operations.ts:makeAllOperations",
+      "mcp-server\\src\\scripts\\memu-perf.ts:main",
+      "mcp-server\\src\\adapters\\obsidian.ts:graph",
+      "mcp-server\\src\\compile-trigger.ts:concepts"
+    ],
+    "precision_at_5": 0.0,
+    "notes": "top1_rrf=0.0153"
+  },
+  {
+    "id": "A6",
+    "axis": 1,
+    "query": "validatedArgs",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\connector\\connector.ts:validatedArgs",
+      "mcp-server\\src\\index.ts:validatedArgs",
+      "mcp-server\\src\\scripts\\memu-query.ts:parseArgs",
+      "mcp-server\\src\\scripts\\memu-perf.ts:parseArgs",
+      "mcp-server\\src\\core\\validate.ts:validateParams"
+    ],
+    "precision_at_5": 1.0,
+    "notes": "top1_rrf=0.0163"
+  },
+  {
+    "id": "A7",
+    "axis": 1,
+    "query": "kb_meta",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\compile-trigger.ts:kbMeta",
+      "mcp-server\\src\\compile-trigger.ts:loadInitialDirty",
+      "mcp-server\\src\\connector\\fs-transport.ts:FrontmatterValue",
+      "mcp-server\\src\\connector\\fs-transport.ts:currentKey",
+      "mcp-server\\src\\index.ts:currentKey"
+    ],
+    "precision_at_5": 0.0,
+    "notes": "top1_rrf=0.0164"
+  },
+  {
+    "id": "A8",
+    "axis": 1,
+    "query": "Node tags field",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\connector\\fs-transport.ts:fmTags",
+      "mcp-server\\src\\connector\\fs-transport.ts:tags",
+      "mcp-server\\src\\index.ts:fmTags",
+      "mcp-server\\src\\index.ts:tags",
+      "mcp-server\\src\\adapters\\vaultbrain\\index.ts:inlineTags"
+    ],
+    "precision_at_5": 0.0,
+    "notes": "top1_rrf=0.0160"
+  },
+  {
+    "id": "A9",
+    "axis": 1,
+    "query": "parseYAMLFrontmatter",
+    "negative": true,
+    "top5": [
+      "mcp-server\\src\\index.ts:parseFrontmatter",
+      "mcp-server\\src\\connector\\fs-transport.ts:parseFrontmatter",
+      "mcp-server\\src\\adapters\\vaultbrain\\index.ts:frontmatter",
+      "mcp-server\\src\\recipes\\_framework.ts:frontmatter",
+      "recipes\\collectors\\linear-collector.ts:frontmatter"
+    ],
+    "precision_at_5": -0.25,
+    "notes": "top1_rrf=0.0131"
+  },
+  {
+    "id": "A10",
+    "axis": 1,
+    "query": "OAuth2Provider",
+    "negative": true,
+    "top5": [
+      "mcp-server\\src\\index.ts:provided",
+      "recipes\\collectors\\gmail-setup.ts:tokenRes",
+      "recipes\\collectors\\gmail-setup.ts:authUrl",
+      "recipes\\collectors\\gmail-setup.ts:code",
+      "recipes\\collectors\\gmail-collector.ts:TOKEN_URL"
+    ],
+    "precision_at_5": -0.25,
+    "notes": "top1_rrf=0.0131"
+  },
+  {
+    "id": "B1",
+    "axis": 2,
+    "query": "filesystem fallback when obsidian not running",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\index.ts:obsidianAdapter",
+      "mcp-server\\src\\index.ts:hidden",
+      "mcp-server\\src\\connector\\connector.ts:PORT_FILE",
+      "mcp-server\\src\\connector\\fs-transport.ts:hidden",
+      "mcp-server\\src\\index.ts:obsAdapter"
+    ],
+    "precision_at_5": 1.0,
+    "notes": "top1_rrf=0.0153"
+  },
+  {
+    "id": "B2",
+    "axis": 2,
+    "query": "preflight check for protected directories",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\connector\\fs-transport.ts:PROTECTED_DIRS",
+      "mcp-server\\src\\core\\operations.ts:PROTECTED_DIRS",
+      "mcp-server\\src\\index.ts:PROTECTED_DIRS",
+      "mcp-server\\src\\core\\operations.ts:walk",
+      "mcp-server\\src\\index.ts:subDirs"
+    ],
+    "precision_at_5": 1.0,
+    "notes": "top1_rrf=0.0162"
+  },
+  {
+    "id": "B3",
+    "axis": 2,
+    "query": "search files by tag",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\adapters\\vaultbrain\\index.ts:extractTags",
+      "mcp-server\\src\\connector\\fs-transport.ts:allFiles",
+      "mcp-server\\src\\index.ts:allFiles",
+      "mcp-server\\src\\connector\\fs-transport.ts:fmTags",
+      "mcp-server\\src\\index.ts:fmTags"
+    ],
+    "precision_at_5": 1.0,
+    "notes": "top1_rrf=0.0151"
+  },
+  {
+    "id": "B4",
+    "axis": 2,
+    "query": "build concept graph from notes",
+    "negative": false,
+    "top5": [
+      "recipes\\collectors\\circleback-collector.ts:notes",
+      "mcp-server\\src\\adapters\\interface.ts:GraphNode",
+      "recipes\\collectors\\circleback-collector.ts:buildDigest",
+      "mcp-server\\src\\core\\types.ts:GraphNode",
+      "mcp-server\\src\\adapters\\obsidian.ts:graph"
+    ],
+    "precision_at_5": 0.0,
+    "notes": "top1_rrf=0.0159"
+  },
+  {
+    "id": "B5",
+    "axis": 2,
+    "query": "rate limiting middleware",
+    "negative": true,
+    "top5": [
+      "recipes\\collectors\\x-collector.ts:resetEpoch",
+      "recipes\\collectors\\x-collector.ts:main",
+      "mcp-server\\src\\core\\operations.ts:limit",
+      "mcp-server\\src\\connector\\fs-transport.ts:max",
+      "mcp-server\\src\\adapters\\gitnexus.ts:limit"
+    ],
+    "precision_at_5": -0.25,
+    "notes": "top1_rrf=0.0149"
+  },
+  {
+    "id": "B6",
+    "axis": 2,
+    "query": "safe file deletion with dry run",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\index.ts:dryRun",
+      "mcp-server\\src\\index.ts:dryRun",
+      "mcp-server\\src\\adapters\\obsidian.ts:write",
+      "mcp-server\\src\\adapters\\filesystem.ts:write",
+      "mcp-server\\src\\ai-output.test.ts:report"
+    ],
+    "precision_at_5": 1.0,
+    "notes": "top1_rrf=0.0162"
+  },
+  {
+    "id": "B7",
+    "axis": 2,
+    "query": "register MCP tool handler",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\connector\\connector.ts:toolName",
+      "mcp-server\\src\\adapters\\obsidian.ts:setupMessageHandler",
+      "mcp-server\\src\\index.ts:toolName",
+      "mcp-server\\src\\unified-query.test.ts:makeRegistry",
+      "mcp-server\\src\\adapters\\registry.ts:register"
+    ],
+    "precision_at_5": 1.0,
+    "notes": "top1_rrf=0.0158"
+  },
+  {
+    "id": "B8",
+    "axis": 2,
+    "query": "handle concurrent writes to the same vault file",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\adapters\\obsidian.ts:write",
+      "mcp-server\\src\\ai-output.test.ts:writeFile",
+      "mcp-server\\src\\core\\types.ts:VaultBackend",
+      "mcp-server\\src\\index.ts:vaultFs",
+      "mcp-server\\src\\connector\\fs-transport.test.ts:makeEscapingVault"
+    ],
+    "precision_at_5": 0.0,
+    "notes": "top1_rrf=0.0158"
+  },
+  {
+    "id": "B9",
+    "axis": 2,
+    "query": "detect conflicting edits between adapters",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\index.ts:enabledAdapters",
+      "mcp-server\\src\\adapters\\registry.ts:AdapterRegistry",
+      "mcp-server\\src\\adapters\\registry.ts:adapter",
+      "mcp-server\\src\\unified-query.test.ts:adapterA",
+      "mcp-server\\src\\unified-query.test.ts:makeRegistry"
+    ],
+    "precision_at_5": 0.0,
+    "notes": "top1_rrf=0.0161"
+  },
+  {
+    "id": "B10",
+    "axis": 2,
+    "query": "aggregate metadata across multiple notes",
+    "negative": false,
+    "top5": [
+      "recipes\\collectors\\circleback-collector.ts:notes",
+      "recipes\\collectors\\circleback-collector.ts:buildDigest",
+      "recipes\\collectors\\circleback-collector.ts:digest",
+      "recipes\\collectors\\circleback-collector.ts:fetchAllNotes",
+      "recipes\\collectors\\circleback-collector.ts:NotesPage"
+    ],
+    "precision_at_5": 0.0,
+    "notes": "top1_rrf=0.0161"
+  },
+  {
+    "id": "C1",
+    "axis": 3,
+    "query": "who calls assertRealPathInsideVault",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\connector\\fs-transport.ts:assertRealPathInsideVault",
+      "mcp-server\\src\\index.ts:assertRealPathInsideVault",
+      "mcp-server\\src\\index.ts:VaultFs",
+      "mcp-server\\src\\connector\\fs-transport.ts:FsTransport",
+      "mcp-server\\src\\connector\\fs-transport.ts:resolve"
+    ],
+    "precision_at_5": 0.0,
+    "notes": "top1_rrf=0.0163"
+  },
+  {
+    "id": "C2",
+    "axis": 3,
+    "query": "what operations does ObsidianAdapter implement",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\index.ts:obsidianAdapter",
+      "mcp-server\\src\\index.ts:obsAdapter",
+      "mcp-server\\src\\adapters\\obsidian.ts:ObsidianAdapter",
+      "mcp-server\\src\\adapters\\obsidian.test.ts:adapter",
+      "mcp-server\\src\\adapters\\obsidian.test.ts:adapter"
+    ],
+    "precision_at_5": 0.0,
+    "notes": "top1_rrf=0.0161"
+  },
+  {
+    "id": "C3",
+    "axis": 3,
+    "query": "which adapter calls FilesystemAdapter as fallback",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\adapters\\filesystem.ts:FilesystemAdapter",
+      "mcp-server\\src\\index.ts:fsAdapter",
+      "mcp-server\\src\\index.ts:main",
+      "mcp-server\\src\\unified-query.test.ts:fakeAdapter",
+      "mcp-server\\src\\adapters\\obsidian.test.ts:adapter"
+    ],
+    "precision_at_5": 0.0,
+    "notes": "top1_rrf=0.0164"
+  },
+  {
+    "id": "C4",
+    "axis": 3,
+    "query": "what error handler runs when vault_create fails preflight",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\core\\validate.ts:ValidationError",
+      "mcp-server\\src\\adapters\\filesystem.ts:init",
+      "mcp-server\\src\\index.ts:vaultFs",
+      "mcp-server\\src\\index.ts:VaultFs",
+      "mcp-server\\src\\ai-output.test.ts:vaultFs"
+    ],
+    "precision_at_5": 1.0,
+    "notes": "top1_rrf=0.0148"
+  },
+  {
+    "id": "C5",
+    "axis": 3,
+    "query": "what does concept_graph run call internally",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\adapters\\obsidian.ts:graph",
+      "mcp-server\\src\\compile-trigger.ts:run",
+      "mcp-server\\src\\compile-trigger.ts:concepts",
+      "mcp-server\\src\\core\\operations.ts:concept",
+      "mcp-server\\src\\adapters\\obsidian.test.ts:g"
+    ],
+    "precision_at_5": 0.0,
+    "notes": "top1_rrf=0.0156"
+  },
+  {
+    "id": "C6",
+    "axis": 3,
+    "query": "who produces kb_meta records",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\compile-trigger.ts:kbMeta",
+      "mcp-server\\src\\compile-trigger.ts:loadInitialDirty",
+      "mcp-server\\src\\adapters\\memu.test.ts:timestamps",
+      "mcp-server\\src\\ai-output.test.ts:SweepMetrics",
+      "mcp-server\\src\\index.ts:metrics"
+    ],
+    "precision_at_5": 0.0,
+    "notes": "top1_rrf=0.0164"
+  },
+  {
+    "id": "C7",
+    "axis": 3,
+    "query": "what reads Node tags field",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\adapters\\vaultbrain\\index.ts:extractTags",
+      "mcp-server\\src\\connector\\fs-transport.ts:fmTags",
+      "mcp-server\\src\\adapters\\vaultbrain\\index.ts:inlineTags",
+      "mcp-server\\src\\index.ts:fmTags",
+      "mcp-server\\src\\adapters\\vaultbrain\\index.ts:blockTags"
+    ],
+    "precision_at_5": 1.0,
+    "notes": "top1_rrf=0.0158"
+  },
+  {
+    "id": "C8",
+    "axis": 3,
+    "query": "what runs after MemUAdapter sync completes",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\index.ts:memuAdapter",
+      "mcp-server\\src\\adapters\\memu.ts:MemUAdapter",
+      "mcp-server\\src\\adapters\\memu.test.ts:adapter",
+      "mcp-server\\src\\adapters\\memu.test.ts:adapter",
+      "mcp-server\\src\\adapters\\memu.test.ts:adapter"
+    ],
+    "precision_at_5": 0.0,
+    "notes": "top1_rrf=0.0160"
+  },
+  {
+    "id": "C9",
+    "axis": 3,
+    "query": "who calls OAuth2Provider",
+    "negative": true,
+    "top5": [
+      "mcp-server\\src\\index.ts:provided",
+      "recipes\\collectors\\gmail-setup.ts:code",
+      "recipes\\collectors\\gmail-setup.ts:tokenRes",
+      "recipes\\collectors\\gmail-setup.ts:server",
+      "recipes\\collectors\\gmail-setup.ts:authUrl"
+    ],
+    "precision_at_5": -0.25,
+    "notes": "top1_rrf=0.0131"
+  },
+  {
+    "id": "C10",
+    "axis": 3,
+    "query": "what does GitNexusAdapter call during indexing",
+    "negative": false,
+    "top5": [
+      "mcp-server\\src\\adapters\\gitnexus.ts:GitNexusAdapter",
+      "mcp-server\\src\\index.ts:gnAdapter",
+      "mcp-server\\src\\adapters\\interface.ts:VaultMindAdapter",
+      "mcp-server\\src\\adapters\\gitnexus.ts:GitNexusAdapterConfig",
+      "mcp-server\\src\\adapters\\gitnexus.ts:constructor"
+    ],
+    "precision_at_5": 0.0,
+    "notes": "top1_rrf=0.0160"
+  }
+]

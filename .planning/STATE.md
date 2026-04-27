@@ -4,8 +4,8 @@ milestone: v1.0
 milestone_name: milestone
 status: phase_3_prelim_complete
 stopped_at: Phase 3 REQ-10 ⚠ PRELIM PASS — literal B1-B7 gate met (67.9%) but post-closure analysis (Curry review) flagged local-optimum risk (alpha=0.6 sweep-tuned on the same 7 queries; held-out B8-B10 = 0% before correcting for rubric noise). Phase 3.5 robustness slice required before truly closing.
-last_updated: "2026-04-27T05:55:00.000Z"
-last_activity: 2026-04-27 — Completed quick task 260427-j9g: REQ-10 precision PRELIM PASS (B1-B7=67.9% on literal gate); Phase 3 marked phase_3_prelim_complete. Post-closure reviewer pushback (Curry) surfaced alpha-tuned-on-test-set + held-out B8-B10=0% concerns; held-out analysis showed 1 real miss (B8) + 1 rubric-too-narrow (B10 right answer rejected) + 1 concept-not-in-corpus (B9). Robustness caveat added to SUMMARY.md. Phase 3.5 robustness slice (rubric fix + joint alpha sweep + cross-corpus eval) is the next-session top priority before Phase 4 opens.
+last_updated: "2026-04-27T09:50:00.000Z"
+last_activity: 2026-04-27 — Completed quick task 260427-nz9 (Phase 3.5 robustness slice). 3 of 4 sub-checks pass: (1) joint alpha sweep shows alpha=0.6 is plateau across 0.6/0.7/0.8 — NOT local-optimum-by-construction; (2) B10 rubric correction legitimate (corpus-grounded), B1-B10 v2 = 57.5%; (3) cross-corpus FSC eval strict 50% / generous 71.4% on 5-of-107 partial-indexed files. Sub-check 4 BLOCKED: ollama qwen3-embedding:0.6b fails deterministically after ~130 sequential calls — full FSC re-index impossible without fix. Phase 3 stays phase_3_prelim_complete. Next priority: Phase 3.5b ollama embedding instability fix (retry+backoff or candle in-process per ARCH 9.5).
 progress:
   total_phases: 6
   completed_phases: 3
@@ -76,14 +76,19 @@ Recent decisions affecting current work:
 
 - 2026-04-27: REQ-10 ✓ — Phase 3 MVP **CLOSED**. eval/req10_alpha06.json captures B1-B7 mean precision_at_5 = 67.9% (alpha=0.6 rerank=false) vs gate 60% (+7.9pp) and GitNexus 1.6.3 baseline 43.6% (+24.3pp). 6 of 7 queries clear (B1/B2/B3/B6/B7 all 100%; B4=0% known Python target POC TS-only miss; B5=-0.25 negative-test false-positive penalty, threshold tuneable in Phase 4). Locked config matches R5/R6 default. Plumbing bugs surfaced in REQ-08 (Makefile cp expects codenexus-core but binary is poc-retrieval; `make` not on Windows git-bash PATH) deferred to follow-up quick task — they do NOT block REQ-10 because Cmd::Eval reads same retrieval engine as A2A endpoint Query handler. Quick task: 260427-j9g.
 
+- 2026-04-27: Phase 3.5 robustness slice (quick task 260427-nz9) — 3 of 4 sub-checks pass, 1 blocked. (1) Joint alpha sweep on 5 alphas {0.4..0.8 step 0.1}: B1-B7 plateau at 67.9% across alpha 0.6/0.7/0.8 (NOT local optimum); B1-B10 v2 joint optimum also at alpha=0.6 (57.5%); A1-A10 axis-1 stable at 70% across alpha 0.4-0.7 then collapses to 35% at 0.8 (BM25 channel materially helps exact-symbol). (2) B10 rubric corrected (expected_paths extended with digest/buildDigest/fetchAllNotes/collector — corpus-grounded, not motivated reasoning); B1-B10 lift +10pp. (3) Cross-corpus FSC eval (10 blind queries against 5/107 partial-indexed files): strict 50.0% / generous 71.4%; F5 IPC query surfaced FSC's git-as-bus coordination mechanism instead of literal IPC — exactly the kind of correct-mismatch agents need (Software 3.0 evidence). (4) BLOCKED: ollama qwen3-embedding:0.6b fails deterministically after ~130 sequential `/api/embeddings` calls (single-call works, sustained-load doesn't); two reindex attempts hit identical 127/2307 ceiling. Phase 3 stays `phase_3_prelim_complete` — local-optimum concern invalidated but cross-corpus only weakly validated on partial corpus. Next: Phase 3.5b unblock ollama (retry+backoff cheapest, candle in-process per ARCH 9.5 cleanest).
+
 ### Pending Todos
 
-- **(P0, NEXT SESSION) Phase 3.5 robustness slice** (30-60min quick task):
-  1. Fix B10 expected_paths rubric — expand from `[meta, aggregate, frontmatter, kb_meta]` to include `[digest, buildDigest, fetchAllNotes, collector]`; re-score B10 (likely flips 0 -> 1.0)
-  2. Joint alpha sweep on B1-B7 ∪ B8-B10 over alpha ∈ {0.4, 0.5, 0.6, 0.7, 0.8}; check whether alpha=0.6 (current locked default tuned on B1-B7 alone) is still optimum on the joint set
-  3. Index a second corpus (claude-code-custodian or full-self-coding); author 5-10 fresh NL queries blind to corpus content; hand-eval — this is the real cross-corpus generalization check
-  4. Write Phase 3.5 verdict in a new quick task; if cross-corpus mean ≥ 50% (relaxed bar, recognizing harder out-of-distribution conditions), flip Phase 3 from `phase_3_prelim_complete` to `phase_3_complete` and open Phase 4. If it tanks, Phase 3.5 expands to fix retrieval (rerank=true default? embedder swap to Nomic Embed Code on AU 5090?)
-- **(P1, follow-up quick task) REQ-08 plumbing fix**: (a) Makefile line 25 cp expects `codenexus-core(.exe)` but Cargo package.name is `poc-retrieval` — name mismatch; (b) `make` not on Windows git-bash PATH on this host. Fix recommended: rename binary via Cargo `[bin]` target OR adjust Makefile cp + add bash/PowerShell wrapper for build chain. Estimated 30-45min; once fixed, naturally flushes REQ-06/07/08/09 deferred smokes in one full-stack run. **Recommended after Phase 3.5** (robustness has higher epistemic priority than build-system polish).
+- **(P0, NEXT SESSION) Phase 3.5b — unblock ollama embedding endpoint instability**: ollama qwen3-embedding:0.6b at localhost:11434 fails deterministically after ~130 sequential `/api/embeddings` calls. Single calls work; sustained load doesn't. Three options:
+  1. Add retry+exponential-backoff to `experiments/poc-retrieval/src/embedder.rs` (cheapest, ~30min, masks symptom but unblocks indexing)
+  2. Switch to candle in-process embedder per ARCH §9.5 plan (cleanest, 2-4hr, removes ollama dep entirely)
+  3. Throttle indexer to ≤ 100 symbols per batch with sleep between (ugly but works without code change beyond Cmd::Index)
+  After fix: re-index FSC to full ~2300 symbols, re-run F1-F10 + hand-judge with full corpus, only then can Phase 3 flip from `phase_3_prelim_complete` to `phase_3_complete`.
+- **(P1) Phase 3.5 follow-ups (epistemic gap closure)**:
+  - B8 "concurrent writes" remains a real miss in original corpus even after rubric correction; investigate why (embedding mismatch? alpha insufficient? rerank needed?)
+  - Cross-corpus eval should use LLM-judge or separate-person judge instead of system-author hand-judge (R5/R6 graded LLM-judge pattern; subjective bias was disclosed honestly in 260427-nz9 SUMMARY F5)
+- **(P2, follow-up quick task) REQ-08 plumbing fix**: (a) Makefile line 25 cp expects `codenexus-core(.exe)` but Cargo package.name is `poc-retrieval` — name mismatch; (b) `make` not on Windows git-bash PATH on this host. Fix recommended: rename binary via Cargo `[bin]` target OR adjust Makefile cp + add bash/PowerShell wrapper for build chain. Estimated 30-45min; once fixed, naturally flushes REQ-06/07/08/09 deferred smokes in one full-stack run. Demoted from P1 to P2 after Phase 3.5b became the new acceptance blocker.
 - Real spawn-and-restart smoke (REQ-07 acceptance #1-#3): blocked on plumbing fix above. With working `make build`: smoke (1) `serve --port 8080` starts both Go HTTP + extracted Rust, (2) Rust kill → 5s restart per supervisor backoff, (3) MCP query stdio round-trip
 - Real browser load smoke (REQ-09 acceptance #1-#3): same blocker; verify `localhost:8080/` redirects to /ui/, search returns 4-score-column results, list_callers renders cytoscape graph with confidence color bands
 - 150 MB total size budget verification (REQ-08 acceptance #2): blocked on real Rust release build. Expected ~110-150 MB Go + cytoscape 374 KB + UI text < 1 MB
@@ -109,6 +114,7 @@ Recent decisions affecting current work:
 | (no-id) | Edge confidence on list_callers + Makefile/STATE realign + Software 3.0 reframe in PROJECT.md | 2026-04-27 | 4af9f4d + 7f6f44d + d98b16c | (no quick dir — micro-task + doc-only commits) |
 | 260427-i0c | REQ-09: UI bundle (vanilla JS + cytoscape.js, no build step, option B git mv) | 2026-04-27 | ec3849e + dfdcb95 | [260427-i0c-req-09-go-embed-ui-bundle-vanilla-js-htm](./quick/260427-i0c-req-09-go-embed-ui-bundle-vanilla-js-htm/) |
 | 260427-j9g | REQ-10: Phase 3 MVP precision gate met (B1-B7 mean=67.9% vs gate 60% +7.9pp; +24.3pp over GitNexus 1.6.3 baseline 43.6%) — Phase 3 CLOSED | 2026-04-27 | 226c50f | [260427-j9g-req-10-closure-phase-3-mvp-precision-gat](./quick/260427-j9g-req-10-closure-phase-3-mvp-precision-gat/) |
+| 260427-nz9 | Phase 3.5 robustness slice (alpha sweep plateau confirmed, B10 rubric corrected, cross-corpus FSC strict 50%/generous 71.4% on 5-of-107 partial index; full re-index BLOCKED by ollama instability after ~130 sequential calls) | 2026-04-27 | _pending_ | [260427-nz9-phase-3-5-robustness-b10-rubric-fix-join](./quick/260427-nz9-phase-3-5-robustness-b10-rubric-fix-join/) |
 
 ## Deferred Items
 
@@ -121,15 +127,14 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-27 (Phase 3 PRELIM closure — quick task 260427-j9g; REQ-10 literal gate met B1-B7=67.9%; reviewer pushback flagged local-optimum risk; held-out analysis showed mixed signal (B8 real miss, B10 rubric-too-narrow, B9 concept-not-in-corpus); robustness slice deferred to next session per Curry directive "下个 session 干")
-Stopped at: Phase 3 PRELIM CLOSED. Phase 3.5 robustness micro-slice is the explicit next-session top priority.
-Resume file: progress.txt (root) + this STATE.md + .planning/quick/260427-j9g-.../260427-j9g-SUMMARY.md (Robustness caveat section)
-Next-session entry: user says "继续" → **Phase 3.5 robustness slice** (NOT Phase 4 yet):
-  1. Fix B10 expected_paths rubric (add digest/buildDigest/fetchAllNotes/collector)
-  2. Joint alpha sweep on B1-B7 ∪ B8-B10 (0.4-0.8 step 0.1)
-  3. Index a second corpus + author 5-10 fresh NL queries + hand-eval
-  4. Write verdict; flip Phase 3 to truly closed OR expand 3.5 to fix retrieval algorithm
-After Phase 3.5 closes: either REQ-08 plumbing fix (Makefile/binary names) or `/gsd-new-milestone` for Phase 4. Software 3.0 strategic reframe (PROJECT.md d98b16c) becomes meaningful only after retrieval generalization is verified.
+Last session: 2026-04-27 (Phase 3.5 robustness slice — quick task 260427-nz9; alpha=0.6 plateau confirmed across 0.6/0.7/0.8; B10 rubric corrected legitimately; cross-corpus FSC strict 50.0% / generous 71.4% on 5/107 partial-indexed files; sub-check 4 full-FSC re-index BLOCKED by ollama qwen3-embedding:0.6b instability after ~130 sequential calls; Phase 3 stays prelim_complete pending 3.5b)
+Stopped at: Phase 3 PRELIM CLOSED, Phase 3.5 sub-checks 1-3 pass, sub-check 4 blocked. Local-optimum-by-construction concern is INVALIDATED but cross-corpus generalization only weakly validated.
+Resume file: progress.txt + this STATE.md + .planning/quick/260427-nz9-.../260427-nz9-SUMMARY.md (full Phase 3.5 verdict)
+Next-session entry: user says "继续" → **Phase 3.5b** unblock ollama embedding endpoint instability:
+  Option 1 (recommended): add retry+exponential-backoff in embedder.rs (~30min, cheapest)
+  Option 2: switch to candle in-process per ARCH §9.5 (~2-4hr, cleanest, removes ollama dep)
+  Option 3: throttle indexer batch size + sleep (~15min, ugly but no code change)
+After Phase 3.5b unblocks: re-index FSC to full ~2300 symbols, re-run F1-F10 + hand-judge with full corpus, then flip Phase 3 to `phase_3_complete` if data passes 50% strict bar. After that: REQ-08 plumbing fix OR `/gsd-new-milestone` Phase 4. Software 3.0 strategic reframe (PROJECT.md d98b16c) becomes meaningful only after retrieval generalization is verified.
 
 ## Linear cross-reference
 
