@@ -599,6 +599,26 @@ Reference: this is a documented failure mode in production RAG systems (`embeddi
 
 Provenance: Phase 3.5b micro-slice (`260427-e7r`), Curry review 2026-04-27.
 
+### 9.10 Embedder Runtime: Candle Migration (Phase 4)
+
+**Decision trigger.** Phase 3.5b retry probe (commit `8f4da66`) confirmed ollama burst-failure mode is unrecoverable at the call layer: per-call 60s reqwest send-timeout × 5 attempts = 5 min/symbol, total ~20 min wall-clock per fail-cluster with zero recovery. Throttle and HTTP keep-alive workarounds explicitly considered and rejected as symptom-treatment; candle in-process inference is the architecturally locked direction since §9.1 D-W5.
+
+**Target.** Replace `embedder.rs` `embed_once()` HTTP call with candle in-process tensor inference. Preserve §9.8 version-hash discipline: must produce dim=1024 vectors, must apply the same instruction prefix, must be bit-equivalent (or explicitly version-bumped) to the current ollama qwen3-embedding-0.6b output. Retry wrapper from §9.9 stays as defensive-only — network is gone, so only OOM / CUDA-unavailable / model-load-failure transients remain.
+
+**Known unknown — model loader path.** Candle ships no native qwen3-embedding-0.6b loader. The model is Qwen2-family (GQA, custom BPE tokenizer); the standard candle BERT-family encoder examples target safetensors-formatted BERT and are not directly compatible. Cheap path to validate first:
+
+1. Convert HF weights to GGUF via `llama.cpp/convert_hf_to_gguf.py` (Qwen series is supported).
+2. Load via `candle-transformers` `quantized::llama` loader.
+3. Validate dim=1024 + instruction prefix bit-equivalence on a 30-query regression set against current ollama output.
+
+This avoids hand-writing both the forward pass and a custom BPE tokenizer. Self-written safetensors loader is the expensive fallback, only justified if the GGUF path fails the equivalence check.
+
+**Phase 3 interim.** Keep §9.1 ollama config + Phase 3.5b retry+fail-loud (§9.9). Index path bails clean at threshold; Query path UX degraded by ~7.5s sleep chain on transient errors — acceptable until Phase 4 lands the `EmbedError` split per §9.9.
+
+**Anchor discipline.** Phase 4 PLAN's first sub-task locks this section number. All candle-related decisions — weight format pick (GGUF vs safetensors), tokenizer source, version-hash refresh policy, regression-test methodology, optional ONNX fallback per §10.2 — hang here. Do not split into §9.11 / §9.12 until this anchor exceeds ~5 locked sub-decisions (Kolmogorov: collapse early, expand only when redundancy is observed).
+
+Provenance: Phase 3.5b SUMMARY § "Decision triggered" (commit `8f4da66`), Curry review 2026-04-27.
+
 ### 9.6 Pending storage backend pick (Phase 2 Spike)
 
 The storage trait shape is locked (D-R2). The implementation choice between `redb` (pure KV) and `rusqlite + sqlite-vec` (SQL + vector + FTS5 in one file) is a Phase 2 Spike output, not a Phase 1 decision. POC currently uses rusqlite + FTS5 + Rust-side cosine (no sqlite-vec extension); Phase 2 bench will determine the production pick. The trait abstraction allows either to land without re-architecting downstream code.
