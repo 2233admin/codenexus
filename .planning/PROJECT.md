@@ -48,6 +48,24 @@ Code + knowledge graph tool. A Rust core (parser/embedder/storage/git overlay) t
 - **Cargo workspace / sub-crates inside core/ (MVP)** — single binary, single crate; restructure to workspace only if Phase 4 demands it.
 - **Embedding GitNexus PolyForm code** — clean-room policy; designs studied, code never copied or referenced. CodeFlow MIT may be ported (Apache 2.0 upgrade, with attribution).
 
+## Differentiation vs Prior Art
+
+<!-- "What we have that GitNexus 1.6.3 / CodeFlow don't." Real moat, not marketing. -->
+<!-- Each item must point to in-repo evidence — no aspirational claims. -->
+
+- **Graded LLM-judge eval pipeline** — GitNexus has zero eval infrastructure; every config change is a coin flip. CodeNexus has spike-001 7-query baseline + R3/R4/R5/R6/R6c LLM-judge methodology rounds documented in `experiments/poc-retrieval/eval/` (commit `8bf6a4a` axis-3 graph 23.3% > hand 15% > retrieval 0% with N≥3 seeds, EVAL Rule 6). When we change retrieval, we know within minutes if it helped. Compounds across the project lifetime — every other moat below was discoverable because of this.
+- **Parameterized RRF fusion** — GitNexus hardcodes its BM25+vector blend. CodeNexus reads `config/recipe.yaml` for `bm25_weight` / `vector_weight` / `rrf_k`, exposed as `OperationRequest::Query` args (see `experiments/poc-retrieval/src/search.rs`). Tunable per-query for ablation; Phase 4 can ship per-repo recipes.
+- **Incremental indexing readiness** — GitNexus docs explicitly mark "incremental indexing is on the roadmap" (i.e. not built). CodeNexus already has `Store::list_symbols_by_file` (`experiments/poc-retrieval/src/storage.rs`) — the primitive needed to diff files since last index and update only deltas. Phase 4 wires it into a watcher; the data structure is ready today.
+- **Edge-confidence on caller results** — Calls edges carry `confidence: f64` (resolver step 1=1.0 direct AST, step 2=0.95 import-resolved, step 3=0.9 same-file fallback) and `list_callers` surfaces fold-take-max per (caller, target) pair (commit `4af9f4d`, ARCH §3.5.4). Agents can distinguish "definitely calls" from "might call" — neither GitNexus nor CodeFlow exposes this.
+
+## Phase 4+ Backlog (committed but not scheduled)
+
+<!-- Things we will build, design space already locked. Differs from "Out of Scope" (never) and "Active" (now). -->
+
+- **Leiden community detection** — `petgraph` Rust binding (~30 lines) in graph builder. Inputs: existing edge list. Outputs: community labels for graph clustering. Reuses `confidence: f64` directly as edge weight — zero added cost since the field already exists from REQ-06 spike. Useful for "show me the call graph clusters" queries and downstream PPR teleport-set construction.
+- **Confidence-as-Leiden-weight** — already plumbed (see Differentiation #4). Phase 4 Leiden flips a switch, doesn't add a column.
+- **Spike → core/ promotion or alias** — `core/` is currently a 13-line `println!` placeholder superseded by `experiments/poc-retrieval/` since REQ-06. Cleanup options: (a) cargo workspace with `core` aliasing `poc-retrieval`, (b) `git mv experiments/poc-retrieval core` and delete the placeholder, (c) leave as-is with STATE.md note (current state). Decision deferred; not blocking MVP.
+
 ## Context
 
 CodeNexus emerged from spike 001 (`obsidian-llm-wiki/.planning/spikes/001-embed-quality-on-code/`) which measured GitNexus 1.6.3's hybrid search at 43% top-5 precision over 7 NL queries — well below usable threshold. Q5 (negative test, "rate limiting middleware" with no such concept in corpus) returned 6 LIMIT-named constants, confirming pure keyword fallback with no semantic discrimination. Snowflake-arctic-embed-xs (22M params) is the bottleneck embedder.
