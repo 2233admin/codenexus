@@ -1,0 +1,36 @@
+/* CodeNexus UI — minimal layout. No animations, no media queries. */
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; font-family: Consolas, Menlo, monospace; font-size: 13px; }
+
+#topbar {
+  height: 50px; padding: 8px 12px; border-bottom: 1px solid #ccc;
+  display: flex; gap: 8px; align-items: center;
+}
+#topbar #q       { flex: 1; padding: 6px 8px; font: inherit; }
+#topbar #repo-hash { width: 280px; padding: 6px 8px; font: inherit; }
+#topbar button   { padding: 6px 12px; font: inherit; cursor: pointer; }
+#topbar button[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+main { display: flex; height: calc(100% - 50px - 22px); }
+#results-pane { flex: 0 0 40%; overflow: auto; border-right: 1px solid #ccc; }
+#graph-pane   { flex: 1; }
+#cy { width: 100%; height: 100%; }
+
+#results { width: 100%; border-collapse: collapse; }
+#results th, #results td { padding: 4px 6px; border-bottom: 1px solid #eee; text-align: left; }
+#results th { background: #f4f4f4; position: sticky; top: 0; }
+#results tbody tr { cursor: pointer; }
+#results tbody tr:hover { background: #f8f8ff; }
+#results tbody tr.selected { background: #e0e8ff; }
+#results td.score { text-align: right; font-variant-numeric: tabular-nums; }
+
+#status { height: 22px; padding: 2px 12px; border-top: 1px solid #ccc; color: #666; font-size: 12px; }
+#status.error { color: #c00; }
+
+/* Confidence color bands — applied to caller cytoscape nodes via .style() calls in app.js,
+   but also defined here as CSS classes for any DOM elements rendered for callers. */
+.conf-high  { color: #1a7f37; }   /* >= 0.95 */
+.conf-mid   { color: #9a6700; }   /* 0.7  - 0.95 */
+.conf-low   { color: #d1881a; }   /* 0.5  - 0.7 */
+.conf-poor  { color: #cf222e; }   /* <  0.5 */

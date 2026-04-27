@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CodeNexus</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="cytoscape.min.js"></script>
+</head>
+<body>
+  <header id="topbar">
+    <input type="search" id="q" placeholder="Search code..." autocomplete="off">
+    <input type="text" id="repo-hash" placeholder="repo_hash (from index_repo)">
+    <button id="search-btn">Search</button>
+    <button id="callers-btn" disabled>List callers of selected</button>
+  </header>
+  <main>
+    <section id="results-pane">
+      <table id="results">
+        <thead>
+          <tr>
+            <th>Name</th><th>Kind</th><th>Path</th>
+            <th>BM25</th><th>Vector</th><th>RRF</th><th>Final</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+    <section id="graph-pane">
+      <div id="cy"></div>
+    </section>
+  </main>
+  <footer id="status"></footer>
+  <script src="app.js"></script>
+</body>
+</html>
