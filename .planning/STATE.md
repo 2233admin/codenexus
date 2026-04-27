@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: phase_3_active
-stopped_at: Phase 3 REQ-08 //go:embed plumbing ✓ (commits f5b6621 + 59b725b); REQ-09 UI //go:embed pending next
-last_updated: "2026-04-27T04:55:00.000Z"
-last_activity: 2026-04-27 — Completed quick task 260427-hoc: REQ-08 //go:embed Rust core binary plumbing (embed.go + extractRustBinary + Makefile EMBED_DIR + .gitignore); 9 plan invariants verified. Mid-execution handoff (executor returned after Task 1, orchestrator finished Task 2 + fixed clean target bug missed by executor)
+stopped_at: Phase 3 REQ-09 UI //go:embed ✓ (commits ec3849e + dfdcb95); REQ-10 precision measurement next
+last_updated: "2026-04-27T05:30:00.000Z"
+last_activity: 2026-04-27 — Completed quick task 260427-i0c: REQ-09 UI bundle (vanilla JS + cytoscape.js, no build step, option B git mv); 12/12 plan invariants verified. Mid-execution handoff again (executor returned partial, orchestrator wrote SUMMARY.md + STATE update). Also: confidence uplift (4af9f4d) + Software 3.0 strategic reframe in PROJECT.md (7f6f44d + d98b16c)
 progress:
   total_phases: 6
   completed_phases: 1
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-26)
 
 **Core value:** Top-5 NL search precision ≥ 60% on the spike-001 query set, exposed as an open A2A endpoint that any agent can call.
-**Current focus:** Phase 3 (MVP) — REQ-06 ✓, REQ-07 ✓, REQ-08 ✓ (plumbing only, real binary smoke deferred); REQ-09 UI //go:embed next
+**Current focus:** Phase 3 (MVP) — REQ-06 ✓, REQ-07 ✓, REQ-08 ✓, REQ-09 ✓ (all plumbing-only, real binary + browser smoke deferred); REQ-10 precision measurement next
 
 ## Current Position
 
 Phase: 3 of 6 (MVP)
-Plan: REQ-06 + REQ-07 + REQ-08 done (3 of 5)
-Status: REQ-09 UI //go:embed next (same plumbing pattern as REQ-08 but simpler — http.FS over embed.FS, no extraction); REQ-10 precision measurement after stack runs end-to-end
-Last activity: 2026-04-27 — Phase 3 REQ-08 //go:embed plumbing green (commits f5b6621 + 59b725b, 9/9 invariants verified)
+Plan: REQ-06 + REQ-07 + REQ-08 + REQ-09 done (4 of 5)
+Status: REQ-10 precision measurement next (≥ 60% top-5 on spike-001 7 queries vs GitNexus 1.6.3 baseline 43%); requires running stack end-to-end (real Rust binary + indexed repo + smoke against live /healthz)
+Last activity: 2026-04-27 — Phase 3 REQ-09 UI bundle green (commits ec3849e + dfdcb95, 12/12 invariants verified, option B git mv'd ui/ → server/internal/ui/)
 
-Progress: [████░░░░░░] 33% (Phase 1 closed + REQ-06 + REQ-07 + REQ-08 of 5 in Phase 3)
+Progress: [█████░░░░░] 44% (Phase 1 closed + REQ-06 + REQ-07 + REQ-08 + REQ-09 of 5 in Phase 3)
 
 ## Performance Metrics
 
@@ -76,13 +76,15 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-- REQ-09 embedded HTML/JS UI (vanilla + HTMX + cytoscape.js); pattern: `//go:embed all:ui` in server/cmd/serve.go (or new server/internal/ui/embed.go); chi mounts `http.FS(uiFS)` at /ui/*. Simpler than REQ-08 — no extraction needed
-- REQ-10 MVP precision ≥ 60% measurement on spike-001 7-query baseline (after REQ-09 lands + real Rust /healthz round-trip smoke)
+- REQ-10 MVP precision ≥ 60% measurement on spike-001 7-query baseline (after real Rust /healthz round-trip smoke against running stack); GitNexus 1.6.3 baseline 43%
 - Real spawn-and-restart smoke (REQ-07 acceptance #1-#3): blocked on `make build-core` producing a working Rust binary. With binary present, smoke (1) `serve --port 8080` starts both Go HTTP + extracted Rust, (2) Rust kill → 5s restart per supervisor backoff, (3) MCP query stdio round-trip
-- 150 MB total size budget verification (REQ-08 acceptance #2): blocked on real Rust release build. Expected ~110-150 MB total
+- Real browser load smoke (REQ-09 acceptance #1-#3): same blocker; verify `localhost:8080/` redirects to /ui/, search returns 4-score-column results, list_callers renders cytoscape graph with confidence color bands
+- 150 MB total size budget verification (REQ-08 acceptance #2): blocked on real Rust release build. Expected ~110-150 MB Go + cytoscape 374 KB + UI text < 1 MB
 - ldflags coreVersion injection: replace hardcoded `"dev"` with `-ldflags "-X .../supervisor.coreVersion=v0.x.y"` (mechanism documented in embed.go line 36 comment)
 - (deferred) Phase 2 storage micro-bench: optional Criterion harness on insert/lookup/vector top-5/FTS5; skip per ship-it directive
 - (deferred) Nomic Embed Code shadow re-test on AU 5090 host (CPU segfault here)
+- (Phase 4+ tactical, see PROJECT.md): Leiden community detection (~30 lines petgraph), confidence-as-Leiden-weight (free), spike → core/ promotion or alias
+- (Phase 4+ strategic, see PROJECT.md, Software 3.0 reframe): agent behavioral alignment (target ≤5% graph-tool miss rate vs CodeCompass 58% baseline), cross-session codebase understanding accumulation via memU integration, architectural decision semantic indexing (query_constraints A2A operation)
 
 ### Blockers/Concerns
 
@@ -97,6 +99,8 @@ Recent decisions affecting current work:
 |---|-------------|------|---------|-----------|
 | 260427-h71 | REQ-07: Go server scaffold (cobra+chi+mcp-go+supervisor) per ARCH §2/§3.5/§5.5 | 2026-04-27 | 8ff8e11 + 54f23b1 | [260427-h71-req-07-go-server-scaffold-cobra-chi-mcp-](./quick/260427-h71-req-07-go-server-scaffold-cobra-chi-mcp-/) |
 | 260427-hoc | REQ-08: //go:embed Rust core binary plumbing (embed.go + extraction + Makefile EMBED_DIR) | 2026-04-27 | f5b6621 + 59b725b | [260427-hoc-req-08-go-embed-rust-core-binary-into-go](./quick/260427-hoc-req-08-go-embed-rust-core-binary-into-go/) |
+| (no-id) | Edge confidence on list_callers + Makefile/STATE realign + Software 3.0 reframe in PROJECT.md | 2026-04-27 | 4af9f4d + 7f6f44d + d98b16c | (no quick dir — micro-task + doc-only commits) |
+| 260427-i0c | REQ-09: UI bundle (vanilla JS + cytoscape.js, no build step, option B git mv) | 2026-04-27 | ec3849e + dfdcb95 | [260427-i0c-req-09-go-embed-ui-bundle-vanilla-js-htm](./quick/260427-i0c-req-09-go-embed-ui-bundle-vanilla-js-htm/) |
 
 ## Deferred Items
 
@@ -109,10 +113,10 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-27 (Phase 3 third session — REQ-08 //go:embed plumbing done; 9/9 invariants verified; mid-execution handoff demonstrated executor-returns-partial recovery is viable when orchestrator picks up cleanly)
-Stopped at: Phase 3 REQ-08 ✓ plumbing-only (real Rust binary smoke deferred); REQ-09 UI //go:embed next
+Last session: 2026-04-27 (Phase 3 fourth session — REQ-09 UI done + confidence uplift + Software 3.0 strategic reframe in PROJECT.md; 12/12 plan invariants verified; second mid-execution handoff successfully recovered; 4-of-5 Phase 3 done in single session)
+Stopped at: Phase 3 REQ-09 ✓ scaffold (real browser smoke deferred); REQ-10 precision measurement is the last Phase 3 gate
 Resume file: progress.txt (root) + this STATE.md
-Next-session entry: user says "继续" or "REQ-09" → //go:embed UI bundle into Go server. Pattern mirrors REQ-08 (`//go:embed all:ui` in same package as chi router) but simpler: chi serves via `http.FS(uiFS)`, no extraction. Splice point: server/cmd/serve.go line where /ui/* placeholder responds 200 "UI not embedded yet"
+Next-session entry: user says "继续" or "REQ-10" → blocked on `make build-core` producing a working Rust binary first. Order: (a) build Rust release binary from experiments/poc-retrieval, (b) `make build` produces fat-binary bin/codenexus(.exe), (c) run codenexus serve, (d) execute spike-001 7-query eval harness against the running stack, (e) compare top-5 precision vs GitNexus 1.6.3 baseline 43%. If geq 60% → Phase 3 closes. Phase 4+ backlog (tactical + Software 3.0 strategic) is documented in PROJECT.md
 
 ## Linear cross-reference
 
