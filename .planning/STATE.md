@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: phase_2_active
-stopped_at: Phase 1 deliverables shipped — entering Phase 2 storage spike
-last_updated: "2026-04-27T00:00:00.000Z"
-last_activity: Phase 1 closed — ARCHITECTURE.md §9 retrieval locked, REQ-02 expanded to 4 edge kinds with PPR receipt, 5 eval rounds (R5/R6/R6b/R6c/R7) complete, axis-3 graph layer demonstrated
+status: phase_3_active
+stopped_at: Phase 3 REQ-06 A2A endpoint shipped (commit e0727c2); REQ-07 Go server scaffold pending next session
+last_updated: "2026-04-27T12:15:00.000Z"
+last_activity: Phase 3 first session — REQ-06 axum A2A endpoint serve+curl green smoke; storage research-conclusive (sqlite-vec) so Phase 2 micro-bench skipped per ship-it directive
 progress:
   total_phases: 6
   completed_phases: 1
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-26)
 
 **Core value:** Top-5 NL search precision ≥ 60% on the spike-001 query set, exposed as an open A2A endpoint that any agent can call.
-**Current focus:** Phase 2 (Stack Spike) — storage backend pick (spike-008 pending)
+**Current focus:** Phase 3 (MVP) — REQ-06 ✓ done, REQ-07 Go server scaffold next
 
 ## Current Position
 
-Phase: 2 of 6 (Stack Spike)
-Plan: — of 6 in current phase
-Status: Storage backend spike pending (redb vs rusqlite+sqlite-vec — see §10.1 D-R1 + §9.6)
-Last activity: 2026-04-27 — Phase 1 closed, entering Phase 2 storage spike
+Phase: 3 of 6 (MVP)
+Plan: REQ-06 done (1 of 5)
+Status: REQ-07 Go server scaffold next; REQ-08 fat-binary depends on REQ-07; REQ-09 UI depends on REQ-07
+Last activity: 2026-04-27 — Phase 3 REQ-06 axum A2A endpoint green smoke (commit e0727c2)
 
-Progress: [█░░░░░░░░░] 17%
+Progress: [██░░░░░░░░] 22% (Phase 1 closed + REQ-06 of 5 in Phase 3)
 
 ## Performance Metrics
 
@@ -69,10 +69,17 @@ Recent decisions affecting current work:
 - 2026-04-26: UI — pivoted Tauri → axum/Go-served web (option B).
 - 2026-04-27: Phase 1 closed. ARCHITECTURE.md §9.1-§9.8 all locked. REQ-02 expanded to 4 edge kinds (Calls + Imports + Implements + Extends, Overrides Phase 3+). LLM-judge graded 0-3 N>=3 seeds primary metric (EVAL Rule 6). Path B Jina reranker NOT adopted (3 LLM-judge methodologies consistent — R5/R6/R6c).
 - 2026-04-27: User directive — ship-it pivot. After Phase 2 storage spike, go straight to Phase 3 MVP build (axum A2A endpoint + Go MCP server + fat-binary). No more eval rounds unless explicitly requested.
+- 2026-04-27: Phase 2 storage spike SKIPPED — research-conclusive verdict (rusqlite+sqlite-vec) per .planning/research/storage_backend.md; micro-bench recommended but not blocking; ship-it directive prefers building over re-validating.
+- 2026-04-27: REQ-06 A2A endpoint ✓ — commit e0727c2; axum 0.7 + tokio 1.40 + 3 new src/ files (a2a, server, task_state); 4 operations (Query/GetSymbol/ListCallers/IndexRepo) working end-to-end; smoke green on existing poc.db (52 files / 2116 symbols / 877+ edges).
 
 ### Pending Todos
 
-- Phase 2 spike-008 pending: redb vs rusqlite+sqlite-vec storage backend benchmark
+- REQ-07 Go server scaffold (chi + mark3labs/mcp-go + cobra): server/{go.mod,main.go,cmd/serve.go,internal/...}
+- REQ-08 fat-binary go:embed Rust binary inside Go (depends on REQ-07)
+- REQ-09 embedded HTML/JS UI vanilla + HTMX + cytoscape.js (depends on REQ-07)
+- REQ-10 MVP precision ≥ 60% measurement on spike-001 7-query baseline (after REQ-06 stack runs)
+- (deferred) Phase 2 storage micro-bench: optional Criterion harness on insert/lookup/vector top-5/FTS5; skip per ship-it directive
+- (deferred) Nomic Embed Code shadow re-test on AU 5090 host (CPU segfault here)
 
 ### Blockers/Concerns
 
@@ -92,9 +99,10 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-27 (Phase 1 closure + Phase 2 entry)
-Stopped at: Phase 2 storage spike pending; Phase 3 A2A endpoint design doc landed
-Resume file: .planning/research/a2a_endpoint.md (Phase 3 build-ready plan) + .planning/research/storage_backend.md (Phase 2 spike spec)
+Last session: 2026-04-27 (R5 → Phase 3 REQ-06, 11 commits, ship-it pivot done)
+Stopped at: Phase 3 REQ-06 ✓ green smoke; REQ-07 Go server scaffold pending
+Resume file: progress.txt (root) + this STATE.md
+Next-session entry: user says "继续" or "REQ-07" → write Go scaffold per ARCHITECTURE.md §3+§5+§7 + REQ-07 acceptance
 
 ## Linear cross-reference
 

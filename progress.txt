@@ -1,0 +1,83 @@
+CodeNexus — Session log
+
+==========================================================================
+2026-04-27 marathon session — R5 → Phase 3 REQ-06 (11 commits)
+==========================================================================
+
+WHAT DONE (chronological):
+  560eeff R5      pointwise LLM-judge A/B (binary 0/1 vs graded 0-3)
+                  → κ tied within noise, Spearman ρ=0.38 carries graded signal
+  946986e         R5 review absorb (EVAL Rule 6 + CALLS BFS spec + Embedder
+                  version lock + Qwen3-Reranker-4B candidate to ARCH §9.5)
+  416a3dc         REQ-02 expand 1→4 edge kinds (Calls + Imports + Implements
+                  + Extends, Overrides Phase 3+, naive 3-step resolver locked)
+  a89b8e3 R6      pairwise LLM-judge (R3 RRF-only vs R4 RRF+rerank), p=0.084
+                  trend toward A; MiniMax /v1 probe (M2.7-highspeed sweet spot);
+                  Qwen3-Reranker-4B candidate detail
+  748e843 R6.5    graph builder POC for 4 edge kinds (877 edges 8.9s build,
+                  axis-3 stretch: graph 100% vs retrieval ~0% on existence
+                  proof "who calls assertRealPathInsideVault")
+  530291f R6b     position-bias randomization confirms R6 holds (Δ within
+                  stochastic noise; +10pp 1st-shown advantage but distributes
+                  evenly across A/B)
+  57c6e43         R5b verbosity REGRESSION (κ 0.661 → 0.405, prompt reverted)
+                  + R6c two-orderings consistent (margin collapses to +2)
+                  + Nomic Embed Code shadow inconclusive (CPU segfault on
+                  this host, needs AU 5090 retest)
+  32882a2         graph gap-fill (constructor + confidence + namespace) +
+                  PPR library 4 unit tests, total edges 877→923
+  8bf6a4a R7      query-graph CLI subcommand + axis-3 sweep C1-C10 →
+                  15% precision_at_5 vs ~0% retrieval baseline; EVAL Rule 3
+                  pattern reproduces (hand-matcher rejects right neighbors)
+  e7f6534         5-agent ship-it pivot wave: STATE Phase 1→2 transition,
+                  storage backend research (verdict: rusqlite+sqlite-vec),
+                  A2A endpoint build-ready spec, LLM-judge re-eval axis-3
+                  (23.3% > hand 15% > retrieval 0%), queries.json subject
+                  schema upgrade
+  e0727c2 MVP     A2A endpoint serve+curl green smoke — REQ-06 ✓
+                  axum 0.7 + tokio 1.40 + 3 new src/ files (a2a, server,
+                  task_state) + Serve subcommand + 4 ops working end-to-end
+
+PHASE STATUS:
+  Phase 1 (Foundation Design)  ✓ closed (ARCHITECTURE.md §9.1-§9.8 locked)
+  Phase 2 (Stack Spike)        ✓ research-conclusive (storage = sqlite-vec,
+                                   micro-bench optional, skipped per ship-it)
+  Phase 3 (MVP)
+    REQ-06 Rust core A2A          ✓ green smoke 2026-04-27
+    REQ-07 Go server (chi+mcp-go) — pending (~30-45min, ROADMAP next)
+    REQ-08 fat-binary go:embed    — pending (depends on REQ-07)
+    REQ-09 embedded HTML/JS UI    — pending (depends on REQ-07)
+    REQ-10 MVP precision ≥ 60%    — measurable after REQ-06 stack runs
+
+WHAT BLOCKED:
+  - Nomic Embed Code shadow eval needs AU 5090 host retest (CPU segfault here)
+  - REQ-07 Go scaffold is the next dependency for REQ-08 / REQ-09
+
+NEXT SESSION RESUME:
+  $ cd D:/projects/codenexus
+  $ git log --oneline -3       # confirm e0727c2 last commit
+  $ cat progress.txt           # this file
+  $ cat .planning/STATE.md     # phase pointer
+  $ cat .planning/research/a2a_endpoint.md  # build-ready spec already used
+
+  User says "继续" or "REQ-07" → I write Go scaffold:
+    server/go.mod, main.go, cmd/serve.go, internal/{supervisor,a2a_client,mcp_handler}.go
+    Per ARCHITECTURE.md §3 (A2A schema), §5 (state ownership), §7 (Go server
+    spawns Rust core + lifecycle), REQ-07 acceptance criteria.
+
+  Smoke: ./codenexus serve --port 8080 should:
+    - spawn ./poc-retrieval serve --port 9876 as child process
+    - serve chi router on :8080 with routes that proxy to Rust core
+    - register MCP `query` tool round-tripping correctly
+
+KEY DOCS POINTERS:
+  .planning/STATE.md                — phase pointer, decisions log
+  .planning/research/a2a_endpoint.md — REQ-06 build spec (already used)
+  .planning/research/storage_backend.md — sqlite-vec verdict
+  docs/ARCHITECTURE.md §3, §5, §7    — A2A schema + Go server spec
+  experiments/poc-retrieval/eval/round_*_results.md — eval rounds R5-R7c
+  experiments/poc-retrieval/eval/spike-006-graph-build.md — graph layer
+  experiments/poc-retrieval/eval/spike-007-graph-axis3.md — axis-3 sweep
+
+Session ended: 2026-04-27 ship-it pivot complete.
+Next session: REQ-07 Go server scaffold.
