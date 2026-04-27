@@ -16,3 +16,5 @@ _probe_*.py
 _*_probe.py
 _*_probe.log
 round_*_smoke*.json
+*.log
+*_run.log

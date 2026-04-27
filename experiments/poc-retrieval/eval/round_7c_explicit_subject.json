@@ -1,0 +1,441 @@
+{
+  "n_queries_total": 10,
+  "n_excluded_unindexed": 2,
+  "n_scored": 8,
+  "avg_precision_at_5_scored": 0.1875,
+  "avg_precision_at_5_all10": 0.15,
+  "unresolved_subjects_heuristic": 1,
+  "r3_retrieval_baseline_axis3": 0.0,
+  "spike007_baseline_all10": 0.15,
+  "kinds": "Calls,Implements,Extends,Imports",
+  "results": [
+    {
+      "id": "C1",
+      "query": "who calls assertRealPathInsideVault",
+      "expected_paths": [
+        "vault_create",
+        "vault_modify",
+        "vault_delete"
+      ],
+      "negative": false,
+      "subject": "assertRealPathInsideVault",
+      "entry_ids": [
+        534,
+        833
+      ],
+      "top5": [
+        "mcp-server\\src\\connector\\fs-transport.ts:resolve",
+        "mcp-server\\src\\index.ts:resolve",
+        "mcp-server\\src\\index.ts:err",
+        "mcp-server\\src\\index.ts:dispatch",
+        "recipes\\collectors\\linear-collector.ts:map"
+      ],
+      "top5_full": [
+        {
+          "kind": "method_definition",
+          "name": "resolve",
+          "path": "mcp-server\\src\\connector\\fs-transport.ts",
+          "score": 0.1846300164585388
+        },
+        {
+          "kind": "method_definition",
+          "name": "resolve",
+          "path": "mcp-server\\src\\index.ts",
+          "score": 0.10886998823693542
+        },
+        {
+          "kind": "function_declaration",
+          "name": "err",
+          "path": "mcp-server\\src\\index.ts",
+          "score": 0.05155205911195657
+        },
+        {
+          "kind": "method_definition",
+          "name": "dispatch",
+          "path": "mcp-server\\src\\index.ts",
+          "score": 0.0256459634911297
+        },
+        {
+          "kind": "lexical_declaration",
+          "name": "map",
+          "path": "recipes\\collectors\\linear-collector.ts",
+          "score": 0.020001712935726623
+        }
+      ],
+      "precision_at_5": 0.0,
+      "note": ""
+    },
+    {
+      "id": "C2",
+      "query": "what operations does ObsidianAdapter implement",
+      "expected_paths": [
+        "read",
+        "write",
+        "search",
+        "list"
+      ],
+      "negative": false,
+      "subject": "ObsidianAdapter",
+      "entry_ids": [
+        153
+      ],
+      "top5": [
+        "mcp-server\\src\\index.ts:loadConfig",
+        "mcp-server\\src\\adapters\\interface.ts:VaultMindAdapter",
+        "mcp-server\\src\\adapters\\obsidian.test.ts:TMP_PORT_FILE",
+        "mcp-server\\src\\adapters\\obsidian.test.ts:adapter",
+        "mcp-server\\src\\index.ts:obsAdapter"
+      ],
+      "top5_full": [
+        {
+          "kind": "function_declaration",
+          "name": "loadConfig",
+          "path": "mcp-server\\src\\index.ts",
+          "score": 0.043247021636223036
+        },
+        {
+          "kind": "interface_declaration",
+          "name": "VaultMindAdapter",
+          "path": "mcp-server\\src\\adapters\\interface.ts",
+          "score": 0.0385281678656781
+        },
+        {
+          "kind": "lexical_declaration",
+          "name": "TMP_PORT_FILE",
+          "path": "mcp-server\\src\\adapters\\obsidian.test.ts",
+          "score": 0.030860368246421577
+        },
+        {
+          "kind": "lexical_declaration",
+          "name": "adapter",
+          "path": "mcp-server\\src\\adapters\\obsidian.test.ts",
+          "score": 0.02461665843201173
+        },
+        {
+          "kind": "lexical_declaration",
+          "name": "obsAdapter",
+          "path": "mcp-server\\src\\index.ts",
+          "score": 0.02461665843201173
+        }
+      ],
+      "precision_at_5": 0.0,
+      "note": ""
+    },
+    {
+      "id": "C3",
+      "query": "which adapter calls FilesystemAdapter as fallback",
+      "expected_paths": [
+        "ObsidianAdapter",
+        "fallback"
+      ],
+      "negative": false,
+      "subject": "FilesystemAdapter",
+      "entry_ids": [
+        2
+      ],
+      "top5": [
+        "mcp-server\\src\\index.ts:loadConfig",
+        "mcp-server\\src\\adapters\\interface.ts:VaultMindAdapter",
+        "mcp-server\\src\\index.ts:fsAdapter",
+        "mcp-server\\src\\adapters\\memu.ts:MemUAdapter",
+        "mcp-server\\src\\adapters\\obsidian.ts:ObsidianAdapter"
+      ],
+      "top5_full": [
+        {
+          "kind": "function_declaration",
+          "name": "loadConfig",
+          "path": "mcp-server\\src\\index.ts",
+          "score": 0.10018709900838672
+        },
+        {
+          "kind": "interface_declaration",
+          "name": "VaultMindAdapter",
+          "path": "mcp-server\\src\\adapters\\interface.ts",
+          "score": 0.08587491045163533
+        },
+        {
+          "kind": "lexical_declaration",
+          "name": "fsAdapter",
+          "path": "mcp-server\\src\\index.ts",
+          "score": 0.05956314802572058
+        },
+        {
+          "kind": "class_declaration",
+          "name": "MemUAdapter",
+          "path": "mcp-server\\src\\adapters\\memu.ts",
+          "score": 0.026634379094873307
+        },
+        {
+          "kind": "class_declaration",
+          "name": "ObsidianAdapter",
+          "path": "mcp-server\\src\\adapters\\obsidian.ts",
+          "score": 0.024234535212567035
+        }
+      ],
+      "precision_at_5": 0.5,
+      "note": ""
+    },
+    {
+      "id": "C4",
+      "query": "what error handler runs when vault_create fails preflight",
+      "expected_paths": [
+        "error",
+        "throw",
+        "PreflightError",
+        "VaultError"
+      ],
+      "negative": false,
+      "subject": "dispatch",
+      "entry_ids": [
+        569,
+        870
+      ],
+      "top5": [
+        "mcp-server\\src\\adapters\\registry.ts:get",
+        "recipes\\collectors\\linear-collector.ts:map",
+        "mcp-server\\src\\connector\\fs-transport.ts:resolve",
+        "mcp-server\\src\\recipes\\_framework.ts:isArray",
+        "mcp-server\\src\\index.ts:resolve"
+      ],
+      "top5_full": [
+        {
+          "kind": "method_definition",
+          "name": "get",
+          "path": "mcp-server\\src\\adapters\\registry.ts",
+          "score": 0.03126141437794162
+        },
+        {
+          "kind": "lexical_declaration",
+          "name": "map",
+          "path": "recipes\\collectors\\linear-collector.ts",
+          "score": 0.030646735174728455
+        },
+        {
+          "kind": "method_definition",
+          "name": "resolve",
+          "path": "mcp-server\\src\\connector\\fs-transport.ts",
+          "score": 0.02188292480300158
+        },
+        {
+          "kind": "lexical_declaration",
+          "name": "isArray",
+          "path": "mcp-server\\src\\recipes\\_framework.ts",
+          "score": 0.020915327269048285
+        },
+        {
+          "kind": "method_definition",
+          "name": "resolve",
+          "path": "mcp-server\\src\\index.ts",
+          "score": 0.014888040234124624
+        }
+      ],
+      "precision_at_5": 0.0,
+      "note": ""
+    },
+    {
+      "id": "C5",
+      "query": "what does concept_graph run call internally",
+      "expected_paths": [
+        "models"
+      ],
+      "negative": false,
+      "subject": "concept_graph",
+      "top5": [],
+      "precision_at_5": null,
+      "note": "subject_unindexed=true — excluded from precision aggregate"
+    },
+    {
+      "id": "C6",
+      "query": "who produces kb_meta records",
+      "expected_paths": [
+        "compiler",
+        "writer"
+      ],
+      "negative": false,
+      "subject": "kb_meta",
+      "top5": [],
+      "precision_at_5": null,
+      "note": "subject_unindexed=true — excluded from precision aggregate"
+    },
+    {
+      "id": "C7",
+      "query": "what reads Node tags field",
+      "expected_paths": [
+        "tags",
+        "search",
+        "filter"
+      ],
+      "negative": false,
+      "subject": "GraphNode",
+      "entry_ids": [
+        37,
+        766
+      ],
+      "top5": [
+        "mcp-server\\src\\recipes\\recipes.test.ts:status",
+        "mcp-server\\src\\index.ts:edges",
+        "mcp-server\\src\\scripts\\memu-query.ts:kill",
+        "mcp-server\\src\\connector\\fs-transport.ts:fm",
+        "mcp-server\\src\\adapters\\registry.ts:adapter"
+      ],
+      "top5_full": [
+        {
+          "kind": "lexical_declaration",
+          "name": "status",
+          "path": "mcp-server\\src\\recipes\\recipes.test.ts",
+          "score": 0.0
+        },
+        {
+          "kind": "lexical_declaration",
+          "name": "edges",
+          "path": "mcp-server\\src\\index.ts",
+          "score": 0.0
+        },
+        {
+          "kind": "lexical_declaration",
+          "name": "kill",
+          "path": "mcp-server\\src\\scripts\\memu-query.ts",
+          "score": 0.0
+        },
+        {
+          "kind": "lexical_declaration",
+          "name": "fm",
+          "path": "mcp-server\\src\\connector\\fs-transport.ts",
+          "score": 0.0
+        },
+        {
+          "kind": "lexical_declaration",
+          "name": "adapter",
+          "path": "mcp-server\\src\\adapters\\registry.ts",
+          "score": 0.0
+        }
+      ],
+      "precision_at_5": 0.0,
+      "note": ""
+    },
+    {
+      "id": "C8",
+      "query": "what runs after MemUAdapter sync completes",
+      "expected_paths": [
+        "callback",
+        "onSync",
+        "afterSync",
+        "notify"
+      ],
+      "negative": false,
+      "subject": "MemUAdapter",
+      "entry_ids": [
+        95
+      ],
+      "top5": [
+        "mcp-server\\src\\index.ts:loadConfig",
+        "mcp-server\\src\\adapters\\interface.ts:VaultMindAdapter",
+        "mcp-server\\src\\adapters\\memu.test.ts:adapter",
+        "mcp-server\\src\\scripts\\memu-perf.ts:adapter",
+        "mcp-server\\src\\adapters\\memu.test.ts:TEST_DSN"
+      ],
+      "top5_full": [
+        {
+          "kind": "function_declaration",
+          "name": "loadConfig",
+          "path": "mcp-server\\src\\index.ts",
+          "score": 0.036926869243844904
+        },
+        {
+          "kind": "interface_declaration",
+          "name": "VaultMindAdapter",
+          "path": "mcp-server\\src\\adapters\\interface.ts",
+          "score": 0.0316658275906228
+        },
+        {
+          "kind": "lexical_declaration",
+          "name": "adapter",
+          "path": "mcp-server\\src\\adapters\\memu.test.ts",
+          "score": 0.021146124501973958
+        },
+        {
+          "kind": "lexical_declaration",
+          "name": "adapter",
+          "path": "mcp-server\\src\\scripts\\memu-perf.ts",
+          "score": 0.021146124501973958
+        },
+        {
+          "kind": "lexical_declaration",
+          "name": "TEST_DSN",
+          "path": "mcp-server\\src\\adapters\\memu.test.ts",
+          "score": 0.021146124501973958
+        }
+      ],
+      "precision_at_5": 0.0,
+      "note": ""
+    },
+    {
+      "id": "C9",
+      "query": "who calls OAuth2Provider",
+      "expected_paths": [],
+      "negative": true,
+      "subject": "OAuth2Provider",
+      "entry_ids": [],
+      "top5": [],
+      "top5_full": [],
+      "precision_at_5": 1.0,
+      "note": "subject unresolved (NEG correct)"
+    },
+    {
+      "id": "C10",
+      "query": "what does GitNexusAdapter call during indexing",
+      "expected_paths": [
+        "analyze",
+        "spawn",
+        "exec",
+        "ripgrep"
+      ],
+      "negative": false,
+      "subject": "GitNexusAdapter",
+      "entry_ids": [
+        24
+      ],
+      "top5": [
+        "mcp-server\\src\\index.ts:loadConfig",
+        "mcp-server\\src\\adapters\\interface.ts:VaultMindAdapter",
+        "mcp-server\\src\\index.ts:gnAdapter",
+        "mcp-server\\src\\adapters\\memu.ts:MemUAdapter",
+        "mcp-server\\src\\adapters\\obsidian.ts:ObsidianAdapter"
+      ],
+      "top5_full": [
+        {
+          "kind": "function_declaration",
+          "name": "loadConfig",
+          "path": "mcp-server\\src\\index.ts",
+          "score": 0.1001870990083867
+        },
+        {
+          "kind": "interface_declaration",
+          "name": "VaultMindAdapter",
+          "path": "mcp-server\\src\\adapters\\interface.ts",
+          "score": 0.08587491045163531
+        },
+        {
+          "kind": "lexical_declaration",
+          "name": "gnAdapter",
+          "path": "mcp-server\\src\\index.ts",
+          "score": 0.05956314802572058
+        },
+        {
+          "kind": "class_declaration",
+          "name": "MemUAdapter",
+          "path": "mcp-server\\src\\adapters\\memu.ts",
+          "score": 0.026634379094873307
+        },
+        {
+          "kind": "class_declaration",
+          "name": "ObsidianAdapter",
+          "path": "mcp-server\\src\\adapters\\obsidian.ts",
+          "score": 0.024234535212567035
+        }
+      ],
+      "precision_at_5": 0.0,
+      "note": ""
+    }
+  ]
+}

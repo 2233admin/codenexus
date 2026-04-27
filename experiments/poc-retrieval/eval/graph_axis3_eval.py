@@ -36,20 +36,24 @@ def matches(hit_path: str, hit_name: str, expected_paths: list[str]) -> bool:
     return False
 
 
-def run_query_graph(query_text: str, top: int = 5) -> dict:
+def run_query_graph(query_text: str, top: int = 5, subject: str | None = None) -> dict:
+    cmd = [
+        str(BIN),
+        "query-graph",
+        query_text,
+        "--db",
+        str(DB),
+        "--kinds",
+        KINDS,
+        "--top",
+        str(top),
+        "--json",
+    ]
+    # Explicit subject bypasses extract_subject heuristic in Rust
+    if subject:
+        cmd += ["--subject", subject]
     res = subprocess.run(
-        [
-            str(BIN),
-            "query-graph",
-            query_text,
-            "--db",
-            str(DB),
-            "--kinds",
-            KINDS,
-            "--top",
-            str(top),
-            "--json",
-        ],
+        cmd,
         capture_output=True,
         text=True,
         timeout=30,
@@ -75,8 +79,26 @@ def main():
     results = []
     total_precision = 0.0
     n_unresolved_subject = 0
+    n_excluded_unindexed = 0
     for q in axis3:
-        out = run_query_graph(q["query"])
+        # Skip queries whose subject is not in the TS-only indexed corpus
+        if q.get("subject_unindexed"):
+            n_excluded_unindexed += 1
+            print(f"{q['id']:5} SKIP (subject_unindexed=true: {q.get('subject','?')}) | {q['query'][:50]}")
+            results.append({
+                "id": q["id"],
+                "query": q["query"],
+                "expected_paths": q["expected_paths"],
+                "negative": q.get("negative", False),
+                "subject": q.get("subject"),
+                "top5": [],
+                "precision_at_5": None,  # excluded from aggregate
+                "note": f"subject_unindexed=true — excluded from precision aggregate",
+            })
+            continue
+        # Use explicit subject field if present, else fall back to extract_subject heuristic in Rust
+        explicit_subject = q.get("subject")
+        out = run_query_graph(q["query"], subject=explicit_subject)
         if "_error" in out or "_parse_error" in out:
             print(f"{q['id']:5} ERR  | {q['query'][:50]}")
             print(f"      err: {out.get('_error') or out.get('_parse_error')}")
@@ -146,25 +168,36 @@ def main():
             }
         )
 
-    n = len(results)
-    avg_precision = total_precision / n if n > 0 else 0.0
+    n_total = len(results)
+    scored = [r for r in results if r["precision_at_5"] is not None]
+    n_scored = len(scored)
+    avg_precision = total_precision / n_scored if n_scored > 0 else 0.0
+    avg_precision_all10 = total_precision / n_total if n_total > 0 else 0.0
     print()
     print(f"=== axis-3 graph-traversal precision_at_5 summary ===")
-    print(f"queries: {n}")
-    print(f"avg precision_at_5: {avg_precision:.3f} ({avg_precision*100:.1f}%)")
-    print(f"unresolved subjects: {n_unresolved_subject}")
+    print(f"queries total: {n_total}")
+    print(f"excluded (subject_unindexed): {n_excluded_unindexed}")
+    print(f"scored: {n_scored}")
+    print(f"avg precision_at_5 (scored {n_scored}): {avg_precision:.3f} ({avg_precision*100:.1f}%)")
+    print(f"avg precision_at_5 (all 10, excluded=0): {avg_precision_all10:.3f} ({avg_precision_all10*100:.1f}%)")
+    print(f"unresolved subjects (heuristic fail): {n_unresolved_subject}")
     print(f"R3 retrieval baseline (axis-3): ~0% (per round_3_results.md)")
-    print(f"Lift: {avg_precision*100:.1f}pp absolute")
+    print(f"spike-007 baseline (all 10): 15.0%")
+    print(f"Lift vs spike-007 (scored {n_scored}): {(avg_precision - 0.15)*100:+.1f}pp")
 
     summary = {
-        "n_queries": n,
-        "avg_precision_at_5": avg_precision,
-        "unresolved_subjects": n_unresolved_subject,
+        "n_queries_total": n_total,
+        "n_excluded_unindexed": n_excluded_unindexed,
+        "n_scored": n_scored,
+        "avg_precision_at_5_scored": avg_precision,
+        "avg_precision_at_5_all10": avg_precision_all10,
+        "unresolved_subjects_heuristic": n_unresolved_subject,
         "r3_retrieval_baseline_axis3": 0.0,
+        "spike007_baseline_all10": 0.15,
         "kinds": KINDS,
         "results": results,
     }
-    out_path = ROOT / "round_7_graph_axis3.json"
+    out_path = ROOT / "round_7c_explicit_subject.json"
     out_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"\nWrote {out_path}")
 
