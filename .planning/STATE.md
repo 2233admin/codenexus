@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: phase_3_active
-stopped_at: Phase 3 REQ-07 Go scaffold ✓ (commits 8ff8e11 + 54f23b1); REQ-08 fat-binary //go:embed pending next
-last_updated: "2026-04-27T04:30:00.000Z"
-last_activity: 2026-04-27 — Completed quick task 260427-h71: REQ-07 Go server scaffold (cobra+chi+mcp-go+supervisor) — 12 .go files, build/vet green, 7 plan invariants verified
+stopped_at: Phase 3 REQ-08 //go:embed plumbing ✓ (commits f5b6621 + 59b725b); REQ-09 UI //go:embed pending next
+last_updated: "2026-04-27T04:55:00.000Z"
+last_activity: 2026-04-27 — Completed quick task 260427-hoc: REQ-08 //go:embed Rust core binary plumbing (embed.go + extractRustBinary + Makefile EMBED_DIR + .gitignore); 9 plan invariants verified. Mid-execution handoff (executor returned after Task 1, orchestrator finished Task 2 + fixed clean target bug missed by executor)
 progress:
   total_phases: 6
   completed_phases: 1
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-26)
 
 **Core value:** Top-5 NL search precision ≥ 60% on the spike-001 query set, exposed as an open A2A endpoint that any agent can call.
-**Current focus:** Phase 3 (MVP) — REQ-06 ✓, REQ-07 ✓; REQ-08 fat-binary //go:embed next
+**Current focus:** Phase 3 (MVP) — REQ-06 ✓, REQ-07 ✓, REQ-08 ✓ (plumbing only, real binary smoke deferred); REQ-09 UI //go:embed next
 
 ## Current Position
 
 Phase: 3 of 6 (MVP)
-Plan: REQ-06 + REQ-07 done (2 of 5)
-Status: REQ-08 fat-binary //go:embed next (Go scaffold ready, just needs embed.FS extraction); REQ-09 UI //go:embed depends on REQ-07 ✓
-Last activity: 2026-04-27 — Phase 3 REQ-07 Go scaffold green (commits 8ff8e11 + 54f23b1, build/vet pass)
+Plan: REQ-06 + REQ-07 + REQ-08 done (3 of 5)
+Status: REQ-09 UI //go:embed next (same plumbing pattern as REQ-08 but simpler — http.FS over embed.FS, no extraction); REQ-10 precision measurement after stack runs end-to-end
+Last activity: 2026-04-27 — Phase 3 REQ-08 //go:embed plumbing green (commits f5b6621 + 59b725b, 9/9 invariants verified)
 
-Progress: [███░░░░░░░] 28% (Phase 1 closed + REQ-06 + REQ-07 of 5 in Phase 3)
+Progress: [████░░░░░░] 33% (Phase 1 closed + REQ-06 + REQ-07 + REQ-08 of 5 in Phase 3)
 
 ## Performance Metrics
 
@@ -74,10 +74,11 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-- REQ-08 fat-binary //go:embed Rust binary inside Go (Go scaffold ready in supervisor/rust.go, embed.FS placeholder comment marks the splice point)
-- REQ-09 embedded HTML/JS UI vanilla + HTMX + cytoscape.js (Go scaffold ready in cmd/serve.go, /ui/* placeholder marks the splice point)
-- REQ-10 MVP precision ≥ 60% measurement on spike-001 7-query baseline (after REQ-08+REQ-09 land + real Rust /healthz round-trip smoke)
-- Real spawn-and-restart smoke: REQ-07 was scaffold-only (build/vet green, no live Rust binary). After REQ-08 lands, smoke test 3 acceptance criteria: (1) `serve --port 8080` starts both, (2) Rust kill → 5s restart, (3) MCP query round-trip
+- REQ-09 embedded HTML/JS UI (vanilla + HTMX + cytoscape.js); pattern: `//go:embed all:ui` in server/cmd/serve.go (or new server/internal/ui/embed.go); chi mounts `http.FS(uiFS)` at /ui/*. Simpler than REQ-08 — no extraction needed
+- REQ-10 MVP precision ≥ 60% measurement on spike-001 7-query baseline (after REQ-09 lands + real Rust /healthz round-trip smoke)
+- Real spawn-and-restart smoke (REQ-07 acceptance #1-#3): blocked on `make build-core` producing a working Rust binary. With binary present, smoke (1) `serve --port 8080` starts both Go HTTP + extracted Rust, (2) Rust kill → 5s restart per supervisor backoff, (3) MCP query stdio round-trip
+- 150 MB total size budget verification (REQ-08 acceptance #2): blocked on real Rust release build. Expected ~110-150 MB total
+- ldflags coreVersion injection: replace hardcoded `"dev"` with `-ldflags "-X .../supervisor.coreVersion=v0.x.y"` (mechanism documented in embed.go line 36 comment)
 - (deferred) Phase 2 storage micro-bench: optional Criterion harness on insert/lookup/vector top-5/FTS5; skip per ship-it directive
 - (deferred) Nomic Embed Code shadow re-test on AU 5090 host (CPU segfault here)
 
@@ -93,6 +94,7 @@ Recent decisions affecting current work:
 | # | Description | Date | Commits | Directory |
 |---|-------------|------|---------|-----------|
 | 260427-h71 | REQ-07: Go server scaffold (cobra+chi+mcp-go+supervisor) per ARCH §2/§3.5/§5.5 | 2026-04-27 | 8ff8e11 + 54f23b1 | [260427-h71-req-07-go-server-scaffold-cobra-chi-mcp-](./quick/260427-h71-req-07-go-server-scaffold-cobra-chi-mcp-/) |
+| 260427-hoc | REQ-08: //go:embed Rust core binary plumbing (embed.go + extraction + Makefile EMBED_DIR) | 2026-04-27 | f5b6621 + 59b725b | [260427-hoc-req-08-go-embed-rust-core-binary-into-go](./quick/260427-hoc-req-08-go-embed-rust-core-binary-into-go/) |
 
 ## Deferred Items
 
@@ -105,10 +107,10 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-27 (Phase 3 second session — REQ-07 quick task 260427-h71 done; build/vet green, 7 plan invariants verified by orchestrator independent grep)
-Stopped at: Phase 3 REQ-07 ✓ scaffold-only (no live Rust smoke); REQ-08 //go:embed next
+Last session: 2026-04-27 (Phase 3 third session — REQ-08 //go:embed plumbing done; 9/9 invariants verified; mid-execution handoff demonstrated executor-returns-partial recovery is viable when orchestrator picks up cleanly)
+Stopped at: Phase 3 REQ-08 ✓ plumbing-only (real Rust binary smoke deferred); REQ-09 UI //go:embed next
 Resume file: progress.txt (root) + this STATE.md
-Next-session entry: user says "继续" or "REQ-08" → //go:embed Rust core binary into Go server, splice point is the placeholder comment in server/internal/supervisor/rust.go
+Next-session entry: user says "继续" or "REQ-09" → //go:embed UI bundle into Go server. Pattern mirrors REQ-08 (`//go:embed all:ui` in same package as chi router) but simpler: chi serves via `http.FS(uiFS)`, no extraction. Splice point: server/cmd/serve.go line where /ui/* placeholder responds 200 "UI not embedded yet"
 
 ## Linear cross-reference
 
