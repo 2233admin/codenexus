@@ -1,0 +1,73 @@
+[
+  {
+    "id": "F1",
+    "axis": 2,
+    "query": "spawn agent subprocess",
+    "na_flag": false,
+    "expected_concept": "Bun.spawn-based subprocess host for running agent commands; FSC core agent execution primitive (260427-nz9 finding: execHost in agent.ts)",
+    "_provenance": "Bootstrapped from experiments/poc-retrieval/eval/fsc_blind_queries.json (committed 8f5d48c, Phase 3.5 cross-corpus eval). na_flag locked pre-retrieval per EVAL_DESIGN_NOTES Rule 7."
+  },
+  {
+    "id": "F2",
+    "axis": 2,
+    "query": "schedule task across worker pool",
+    "na_flag": false,
+    "expected_concept": "Task scheduling / dispatch logic. On partial corpus (132 sym) was N/A; FULL 2307 corpus may surface different answer. Hand-judge with FSC's actual single-machine model (no worker pool by design per MEMORY.md fsc-architecture) -- if concept genuinely absent, judge.notes='concept not in FSC by design'."
+  },
+  {
+    "id": "F3",
+    "axis": 2,
+    "query": "report agent execution result back to coordinator",
+    "na_flag": false,
+    "expected_concept": "TaskResult interface + execute() method returning result type (260427-nz9 finding direct hit)"
+  },
+  {
+    "id": "F4",
+    "axis": 2,
+    "query": "abort running agent on timeout",
+    "na_flag": false,
+    "expected_concept": "setTimeout + proc.kill timeout-abort path in agent.ts (260427-nz9 finding direct hit)"
+  },
+  {
+    "id": "F5",
+    "axis": 2,
+    "query": "communicate between worker and coordinator over IPC",
+    "na_flag": false,
+    "expected_concept": "FSC uses git-as-bus (autoCommitAndPush), not classical IPC. 260427-nz9 finding: F5 retrieval surfaced autoCommitAndPush as creative-correct mismatch -- the system told the user 'your assumed mechanism isn't how it works here'. With FULL corpus, may surface same or richer signal."
+  },
+  {
+    "id": "F6",
+    "axis": 2,
+    "query": "capture stdout from spawned process",
+    "na_flag": false,
+    "expected_concept": "Bun.spawn proc.stdout reading + execHost output capture (260427-nz9 finding direct hit)"
+  },
+  {
+    "id": "F7",
+    "axis": 2,
+    "query": "retry failed agent execution",
+    "na_flag": false,
+    "expected_concept": "On partial corpus (132 sym) was N/A (no retry logic in agent-daemon). FULL 2307 corpus may include retry logic in cli/ or other packages. Hand-judge: if no retry semantics surface in top-5 from full corpus either, judge.notes='no retry logic in FSC'."
+  },
+  {
+    "id": "F8",
+    "axis": 2,
+    "query": "load configuration from environment",
+    "na_flag": false,
+    "expected_concept": "process.env.* reads + config loading; 260427-nz9 finding: top-3 hit (process.env.HOME), partial credit"
+  },
+  {
+    "id": "F9",
+    "axis": 2,
+    "query": "register agent capability or skill",
+    "na_flag": false,
+    "expected_concept": "agentTypeMap or capability registry; 260427-nz9 finding: top-2 hit, partial credit"
+  },
+  {
+    "id": "F10",
+    "axis": 2,
+    "query": "merge results from parallel agent executions",
+    "na_flag": false,
+    "expected_concept": "On partial corpus (132 sym) was N/A. FULL 2307 corpus may include merge/aggregation logic; hand-judge by FSC architecture (single-machine, no parallel-agent-merge by design) -- if concept genuinely absent, judge.notes='no parallel-merge in FSC by design'."
+  }
+]

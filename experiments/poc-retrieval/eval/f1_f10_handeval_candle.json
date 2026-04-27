@@ -1,0 +1,735 @@
+{
+  "phase": "03.6",
+  "embedder": "fastembed::Qwen3TextEmbedding (Qwen/Qwen3-Embedding-0.6B safetensors via candle DType::F32)",
+  "corpus": "full-self-coding",
+  "fsc_db_symbols": 2307,
+  "na_flags_locked_at": "2026-04-27T14:55:28Z",
+  "retrieval_started_at": "2026-04-27T14:56:20Z",
+  "retrieval_finished_at": "2026-04-27T14:56:32Z",
+  "valid_queries": 10,
+  "_eval_rule_7_note": "All 10 na_flags locked false BEFORE retrieval. FULL 2307-symbol corpus available -- no concept can be excluded based on partial-index absence. Hand-judge applies rubric: relevant = top-5 result implements queried concept OR explicitly establishes the concept's absence in a way that auto-corrects the user's mental model (260427-nz9 F5 'creative-correct mismatch' precedent). 'No such concept in FSC by design' is a valid hand-judge note that yields relevant_count=0 (counts toward denominator, no laundering).",
+  "per_query": [
+    {
+      "id": "F1",
+      "query": "spawn agent subprocess",
+      "na_flag": false,
+      "expected_concept": "Bun.spawn-based subprocess host for running agent commands",
+      "top5": [
+        {
+          "rank": 1,
+          "path": "packages\\core\\src\\execution\\local.ts",
+          "name": "proc",
+          "kind": "lexical_declaration",
+          "start_line": 48,
+          "end_line": 60,
+          "rrf_score": 0.014670791,
+          "bm25_score": 10.188676,
+          "vector_score": 0.5671491,
+          "snippet_head": "const proc = spawn({ /         cmd, /         cwd: worktreePath, /         env: { /           ...process.env, /           ...unit.agentConfig.env, /           FSC_TASK_ID: unit.id, /           FSC_WORKTREE: "
+        },
+        {
+          "rank": 2,
+          "path": "packages\\core\\src\\dockerInstance.ts",
+          "name": "startResult",
+          "kind": "lexical_declaration",
+          "start_line": 48,
+          "end_line": 48,
+          "rrf_score": 0.0145113105,
+          "bm25_score": 7.353818,
+          "vector_score": 0.5678951,
+          "snippet_head": "const startResult = spawnSync(args);"
+        },
+        {
+          "rank": 3,
+          "path": "packages\\core\\src\\agent-daemon\\daemon.ts",
+          "name": "proc",
+          "kind": "lexical_declaration",
+          "start_line": 466,
+          "end_line": 466,
+          "rrf_score": 0.01313059,
+          "bm25_score": 7.419428,
+          "vector_score": 0.53755087,
+          "snippet_head": "const proc = Bun.spawn([\"hostname\"], { stdout: \"pipe\" });"
+        },
+        {
+          "rank": 4,
+          "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+          "name": "execHost",
+          "kind": "method_definition",
+          "start_line": 382,
+          "end_line": 409,
+          "rrf_score": 0.013114264,
+          "bm25_score": 5.593081,
+          "vector_score": 0.6012585,
+          "snippet_head": "private async execHost( /     command: string, /     timeoutMs = 30000, /   ): Promise<{ output: string; success: boolean; exitCode: number }> { /     try { /       const proc = Bun.spawn([\"/usr/bin/bash\","
+        },
+        {
+          "rank": 5,
+          "path": "packages\\core\\src\\dockerInstance.ts",
+          "name": "proc",
+          "kind": "lexical_declaration",
+          "start_line": 156,
+          "end_line": 161,
+          "rrf_score": 0.011602434,
+          "bm25_score": 6.90993,
+          "vector_score": 0.53516805,
+          "snippet_head": "const proc = spawn( { /                 cmd:[ /                 \"docker\", \"exec\", this.containerName, \"sh\", \"-c\", command /                     ], /                 timeout: timeoutSeconds ? timeoutSecond"
+        }
+      ],
+      "judge": {
+        "relevant_count": null,
+        "notes": "PENDING HUMAN JUDGE"
+      }
+    },
+    {
+      "id": "F2",
+      "query": "schedule task across worker pool",
+      "na_flag": false,
+      "expected_concept": "Task scheduling / dispatch -- FSC may have no worker pool by design",
+      "top5": [
+        {
+          "rank": 1,
+          "path": "packages\\core\\test\\execution\\scheduler.test.ts",
+          "name": "MockScheduler",
+          "kind": "class_declaration",
+          "start_line": 34,
+          "end_line": 134,
+          "rrf_score": 0.015469868,
+          "bm25_score": 9.1977625,
+          "vector_score": 0.69255537,
+          "snippet_head": "class MockScheduler { /   private stateStore = new TaskStateStore(); /   private concurrency: ConcurrencyPool; /   private execution: LocalExecution; /   private pool: WorktreePool | null = null; /   priva"
+        },
+        {
+          "rank": 2,
+          "path": "packages\\core\\src\\agent-daemon\\pool.ts",
+          "name": "AgentPool",
+          "kind": "class_declaration",
+          "start_line": 43,
+          "end_line": 241,
+          "rrf_score": 0.015089286,
+          "bm25_score": 9.25692,
+          "vector_score": 0.64741576,
+          "snippet_head": "class AgentPool { /   private agents: Map<string, Agent> = new Map(); /   private config: PoolConfig; /   private nextAgentNum = 0; /   private healthCheckTimer: ReturnType<typeof setInterval> | null = nu"
+        },
+        {
+          "rank": 3,
+          "path": "packages\\core\\src\\execution\\remote.ts",
+          "name": "Transport",
+          "kind": "interface_declaration",
+          "start_line": 12,
+          "end_line": 19,
+          "rrf_score": 0.014453782,
+          "bm25_score": 9.404497,
+          "vector_score": 0.6098258,
+          "snippet_head": "interface Transport { /   /** Send a WorkUnit to a remote worker. Returns a job ID. */ /   send(unit: WorkUnit): Promise<string>; /   /** Poll for result by job ID. Resolves when complete or rejects on t"
+        },
+        {
+          "rank": 4,
+          "path": "packages\\core\\src\\execution\\scheduler.ts",
+          "name": "UnifiedScheduler",
+          "kind": "class_declaration",
+          "start_line": 50,
+          "end_line": 290,
+          "rrf_score": 0.014424243,
+          "bm25_score": 9.031418,
+          "vector_score": 0.6317281,
+          "snippet_head": "class UnifiedScheduler { /   private config: SchedulerConfig; /   private stateStore: TaskStateStore; /   private pool: WorktreePool | null = null; /   private concurrency: ConcurrencyPool; /   private exe"
+        },
+        {
+          "rank": 5,
+          "path": "packages\\core\\src\\execution\\concurrency.ts",
+          "name": "ConcurrencyPool",
+          "kind": "class_declaration",
+          "start_line": 3,
+          "end_line": 39,
+          "rrf_score": 0.014230769,
+          "bm25_score": 8.389517,
+          "vector_score": 0.6469823,
+          "snippet_head": "class ConcurrencyPool { /   private limit: number; /   private running = 0; /   private queue: Array<() => void> = []; /  /   constructor(limit: number) { /     this.limit = limit; /   } /  /   async run<T>(ta"
+        }
+      ],
+      "judge": {
+        "relevant_count": null,
+        "notes": "PENDING HUMAN JUDGE"
+      }
+    },
+    {
+      "id": "F3",
+      "query": "report agent execution result back to coordinator",
+      "na_flag": false,
+      "expected_concept": "TaskResult interface + execute() return path",
+      "top5": [
+        {
+          "rank": 1,
+          "path": "packages\\core\\src\\execution\\types.ts",
+          "name": "ExecutionResult",
+          "kind": "interface_declaration",
+          "start_line": 40,
+          "end_line": 55,
+          "rrf_score": 0.015311222,
+          "bm25_score": 13.120163,
+          "vector_score": 0.593823,
+          "snippet_head": "interface ExecutionResult { /   workUnitId: string; /   status: \"success\" | \"failure\" | \"timeout\" | \"error\"; /   commitHash: string | null; /   branch: string; /   worktreePath: string; /   startedAt: numbe"
+        },
+        {
+          "rank": 2,
+          "path": "packages\\core\\test\\execution\\sequencer.merge.test.ts",
+          "name": "makeExecResult",
+          "kind": "function_declaration",
+          "start_line": 9,
+          "end_line": 15,
+          "rrf_score": 0.015089286,
+          "bm25_score": 13.12471,
+          "vector_score": 0.5875799,
+          "snippet_head": "function makeExecResult(id: string, hash: string, branch: string): ExecutionResult { /   return { /     workUnitId: id, status: \"success\", commitHash: hash, branch, /     worktreePath: \"\", startedAt: 0, "
+        },
+        {
+          "rank": 3,
+          "path": "packages\\core\\src\\execution\\mapping.ts",
+          "name": "toTaskResult",
+          "kind": "function_declaration",
+          "start_line": 11,
+          "end_line": 30,
+          "rrf_score": 0.0150230415,
+          "bm25_score": 19.321104,
+          "vector_score": 0.57642025,
+          "snippet_head": "function toTaskResult(er: ExecutionResult, originalTask: Task): TaskResult { /   const statusMap: Record<ExecutionResult[\"status\"], TaskStatus> = { /     success: TaskStatus.SUCCESS, /     failure: TaskS"
+        },
+        {
+          "rank": 4,
+          "path": "packages\\core\\src\\agent-daemon\\daemon.ts",
+          "name": "reportCost",
+          "kind": "function_declaration",
+          "start_line": 360,
+          "end_line": 376,
+          "rrf_score": 0.014710221,
+          "bm25_score": 12.557184,
+          "vector_score": 0.5871968,
+          "snippet_head": "async function reportCost( /   redis: RedisClientType, /   task: TaskPayload, /   result: import(\"./agent\").TaskResult, / ): Promise<void> { /   try { /     const model = task.env?.DEFAULT_MODEL || \"doubao-"
+        },
+        {
+          "rank": 5,
+          "path": "packages\\core\\test\\execution\\scheduler.test.ts",
+          "name": "execute",
+          "kind": "method_definition",
+          "start_line": 46,
+          "end_line": 129,
+          "rrf_score": 0.014215686,
+          "bm25_score": 13.319145,
+          "vector_score": 0.56459254,
+          "snippet_head": "async execute(tasks: Task[], repoPath: string): Promise<SchedulerReport> { /     const startTime = Date.now(); /     const baseBranch = gitExec([\"rev-parse\", \"--abbrev-ref\", \"HEAD\"], repoPath).stdout.tr"
+        }
+      ],
+      "judge": {
+        "relevant_count": null,
+        "notes": "PENDING HUMAN JUDGE"
+      }
+    },
+    {
+      "id": "F4",
+      "query": "abort running agent on timeout",
+      "na_flag": false,
+      "expected_concept": "setTimeout + proc.kill timeout-abort",
+      "top5": [
+        {
+          "rank": 1,
+          "path": "packages\\core\\src\\execution\\local.ts",
+          "name": "abort",
+          "kind": "method_definition",
+          "start_line": 160,
+          "end_line": 169,
+          "rrf_score": 0.016234796,
+          "bm25_score": 23.366835,
+          "vector_score": 0.64502233,
+          "snippet_head": "async abort(unitId: string): Promise<void> { /     const proc = this.running.get(unitId); /     if (proc) { /       proc.kill(\"SIGTERM\"); /       setTimeout(() => { /         try { proc.kill(\"SIGKILL\"); } "
+        },
+        {
+          "rank": 2,
+          "path": "packages\\core\\src\\utils\\healthCheck.ts",
+          "name": "timeoutId",
+          "kind": "lexical_declaration",
+          "start_line": 31,
+          "end_line": 31,
+          "rrf_score": 0.016185272,
+          "bm25_score": 16.412226,
+          "vector_score": 0.7101295,
+          "snippet_head": "const timeoutId = setTimeout(() => controller.abort(), 10_000);"
+        },
+        {
+          "rank": 3,
+          "path": "packages\\core\\src\\execution\\scheduler.ts",
+          "name": "abort",
+          "kind": "method_definition",
+          "start_line": 235,
+          "end_line": 242,
+          "rrf_score": 0.015975423,
+          "bm25_score": 18.701534,
+          "vector_score": 0.629956,
+          "snippet_head": "async abort(taskId: string): Promise<void> { /     const state = this.stateStore.get(taskId); /     if (!state) return; /     if (state.status === \"running\") { /       await this.execution.abort(taskId);"
+        },
+        {
+          "rank": 4,
+          "path": "packages\\core\\src\\execution\\worktree.ts",
+          "name": "timer",
+          "kind": "lexical_declaration",
+          "start_line": 20,
+          "end_line": 24,
+          "rrf_score": 0.01342601,
+          "bm25_score": 12.360746,
+          "vector_score": 0.5479721,
+          "snippet_head": "const timer = setTimeout(() => { /         const idx = this.queue.indexOf(onRelease); /         if (idx >= 0) this.queue.splice(idx, 1); /         reject(new Error(`Worktree creation lock timeout (${time"
+        },
+        {
+          "rank": 5,
+          "path": "packages\\core\\src\\agent-daemon\\pool.ts",
+          "name": "createAgent",
+          "kind": "method_definition",
+          "start_line": 176,
+          "end_line": 190,
+          "rrf_score": 0.012820513,
+          "bm25_score": 10.37365,
+          "vector_score": 0.53615767,
+          "snippet_head": "private async createAgent(): Promise<void> { /     const id = `agent-${this.nextAgentNum++}`; /     const options: AgentOptions = { /       id, /       workspaceRoot: this.config.workspaceRoot, /       ena"
+        }
+      ],
+      "judge": {
+        "relevant_count": null,
+        "notes": "PENDING HUMAN JUDGE"
+      }
+    },
+    {
+      "id": "F5",
+      "query": "communicate between worker and coordinator over IPC",
+      "na_flag": false,
+      "expected_concept": "git-as-bus (autoCommitAndPush) per 260427-nz9 creative-correct finding",
+      "top5": [
+        {
+          "rank": 1,
+          "path": "packages\\core\\src\\execution\\remote.ts",
+          "name": "Transport",
+          "kind": "interface_declaration",
+          "start_line": 12,
+          "end_line": 19,
+          "rrf_score": 0.015633166,
+          "bm25_score": 9.404497,
+          "vector_score": 0.56434524,
+          "snippet_head": "interface Transport { /   /** Send a WorkUnit to a remote worker. Returns a job ID. */ /   send(unit: WorkUnit): Promise<string>; /   /** Poll for result by job ID. Resolves when complete or rejects on t"
+        },
+        {
+          "rank": 2,
+          "path": "packages\\core\\src\\agent-daemon\\daemon.ts",
+          "name": "CONSUMER_GROUP",
+          "kind": "lexical_declaration",
+          "start_line": 42,
+          "end_line": 42,
+          "rrf_score": 0.014821429,
+          "bm25_score": 12.158884,
+          "vector_score": 0.45033893,
+          "snippet_head": "const CONSUMER_GROUP = `fsc-worker-${NODE_ID}`;"
+        },
+        {
+          "rank": 3,
+          "path": "packages\\core\\src\\distributedScheduler.ts",
+          "name": "DistributedSchedulerOptions",
+          "kind": "interface_declaration",
+          "start_line": 22,
+          "end_line": 33,
+          "rrf_score": 0.014333057,
+          "bm25_score": 10.232341,
+          "vector_score": 0.45029613,
+          "snippet_head": "interface DistributedSchedulerOptions { /   redisUrl?: string; /   consumerGroup?: string; /   /** 提交后等待结果的最大时间 (ms) */ /   resultTimeoutMs?: number; /   /** Git 仓库 URL (worker 节点会 clone) */ /   gitUrl?: st"
+        },
+        {
+          "rank": 4,
+          "path": "packages\\core\\src\\taskExecutor.ts",
+          "name": "BareWorkspaceExecutor",
+          "kind": "class_declaration",
+          "start_line": 43,
+          "end_line": 193,
+          "rrf_score": 0.009677419,
+          "bm25_score": 0.0,
+          "vector_score": 0.4811434,
+          "snippet_head": "class BareWorkspaceExecutor extends TaskExecutor { / \tprivate worktreePath: string | null = null; / \tprivate taskId: string | null = null; / \tprivate static ROOT = \"/workspace\"; /  / \tasync startContainer("
+        },
+        {
+          "rank": 5,
+          "path": "packages\\core\\src\\taskExecutor.ts",
+          "name": "createTaskExecutor",
+          "kind": "function_declaration",
+          "start_line": 199,
+          "end_line": 207,
+          "rrf_score": 0.009523811,
+          "bm25_score": 0.0,
+          "vector_score": 0.4729137,
+          "snippet_head": "function createTaskExecutor(mode: ExecutionMode): TaskExecutor { / \tif (mode === \"bare\") { / \t\treturn new BareWorkspaceExecutor(); / \t} / \t// Docker mode: 动态导入原 DockerInstance 并包装为 TaskExecutor / \t// 为了保持向"
+        }
+      ],
+      "judge": {
+        "relevant_count": null,
+        "notes": "PENDING HUMAN JUDGE"
+      }
+    },
+    {
+      "id": "F6",
+      "query": "capture stdout from spawned process",
+      "na_flag": false,
+      "expected_concept": "Bun.spawn proc.stdout + execHost output capture",
+      "top5": [
+        {
+          "rank": 1,
+          "path": "packages\\core\\src\\execution\\local.ts",
+          "name": "processPromise",
+          "kind": "lexical_declaration",
+          "start_line": 72,
+          "end_line": 81,
+          "rrf_score": 0.016393442,
+          "bm25_score": 14.8196535,
+          "vector_score": 0.5766499,
+          "snippet_head": "const processPromise = (async () => { /         const [stdout, stderr] = await Promise.all([ /           new Response(proc.stdout).text(), /           new Response(proc.stderr).text(), /         ]); /     "
+        },
+        {
+          "rank": 2,
+          "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+          "name": "execHost",
+          "kind": "method_definition",
+          "start_line": 382,
+          "end_line": 409,
+          "rrf_score": 0.015831266,
+          "bm25_score": 13.036253,
+          "vector_score": 0.56529105,
+          "snippet_head": "private async execHost( /     command: string, /     timeoutMs = 30000, /   ): Promise<{ output: string; success: boolean; exitCode: number }> { /     try { /       const proc = Bun.spawn([\"/usr/bin/bash\","
+        },
+        {
+          "rank": 3,
+          "path": "packages\\core\\src\\codeCommitter.ts",
+          "name": "getTerminalWidth",
+          "kind": "lexical_declaration",
+          "start_line": 698,
+          "end_line": 704,
+          "rrf_score": 0.015579976,
+          "bm25_score": 13.806707,
+          "vector_score": 0.5309162,
+          "snippet_head": "const getTerminalWidth = (): number => { /       try { /         return process.stdout.columns || 80; // Fallback to 80 if undefined /       } catch { /         return 80; // Safe fallback /       } /     }"
+        },
+        {
+          "rank": 4,
+          "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+          "name": "proc",
+          "kind": "lexical_declaration",
+          "start_line": 387,
+          "end_line": 391,
+          "rrf_score": 0.014784946,
+          "bm25_score": 14.030982,
+          "vector_score": 0.4964051,
+          "snippet_head": "const proc = Bun.spawn([\"/usr/bin/bash\", \"-c\", command], { /         stdout: \"pipe\", /         stderr: \"pipe\", /         env: { ...process.env, ...this.baseEnv }, /       });"
+        },
+        {
+          "rank": 5,
+          "path": "packages\\core\\src\\execution\\local.ts",
+          "name": "stdoutChunks",
+          "kind": "lexical_declaration",
+          "start_line": 44,
+          "end_line": 44,
+          "rrf_score": 0.014329455,
+          "bm25_score": 8.074502,
+          "vector_score": 0.5078021,
+          "snippet_head": "let stdoutChunks: string[] = [];"
+        }
+      ],
+      "judge": {
+        "relevant_count": null,
+        "notes": "PENDING HUMAN JUDGE"
+      }
+    },
+    {
+      "id": "F7",
+      "query": "retry failed agent execution",
+      "na_flag": false,
+      "expected_concept": "Retry logic -- may not exist in FSC",
+      "top5": [
+        {
+          "rank": 1,
+          "path": "packages\\core\\src\\execution\\scheduler.ts",
+          "name": "retryFailed",
+          "kind": "method_definition",
+          "start_line": 245,
+          "end_line": 271,
+          "rrf_score": 0.016393442,
+          "bm25_score": 16.932241,
+          "vector_score": 0.71102834,
+          "snippet_head": "async retryFailed(repoPath?: string): Promise<SchedulerReport> { /     const failed = this.stateStore.getFailedTasks(); /  /     // Sort by regression replay count (most failures first = highest priority"
+        },
+        {
+          "rank": 2,
+          "path": "packages\\core\\src\\taskSolverManager.ts",
+          "name": "retryTask",
+          "kind": "lexical_declaration",
+          "start_line": 124,
+          "end_line": 124,
+          "rrf_score": 0.015584417,
+          "bm25_score": 11.39091,
+          "vector_score": 0.6009968,
+          "snippet_head": "const retryTask = { ...task, priority: task.priority + 1, ID: `${task.ID}-retry` };"
+        },
+        {
+          "rank": 3,
+          "path": "packages\\core\\src\\execution\\state.ts",
+          "name": "markForRetry",
+          "kind": "method_definition",
+          "start_line": 133,
+          "end_line": 142,
+          "rrf_score": 0.015474521,
+          "bm25_score": 10.437058,
+          "vector_score": 0.6194963,
+          "snippet_head": "markForRetry(taskId: string): void { /     const state = this.states.get(taskId); /     if (!state) throw new Error(`Task ${taskId} not found`); /     state.status = \"pending\"; /     state.retryCount++; / "
+        },
+        {
+          "rank": 4,
+          "path": "packages\\core\\src\\execution\\types.ts",
+          "name": "ExecutionStatus",
+          "kind": "type_alias_declaration",
+          "start_line": 57,
+          "end_line": 57,
+          "rrf_score": 0.013849206,
+          "bm25_score": 14.684876,
+          "vector_score": 0.51147604,
+          "snippet_head": "type ExecutionStatus = \"pending\" | \"running\" | \"waiting\" | \"completed\" | \"failed\" | \"aborted\";"
+        },
+        {
+          "rank": 5,
+          "path": "packages\\core\\test\\execution\\scheduler.test.ts",
+          "name": "TestScheduler",
+          "kind": "class_declaration",
+          "start_line": 16,
+          "end_line": 26,
+          "rrf_score": 0.011637239,
+          "bm25_score": 8.300491,
+          "vector_score": 0.50286937,
+          "snippet_head": "class TestScheduler extends UnifiedScheduler { /   private mockShell = process.platform === \"win32\" ? \"bash\" : \"/bin/sh\"; /  /   // Override by monkey-patching execution after construction /   // We expos"
+        }
+      ],
+      "judge": {
+        "relevant_count": null,
+        "notes": "PENDING HUMAN JUDGE"
+      }
+    },
+    {
+      "id": "F8",
+      "query": "load configuration from environment",
+      "na_flag": false,
+      "expected_concept": "process.env.* reads + config loading",
+      "top5": [
+        {
+          "rank": 1,
+          "path": "packages\\core\\src\\configReader.ts",
+          "name": "readConfigWithEnvOverride",
+          "kind": "method_definition",
+          "start_line": 341,
+          "end_line": 378,
+          "rrf_score": 0.015391705,
+          "bm25_score": 8.862313,
+          "vector_score": 0.65759426,
+          "snippet_head": "public readConfigWithEnvOverride(): Config { /         const baseConfig = this.readConfig(); /  /         // Environment variable mappings /         const envMappings: Record<string, keyof Config> = { /   "
+        },
+        {
+          "rank": 2,
+          "path": "packages\\core\\src\\configReader.ts",
+          "name": "readConfig",
+          "kind": "method_definition",
+          "start_line": 89,
+          "end_line": 129,
+          "rrf_score": 0.013450293,
+          "bm25_score": 8.798514,
+          "vector_score": 0.55479586,
+          "snippet_head": "public readConfig(): Config { /         try { /             let baseConfig: Partial<Config> = {}; /  /             // Check if main config file exists /             if (fs.existsSync(this.configPath)) { /  "
+        },
+        {
+          "rank": 3,
+          "path": "packages\\cli\\src\\index.ts",
+          "name": "runFullAnalysis",
+          "kind": "function_declaration",
+          "start_line": 21,
+          "end_line": 131,
+          "rrf_score": 0.013150783,
+          "bm25_score": 30.2111,
+          "vector_score": 0.52227396,
+          "snippet_head": "async function runFullAnalysis(): Promise<void> { /   // Load configuration from standard location with environment variable overrides /   let config: Config; /  /   const configFilePathIndex = process.ar"
+        },
+        {
+          "rank": 4,
+          "path": "packages\\core\\src\\configReader.ts",
+          "name": "readConfigFile",
+          "kind": "method_definition",
+          "start_line": 135,
+          "end_line": 150,
+          "rrf_score": 0.012072072,
+          "bm25_score": 8.586107,
+          "vector_score": 0.5224906,
+          "snippet_head": "private readConfigFile(): Partial<Config> { /         try { /             const fileContent = fs.readFileSync(this.configPath, 'utf8'); /  /             // Parse JSON content /             const parsedConf"
+        },
+        {
+          "rank": 5,
+          "path": "packages\\core\\src\\agent-daemon\\mini-claw.ts",
+          "name": "loadProviders",
+          "kind": "function_declaration",
+          "start_line": 41,
+          "end_line": 55,
+          "rrf_score": 0.011795241,
+          "bm25_score": 8.731402,
+          "vector_score": 0.5182249,
+          "snippet_head": "async function loadProviders() { /   try { /     const raw = await Bun.file(PROVIDERS_PATH).json(); /     providers = (raw as Provider[]).map((p) => ({ /       provider: { ...p, maxRetries: p.maxRetries |"
+        }
+      ],
+      "judge": {
+        "relevant_count": null,
+        "notes": "PENDING HUMAN JUDGE"
+      }
+    },
+    {
+      "id": "F9",
+      "query": "register agent capability or skill",
+      "na_flag": false,
+      "expected_concept": "agentTypeMap or capability registry",
+      "top5": [
+        {
+          "rank": 1,
+          "path": "packages\\core\\src\\agent-daemon\\agent.ts",
+          "name": "agentType",
+          "kind": "lexical_declaration",
+          "start_line": 258,
+          "end_line": 258,
+          "rrf_score": 0.014275121,
+          "bm25_score": 5.327879,
+          "vector_score": 0.5915967,
+          "snippet_head": "const agentType = task.agentType || \"api\";"
+        },
+        {
+          "rank": 2,
+          "path": "packages\\core\\src\\modelRouter.ts",
+          "name": "isAgentAvailable",
+          "kind": "function_declaration",
+          "start_line": 207,
+          "end_line": 220,
+          "rrf_score": 0.013719561,
+          "bm25_score": 5.218602,
+          "vector_score": 0.60452557,
+          "snippet_head": "function isAgentAvailable(agent: SWEAgentType, config: Config): boolean { /   switch (agent) { /     case SWEAgentType.CLAUDE_CODE: /       return !config.anthropicAPIKeyExportNeeded || !!config.anthropi"
+        },
+        {
+          "rank": 3,
+          "path": "packages\\core\\src\\execution\\mapping.ts",
+          "name": "agentType",
+          "kind": "lexical_declaration",
+          "start_line": 47,
+          "end_line": 47,
+          "rrf_score": 0.013486514,
+          "bm25_score": 5.321287,
+          "vector_score": 0.5720122,
+          "snippet_head": "const agentType = (route.primary || config.agentType || \"claude\") as AgentConfig[\"type\"];"
+        },
+        {
+          "rank": 4,
+          "path": "packages\\core\\src\\modelRouter.ts",
+          "name": "CATEGORY_AGENT_MAP",
+          "kind": "lexical_declaration",
+          "start_line": 54,
+          "end_line": 62,
+          "rrf_score": 0.013390706,
+          "bm25_score": 5.361776,
+          "vector_score": 0.5678424,
+          "snippet_head": "const CATEGORY_AGENT_MAP: Record<TaskCategory, SWEAgentType> = { /   analysis: SWEAgentType.CLAUDE_CODE, /   implementation: SWEAgentType.CODEX, /   frontend: SWEAgentType.GEMINI_CLI, /   testing: SWEAgen"
+        },
+        {
+          "rank": 5,
+          "path": "packages\\core\\src\\execution\\mapping.ts",
+          "name": "getAgentConfig",
+          "kind": "function_declaration",
+          "start_line": 71,
+          "end_line": 85,
+          "rrf_score": 0.01335448,
+          "bm25_score": 5.25609,
+          "vector_score": 0.582373,
+          "snippet_head": "function getAgentConfig(type: AgentConfig[\"type\"], config: Config): AgentConfig { /   const catalog = AGENT_CATALOG[type as string] ?? AGENT_CATALOG.opencode; /   const command = type === \"custom\" /     "
+        }
+      ],
+      "judge": {
+        "relevant_count": null,
+        "notes": "PENDING HUMAN JUDGE"
+      }
+    },
+    {
+      "id": "F10",
+      "query": "merge results from parallel agent executions",
+      "na_flag": false,
+      "expected_concept": "Merge/aggregate logic -- may not exist in FSC by design",
+      "top5": [
+        {
+          "rank": 1,
+          "path": "packages\\core\\src\\execution\\scheduler.ts",
+          "name": "mergeResults",
+          "kind": "lexical_declaration",
+          "start_line": 167,
+          "end_line": 167,
+          "rrf_score": 0.016287677,
+          "bm25_score": 15.5767355,
+          "vector_score": 0.671088,
+          "snippet_head": "const mergeResults = await sequencer.applyAll(executionResults);"
+        },
+        {
+          "rank": 2,
+          "path": "packages\\core\\test\\execution\\scheduler.test.ts",
+          "name": "mergeResults",
+          "kind": "lexical_declaration",
+          "start_line": 113,
+          "end_line": 113,
+          "rrf_score": 0.016026625,
+          "bm25_score": 15.5767355,
+          "vector_score": 0.671088,
+          "snippet_head": "const mergeResults = await sequencer.applyAll(executionResults);"
+        },
+        {
+          "rank": 3,
+          "path": "packages\\core\\src\\execution\\types.ts",
+          "name": "computeMaxParallel",
+          "kind": "function_declaration",
+          "start_line": 96,
+          "end_line": 104,
+          "rrf_score": 0.01577381,
+          "bm25_score": 13.608211,
+          "vector_score": 0.61997634,
+          "snippet_head": "function computeMaxParallel( /   availableMemoryMB: number, /   agentType: AgentType, /   overhead: number = 500, // OS + git overhead MB / ): number { /   const catalog = AGENT_CATALOG[agentType] ?? AGENT"
+        },
+        {
+          "rank": 4,
+          "path": "packages\\core\\src\\execution\\sequencer.ts",
+          "name": "apply",
+          "kind": "method_definition",
+          "start_line": 53,
+          "end_line": 127,
+          "rrf_score": 0.014230769,
+          "bm25_score": 10.432401,
+          "vector_score": 0.60438603,
+          "snippet_head": "async apply(execResult: ExecutionResult): Promise<SequencerResult> { /     const { workUnitId, commitHash, branch } = execResult; /  /     if (!commitHash) { /       const r: SequencerResult = { taskId: w"
+        },
+        {
+          "rank": 5,
+          "path": "packages\\core\\src\\execution\\types.ts",
+          "name": "ExecutionResult",
+          "kind": "interface_declaration",
+          "start_line": 40,
+          "end_line": 55,
+          "rrf_score": 0.012789742,
+          "bm25_score": 11.117859,
+          "vector_score": 0.55951196,
+          "snippet_head": "interface ExecutionResult { /   workUnitId: string; /   status: \"success\" | \"failure\" | \"timeout\" | \"error\"; /   commitHash: string | null; /   branch: string; /   worktreePath: string; /   startedAt: numbe"
+        }
+      ],
+      "judge": {
+        "relevant_count": null,
+        "notes": "PENDING HUMAN JUDGE"
+      }
+    }
+  ],
+  "generous_p_at_5": null,
+  "passes_gate": null
+}
