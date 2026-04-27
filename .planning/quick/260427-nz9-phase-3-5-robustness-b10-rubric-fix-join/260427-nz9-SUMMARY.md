@@ -18,7 +18,7 @@ landed_files:
   - .planning/STATE.md                                       # MODIFY
   - progress.txt                                             # APPEND
 commits:
-  - <fill-after-commit>
+  - 8f5d48c "mvp(eval): Phase 3.5 robustness slice -- 3/4 sub-checks pass, 1 BLOCKED"
 gates:
   alpha_sweep_plateau_check: pass
   b10_rubric_v2_legitimacy: pass

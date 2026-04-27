@@ -114,7 +114,7 @@ Recent decisions affecting current work:
 | (no-id) | Edge confidence on list_callers + Makefile/STATE realign + Software 3.0 reframe in PROJECT.md | 2026-04-27 | 4af9f4d + 7f6f44d + d98b16c | (no quick dir — micro-task + doc-only commits) |
 | 260427-i0c | REQ-09: UI bundle (vanilla JS + cytoscape.js, no build step, option B git mv) | 2026-04-27 | ec3849e + dfdcb95 | [260427-i0c-req-09-go-embed-ui-bundle-vanilla-js-htm](./quick/260427-i0c-req-09-go-embed-ui-bundle-vanilla-js-htm/) |
 | 260427-j9g | REQ-10: Phase 3 MVP precision gate met (B1-B7 mean=67.9% vs gate 60% +7.9pp; +24.3pp over GitNexus 1.6.3 baseline 43.6%) — Phase 3 CLOSED | 2026-04-27 | 226c50f | [260427-j9g-req-10-closure-phase-3-mvp-precision-gat](./quick/260427-j9g-req-10-closure-phase-3-mvp-precision-gat/) |
-| 260427-nz9 | Phase 3.5 robustness slice (alpha sweep plateau confirmed, B10 rubric corrected, cross-corpus FSC strict 50%/generous 71.4% on 5-of-107 partial index; full re-index BLOCKED by ollama instability after ~130 sequential calls) | 2026-04-27 | _pending_ | [260427-nz9-phase-3-5-robustness-b10-rubric-fix-join](./quick/260427-nz9-phase-3-5-robustness-b10-rubric-fix-join/) |
+| 260427-nz9 | Phase 3.5 robustness slice (alpha sweep plateau confirmed, B10 rubric corrected, cross-corpus FSC strict 50%/generous 71.4% on 5-of-107 partial index; full re-index BLOCKED by ollama instability after ~130 sequential calls) | 2026-04-27 | 8f5d48c | [260427-nz9-phase-3-5-robustness-b10-rubric-fix-join](./quick/260427-nz9-phase-3-5-robustness-b10-rubric-fix-join/) |
 
 ## Deferred Items
 
