@@ -118,6 +118,17 @@ enum Cmd {
         #[arg(long, default_value = "eval/embed_snapshot_ollama.json")]
         out: PathBuf,
     },
+    /// Phase 03.6 Plan 1 step 3 (HARD acceptance gate): compare new (candle)
+    /// embedder output against the ollama snapshot from EmbedSnapshot, computes
+    /// per-pair cosine, dumps summary stats. Gate: mean >= 0.97 AND p10 >= 0.95.
+    EmbedEquivalence {
+        #[arg(long)]
+        queries: PathBuf,
+        #[arg(long, default_value = "eval/embed_snapshot_ollama.json")]
+        ollama_snapshot: PathBuf,
+        #[arg(long, default_value = "eval/embed_equivalence_30q.json")]
+        out: PathBuf,
+    },
 }
 
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -468,6 +479,106 @@ async fn main() -> Result<()> {
             std::fs::create_dir_all(out.parent().unwrap_or(std::path::Path::new(".")))?;
             std::fs::write(&out, serde_json::to_string_pretty(&results)?)?;
             eprintln!("wrote {} entries to {}", results.len(), out.display());
+        }
+        Cmd::EmbedEquivalence { queries, ollama_snapshot, out } => {
+            // Phase 03.6 Plan 1 step 3 (HARD acceptance gate). Reads the ollama
+            // baseline snapshot (Cmd::EmbedSnapshot output, 60 entries x 1024
+            // dim), computes the same 60 embeddings via the new candle-based
+            // embedder, dumps per-pair cosine + summary stats. Gate criteria:
+            //   mean_cosine >= 0.97 AND p10_cosine >= 0.95
+            // Per locked decision #2 (RESEARCH.md Pitfall 2). Threshold is
+            // intentionally NOT 0.999 because dtype/padding/tokenization
+            // differences between ollama and candle paths are expected.
+            let raw_q = std::fs::read_to_string(&queries)?;
+            let qs: Vec<EvalQuery> = serde_json::from_str(&raw_q)?;
+            let raw_s = std::fs::read_to_string(&ollama_snapshot)?;
+            let snap: Vec<serde_json::Value> = serde_json::from_str(&raw_s)?;
+            // Index snapshot by (id, role) -> Vec<f32>
+            let mut snap_idx: std::collections::HashMap<(String, String), Vec<f32>> =
+                std::collections::HashMap::new();
+            for entry in &snap {
+                let id = entry["id"].as_str().unwrap().to_string();
+                let role = entry["role"].as_str().unwrap().to_string();
+                let vec: Vec<f32> = entry["vec"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|v| v.as_f64().unwrap() as f32)
+                    .collect();
+                snap_idx.insert((id, role), vec);
+            }
+            let embedder = embedder::Embedder::new();
+            let mut per_query: Vec<serde_json::Value> = Vec::new();
+            let mut cosines: Vec<f32> = Vec::new();
+            eprintln!("running equivalence check vs ollama snapshot ({} entries)...", snap.len());
+            for (i, q) in qs.iter().enumerate() {
+                for role_str in &["Query", "Passage"] {
+                    let role = if *role_str == "Query" {
+                        embedder::Role::Query
+                    } else {
+                        embedder::Role::Passage
+                    };
+                    let candle_vec = embedder.embed(&q.query, role)?;
+                    let ollama_vec = snap_idx
+                        .get(&(q.id.clone(), role_str.to_string()))
+                        .ok_or_else(|| {
+                            anyhow::anyhow!("missing snapshot entry for {}/{}", q.id, role_str)
+                        })?;
+                    let c = embedder::cosine(&candle_vec, ollama_vec);
+                    per_query.push(serde_json::json!({
+                        "id": q.id, "role": role_str, "cosine": c,
+                    }));
+                    cosines.push(c);
+                }
+                if (i + 1) % 5 == 0 {
+                    eprintln!("  [{}/{}] compared", i + 1, qs.len());
+                }
+            }
+            let mut sorted = cosines.clone();
+            sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+            let n = sorted.len() as f32;
+            let mean: f32 = sorted.iter().sum::<f32>() / n;
+            let pct = |p: f32| -> f32 {
+                let i = ((p / 100.0) * n).floor() as usize;
+                sorted[i.min(sorted.len() - 1)]
+            };
+            let p10 = pct(10.0);
+            let p50 = pct(50.0);
+            let p90 = pct(90.0);
+            let passes_gate = mean >= 0.97 && p10 >= 0.95;
+            let summary = serde_json::json!({
+                "n": cosines.len(),
+                "mean_cosine": mean,
+                "p10_cosine": p10,
+                "p50_cosine": p50,
+                "p90_cosine": p90,
+                "passes_gate": passes_gate,
+                "gate_thresholds": {"mean_min": 0.97, "p10_min": 0.95},
+                "per_query": per_query,
+            });
+            std::fs::create_dir_all(out.parent().unwrap_or(std::path::Path::new(".")))?;
+            std::fs::write(&out, serde_json::to_string_pretty(&summary)?)?;
+            eprintln!("=== Equivalence summary ===");
+            eprintln!(
+                "n={}  mean={:.4}  p10={:.4}  p50={:.4}  p90={:.4}",
+                cosines.len(),
+                mean,
+                p10,
+                p50,
+                p90
+            );
+            eprintln!(
+                "gate (mean>=0.97 AND p10>=0.95): {}",
+                if passes_gate { "PASS" } else { "FAIL" }
+            );
+            if !passes_gate {
+                anyhow::bail!(
+                    "equivalence gate failed: mean={:.4} p10={:.4} -- check {} for per_query breakdown",
+                    mean,
+                    p10,
+                    out.display()
+                );
+            }
         }
     }
     Ok(())
