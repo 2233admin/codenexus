@@ -61,18 +61,23 @@ async def one_call(idx: int) -> dict[str, Any]:
     client = next(_CLIENT_CYCLE)
     t0 = time.perf_counter()
     try:
-        resp = await client.messages.create(
+        # use with_raw_response to capture rate-limit headers
+        raw = await client.messages.with_raw_response.create(
             model=MODEL,
             max_tokens=PROBE_MAX_TOKENS,
             messages=[{"role": "user", "content": PROBE_PROMPT}],
             temperature=0.0,
         )
+        resp = raw.parse()
         dt = time.perf_counter() - t0
         text = ""
         for block in resp.content or []:
             if getattr(block, "type", None) == "text":
                 text = block.text
                 break
+        # capture rate-limit headers (Anthropic-spec: anthropic-ratelimit-*)
+        rl_headers = {k: v for k, v in raw.headers.items()
+                      if "ratelimit" in k.lower() or k.lower().startswith("retry-after")}
         return {
             "idx": idx,
             "status": 200,
@@ -80,6 +85,7 @@ async def one_call(idx: int) -> dict[str, Any]:
             "text": (text or "").strip()[:32],
             "input_tokens": getattr(resp.usage, "input_tokens", None),
             "output_tokens": getattr(resp.usage, "output_tokens", None),
+            "rl_headers": rl_headers,
         }
     except anthropic.RateLimitError as e:
         dt = time.perf_counter() - t0
