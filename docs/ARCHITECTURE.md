@@ -513,6 +513,8 @@ Implementation: `experiments/poc-retrieval/src/{search.rs,storage.rs,embedder.rs
 
 Until this exists, retrieval changes that involve reranking, embedder swaps, or corpus reorganization **cannot be measured cleanly** — and the temptation to overfit to the 30-query dev set is high. See `eval/EVAL_DESIGN_NOTES.md` "Known Eval Limitations" for the full argument.
 
+**LLM-judge throughput sizing (2026-04-27 probe).** Two judge endpoints are wired: 官方 `api.minimaxi.com/anthropic` (Bearer, MiniMax-M2.5) and the okaoi 3-key pool (Anthropic-shape relay, MiniMax-M2.7). Cold-burst ceiling and sustained QPS measured under `eval/probe_minimax_concurrency.py`; full findings in `eval/probe_minimax_concurrency_findings.md`. Headline: 官方 sustained ≈ 0.5 QPS (RPM-bucket), cold-burst safe at N=40; okaoi sustained ≈ 3.79 QPS at N=60 (per existing benchmark). Recommended posture: okaoi for inner-loop iteration and rubric refinement, 官方 for the gate-flipping final eval — okaoi-vs-官方 grader cross-validation on a 30-call sample is a prerequisite for trusting the inner-loop substitution and is queued (not yet run).
+
 ### 9.5 Reranker code stays opt-in
 
 `experiments/poc-retrieval/src/reranker.rs` and the `--rerank` CLI flag remain in the POC for future re-activation. Reranker uses `JINA_API_KEY` from environment (never hardcoded, per security feedback rule #35). When LLM-judge eval is in place (Phase 3+), Path B can be re-evaluated with confidence.

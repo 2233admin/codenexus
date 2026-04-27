@@ -18,3 +18,6 @@ _*_probe.log
 round_*_smoke*.json
 *.log
 *_run.log
+
+# Probe artifacts (regeneratable per-run)
+probe_minimax_concurrency_result.json
