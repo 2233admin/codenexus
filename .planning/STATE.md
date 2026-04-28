@@ -28,6 +28,15 @@ See: .planning/PROJECT.md (updated 2026-04-26)
 Phase: 4 of 6 (Parity) — **first slice 8 of 9 runtime gates PASS 2026-04-28 (Waves 0-3 + 04-04 followup + 04-05 first-run UX workaround + 04-06 IndexRepo non-destructive fix); 1 cluster (E2E 1b/4/5/6) demoted to P3 Linux/macOS smoke**
 Plan: 04-00 (Cargo bin rename) + 04-01 v2 (R1 redesign + R2.c + R3) + 04-02 v2 (R4 + R5 + fault injection) + 04-03 (E2E + EVAL_NO_REGRESSION + closure) + 04-04 followup (cache-first fix in `embedder.rs::snapshot_dir` lifts 3 deferred gates to PASS) + 04-05 (preseed-hf-cache.sh + r1c_probe.sh + offline-bootstrap doc + README + PROJECT.md line 98 reframe; lifts R1.c from DEFERRED to PASS via file-level sha256 probe) + 04-06 (server.rs IndexRepo handler deferred-clear fix; preserves pre-existing data when all embeds fail; R4.b probe now non-destructive)
 Status: First slice runtime 8 of 9 gates PASS. EVAL_NO_REGRESSION + R1.d offline-mode + R5.b synthetic-fail Query + R4.b synthetic-fail A2A IndexRepo + R1.c reload + FIRSTRUN-UX-PRE-SEED + FIRSTRUN-UX-DOC-LINK + IndexRepo-non-destructive-on-failure all PASS. E2E 1b/4/5/6 cluster demoted to P3 Linux/macOS smoke regression markers (cannot be exercised on Windows where fresh-download path is broken; pre-seed bypasses entirely). Phase 4 group 2 (multi-language tree-sitter) unblocked.
+
+## Next Session Order (post-04-06 reflection, 2026-04-28)
+
+Recommended sequence per Curry's session-end review (2026-04-28T19:00+08:00):
+
+1. **cargo test linker conflict** (esaxx-rs/ort RuntimeLibrary mismatch LNK2038/LNK1319, pre-existing from 04-02) — P2 by tag but **higher impact than the tag**: the 04-06 IndexRepo deferred-clear fix has no unit test coverage because the linker conflict prevents `cargo test`. The fix is probe-only-protected; a future server.rs edit could regress silently. Estimated < 1 hr to resolve via build-system / dep-feature-flag tweaking; bundle into the next session opening.
+2. **Multi-language tree-sitter** (Phase 4 group 2) — substantive feature work, unblocked since 04-04 cache-first fix. THIS, not 04.1, is the next major slice.
+3. **Phase 04.1 Graph Clustering and Evolution Layer** — needs plan first (no PLAN.md exists in `codenexus-04.1-graph-clustering-and-evolution-layer/`, only PRE-PLAN-NOTES.md). Do NOT start execution before plan; without plan, scope drift is the primary failure mode. Run `/gsd-plan-phase 04.1` (or inline write per the bypass convention if gsd-sdk init still returns phase_dir=null) as a separate session bracket from #2.
+4. **(P3 citizenship)** hf-hub upstream issue filing + Linux/macOS smoke regression + poc.db reindex from `D:/projects/obsidian-llm-wiki` to restore B1-B7 baseline — defer to a dedicated short slice when convenient. Not blocking active work.
 Last activity: 2026-04-28 -- 04-04-FOLLOWUP-SUMMARY supersedes 04-03 upstream-bug framing; see `.planning/phases/codenexus-04-parity/04-04-FOLLOWUP-SUMMARY.md` for RCA correction (real cause = `download_with_progress` is always-fetch API not cache-aware, NOT hf-hub upstream bug)
 
 Progress: [██████████] 100%
