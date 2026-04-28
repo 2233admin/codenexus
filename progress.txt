@@ -725,3 +725,131 @@ Session ended: 2026-04-27 evening, Phase 3.5b complete with hard-
 evidenced negative result. Phase 4 candle migration triggered.
 Next session: /gsd-add-phase Phase 4 candle migration (NOT another
 quick task -- multi-day milestone-scoped phase).
+
+==========================================================================
+2026-04-28 evening -- Phase 4 group 2 entry SPEC (04-09) committed
+==========================================================================
+
+QUICK TASK: 04-09 SPEC writing
+SCOPE EXECUTED: Promote 04-08 spike notes (5 locked + 5 open SPEC questions)
+                into formal Phase 4 group 2 entry SPEC. Socratic 2-round
+                interview locked the 5 open product decisions. Pure spec
+                document, no code change.
+
+WHAT DONE:
+  e99fde2  04-09-SPEC.md  Phase 4 group 2 entry: Go grammar + kind taxonomy +
+                          ABI exact lock. 5 R locked, ambiguity 0.11 (gate
+                          <=0.20 PASS), 18 acceptance checkboxes (after R4
+                          streaming-iterator addition), framework-decisions
+                          section drafted for thin-SPEC inheritance by
+                          follow-up slices 04-11/12/13/14.
+
+LOCKED DECISIONS (Socratic Round 2 + 4):
+  R1: tree-sitter-go integration follows spike's evidence-backed pattern
+      (Language::Go enum + LangCtx + detect_language + dispatch arm)
+  R2: Symbol.kind dual-field. kind_raw preserves bn.kind() raw string for
+      debug + unmapped fallback; kind_norm is 6-variant SymbolKind enum
+      (Function|Class|Method|Variable|Type|Module) for A2A client
+      stability. Schema migration ADD COLUMN + backfill via lookup table.
+      Recommended: keep `kind` as alias of kind_raw for one slice grace
+      period (planner-decision detail).
+  R3: Per-language fixture pattern locked. Single-lang fixture (>=3
+      symbols of distinct kinds) + cross-lang mixed fixture + REQ-10
+      B1-B7 mean precision_at_5 +/-2pp no-regression gate (anchored on
+      Phase 03.6 byte-identical 67.9% baseline). Coverage table option
+      explicitly rejected as too verbose for slice ROI.
+  R4: Exact-lock policy. All tree-sitter* deps AND streaming-iterator
+      use strict-equality (= "x.y.z") in Cargo.toml. Rationale: 0.22
+      -> 0.25 churn already forced 7 call-site rewrites; streaming-
+      iterator is tree-sitter ABI bystander (added in spike step A
+      precisely because of the churn) -- same lock discipline.
+  R5: Out-of-scope deferrals. graph_build per-lang -> group 2.5 slice
+      04-13. Cross-lang eval set design -> single wrap-up slice 04-14
+      (per-slice incremental rejected -- invites cherry-picking).
+      Rust / Java / C++ -> separate slices 04-11/12 with thin
+      acceptance addendum SPECs inheriting 04-09 framework decisions.
+      cargo-deny CI gate -> P2 mini-slice after group 2 closes.
+
+OUT-OF-SCOPE (with reasoning, locked in SPEC Boundaries):
+  - graph_build extension: edge resolvers diverge sharply per language
+  - Rust grammar: dogfood best done after core/ consolidation
+  - Java/C++ grammars: out-group user expansion, not dogfood path
+  - Cross-language eval set: one-shot design avoids per-slice cherry-pick
+  - cargo-deny / RustSec CI gate: P2 follow-up after group 2
+  - A2A v2 migration: kind_norm is additive, no breakage in this slice
+  - LLM-judge cross-validation: separate task
+
+SOCRATIC INTERVIEW SCORE TRAJECTORY:
+  R0 (post-scout):  Goal=0.65 / Boundary=0.55 / Constraint=0.50 /
+                    Acceptance=0.50 / Ambiguity=0.435
+  R2 (Simplifier+Boundary, 3 questions):
+                    Goal=0.85 / Boundary=0.85 / Constraint=0.65 /
+                    Acceptance=0.70 / Ambiguity=0.22 (just over gate)
+  R4 (Failure-Analyst, 2 questions):
+                    Goal=0.90 / Boundary=0.90 / Constraint=0.85 /
+                    Acceptance=0.90 / Ambiguity=0.11 (PASS)
+
+PROCESS NOTES (worth remembering):
+  - GSD SDK init phase-op fails with "stdin is not a tty" on Windows
+    git-bash; project bypass convention (inline-write SPEC) is the
+    documented workaround per STATE.md line 38. Should be P3 candidate
+    for fix or alternative entry point that doesn't require TTY.
+  - Pre-locked decisions reduce Socratic rounds: Curry's Q2 子题 1 (Go
+    next) and Q4 (repo private) lock removed Round 1 noise. SPEC
+    process ran 2 rounds + 5 questions instead of typical 3-4 rounds
+    + 8-12 questions. Pattern worth adopting: announce pre-locks
+    explicitly so SPEC interview doesn't re-litigate.
+  - "Framework decisions inherited by group 2 follow-up slices"
+    section is the SPEC-writing complexity payoff: 04-11 Rust SPEC
+    will be ~30-50 lines (language-specific deltas only) instead of
+    ~200 lines (full Socratic refinement). One SPEC paying for 4
+    follow-up slices.
+
+WHAT BLOCKED:
+  - None for SPEC closure. SPEC is locked, ready for /gsd-discuss-phase 4.
+  - HOW questions remaining (4-6 items) belong to discuss-phase, not SPEC:
+    (a) kind_norm lookup table location (parser.rs vs new kind.rs vs
+        storage.rs constant)
+    (b) schema migration shape (single migration with backfill, or 2-step
+        add-column-then-backfill)
+    (c) Go fixture file structure (single sample.go vs multi-file)
+    (d) A2A response shape (kind_raw + kind_norm both inline at top
+        level, OR nested under kind: { raw, norm })
+
+NEXT SESSION RESUME:
+  $ cd /d/projects/codenexus
+  $ git log --oneline -5            # confirm e99fde2 last commit
+  $ cat .planning/STATE.md          # phase 4 group 2 entry SPEC closed
+  $ cat .planning/phases/codenexus-04-parity/04-09-SPEC.md
+                                    # the SPEC just written
+  $ cat .planning/phases/codenexus-04-parity/04-08-SPIKE-NOTES.md
+                                    # spike that fed the SPEC
+
+  User says "continue" or "discuss" or "/gsd-discuss-phase 4":
+    -> /gsd-discuss-phase 4 (Socratic HOW refinement on 04-09-SPEC)
+       Estimated 15-20 min Curry bandwidth; produces 04-09-CONTEXT.md
+       (HOW decisions for the planner).
+
+  After discuss-phase closes:
+    -> /gsd-plan-phase 4 -- break group 2 entry into executable plans
+       (04-10 = Go grammar + kind_norm dual-field + exact-lock all-in-
+       one, OR split into mini-slices 04-10/11/12). Plan-phase decides
+       slice granularity from CONTEXT.md.
+
+  Concurrent low-priority (DO NOT auto-trigger):
+    - DF/ND-Leiden bench on AU 5090 BEFORE Phase 04.1 PLAN (Curry-locked
+      empirical-not-theoretical decision; i7 result may not transfer)
+    - hf-hub Windows 49% workaround doc + Quick start strangers-can-run
+      + repo public-visibility prep (bundle into single technical-debt
+      session; trigger conditions for repo public are locked)
+
+KEY DOCS POINTERS:
+  .planning/STATE.md                                      -- next-session
+                                                             order updated
+                                                             post-04-09
+  .planning/phases/codenexus-04-parity/04-09-SPEC.md      -- the SPEC
+  .planning/phases/codenexus-04-parity/04-08-SPIKE-NOTES.md -- input for SPEC
+  experiments/poc-retrieval/src/parser.rs                  -- where R1 lands
+
+Session ended: 2026-04-28 evening, 04-09-SPEC committed.
+Next session: /gsd-discuss-phase 4 (HOW refinement, 15-20 min).
