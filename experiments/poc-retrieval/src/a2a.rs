@@ -56,6 +56,20 @@ impl Task {
 pub enum OperationRequest {
     IndexRepo {
         repo: String,
+        /// R4 (Phase 4 first slice, Plan 04-02 v2): per-call override for
+        /// the consecutive-embed-failure abort threshold in the server.rs
+        /// IndexRepo handler. None means "use the hardcoded const = 5".
+        ///
+        /// **Schema versioning, not A2A metadata pass-through (M6 fix):**
+        /// This is an extension to CodeNexus's own typed `OperationRequest`
+        /// enum, with `#[serde(default)]` for back-compat -- existing A2A
+        /// clients that don't know about this field still produce valid
+        /// JSON (deserializes to `None`). The G-04 spec read confirms A2A
+        /// 1.0 free-form `metadata` would ALSO have allowed it (positive
+        /// knowledge for future per-task metadata extension), but our
+        /// chosen path is operation-schema versioning.
+        #[serde(default)]
+        max_consecutive_fail: Option<usize>,
     },
     Query {
         text: String,
