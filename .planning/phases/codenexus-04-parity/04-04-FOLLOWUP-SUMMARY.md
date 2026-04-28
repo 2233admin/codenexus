@@ -21,7 +21,7 @@ The 04-03-SUMMARY framed Phase 4 first slice as "PARTIAL — blocked by hf-hub W
 | R1.d offline-mode probe (HF_HUB_OFFLINE=1, embedder still loads) | DEFERRED | **PASS** (cache-complete + offline env -> 6.85s clean run, no network attempt) |
 | R5.b synthetic-failure Query <1s wall-clock | DEFERRED | **PASS** (`CODENEXUS_EMBED_FAIL=always` -> 0.286s, retry budget = 250ms sleep + 2 x ~18ms) |
 | R1.c reload test (delete snapshot + redownload yields same SHA) | DEFERRED | DEFERRED (residual; fresh-download path still blocked on Windows) |
-| R4.b synthetic-failure A2A IndexRepo | DEFERRED | DEFERRED (mechanically same as R5.b but server-mode; not run this followup -- queued for next slice) |
+| R4.b synthetic-failure A2A IndexRepo | DEFERRED | **PASS** (standalone probe `eval/r4b_probe.sh`, 19s wall-clock, see addendum below) |
 | E2E harness gates 1, 1b, 2, 3, 4, 5, 6 | DEFERRED | mixed: cache-hit subset (1, 2, 3) reachable now; fresh-download subset (1b, 4, 5, 6) still blocked |
 
 ## What landed in this followup
@@ -158,3 +158,78 @@ This contrasts favorably with the 04-03 estimate of 4 next-session actions total
 
 *Phase 4 first slice followup closure: cache-first fix lifts EVAL_NO_REGRESSION + R1.d + R5.b from DEFERRED to runtime PASS. Residual fresh-install gates (R1.c, E2E 1b/4/5/6) move to "First-run UX P1 cluster" home in PROJECT.md.*
 *Closure timestamp: 2026-04-28T17:00+08:00*
+
+---
+
+## Addendum: R4.b probe (same-day continuation, 2026-04-28T17:38+08:00)
+
+R4.b synthetic-failure A2A IndexRepo gate -- **DEFERRED -> PASS** via standalone probe outside the e2e_first_run_smoke.sh harness (which still hits residual fresh-install download paths in earlier phases).
+
+### Probe artifact
+
+**File:** `experiments/poc-retrieval/eval/r4b_probe.sh` (~100 lines, standalone bash)
+
+Reuses pre-seeded HF cache + existing release binary (`target/release/codenexus-core.exe`, 28 Apr 16:41) + existing `poc.db`. Mirrors the R4.b section of `e2e_first_run_smoke.sh:294-365` mechanically, but isolates the test from earlier harness phases that exercise fresh-download paths. Uses `python -c` for JSON parsing because `jq` is not on this host's PATH.
+
+### Run output (`eval/r4b_logs/serve.log`)
+
+```
+CodeNexus A2A endpoint listening on 0.0.0.0:9897 (db=./poc.db)
+[a2a-index 1/2116] embed fail exec: CODENEXUS_EMBED_FAIL=always: synthetic embed failure (n=4) (consecutive=1/5)
+[a2a-index 2/2116] embed fail FilesystemAdapter: ...                                                  (consecutive=2/5)
+[a2a-index 3/2116] embed fail constructor: ...                                                        (consecutive=3/5)
+[a2a-index 4/2116] embed fail init: ...                                                               (consecutive=4/5)
+[a2a-index 5/2116] embed fail dispose: ...                                                            (consecutive=5/5)
+```
+
+### A2A task state transition (`eval/r4b_logs/poll.json`)
+
+```json
+{
+  "id": "88b787eb-...",
+  "state": "failed",
+  "created_at":  "2026-04-28T09:38:19.123Z",
+  "updated_at":  "2026-04-28T09:38:37.973Z",
+  "operation": { "index_repo": { "repo": "D:/projects/obsidian-llm-wiki", "max_consecutive_fail": 5 } },
+  "error": "op error: aborting a2a indexer: 5 consecutive embed failures (threshold 5), last symbol=dispose, indexed=0/2116, last error=CODENEXUS_EMBED_FAIL=always: synthetic embed failure (n=24)"
+}
+```
+
+Wall-clock: 18.85s (submit -> failed transition). Probe-reported elapsed: 19s. Both well under the 60s budget.
+
+### Acceptance evidence
+
+| Criterion | Required | Observed |
+|-----------|----------|----------|
+| Task state transitions to `failed` | yes | yes (state=failed) |
+| Error message contains "consecutive embed failures" | yes | yes (literal string + "consecutive=5/5" in serve.log) |
+| Wall-clock < 60s budget | yes | 19s |
+| Counter resets on success | n/a (always-fail mode) | counter never resets in this run; reset path is exercised by happy-path indexing in 03.6 baseline |
+| `consecutive_fails` increments correctly 1->5 | yes | yes (1/5, 2/5, 3/5, 4/5, 5/5 in serve.log) |
+
+### Counter mechanics double-check
+
+The `last error=... synthetic embed failure (n=24)` field reveals 25 total `embed_once` calls were attempted (n is 0-indexed, n=24 is the 25th call). This decomposes as 5 outer iter * 5-attempt embed wrapper = 25 calls, confirming the wrapper retry budget runs to completion before the outer counter increments. `consecutive_fails` is the outer-loop counter, NOT the per-call retry counter -- design verified end-to-end.
+
+### Honest gap update (R4.b row only)
+
+| Status | Was | Now |
+|--------|-----|-----|
+| R4.b synthetic A2A IndexRepo timing test | DEFERRED (P2, queued for next slice) | **PASS** (this addendum) |
+| R4.b counter-reset on success path | implicitly tested via happy-path indexing in 03.6 (no synthetic test) | unchanged -- not in scope here |
+
+No new gaps surfaced. The 5 residual P1 first-run UX cluster gates (R1.c, E2E 1b/4/5/6) remain unchanged.
+
+### Files changed (this addendum)
+
+- `experiments/poc-retrieval/eval/r4b_probe.sh` (new -- standalone R4.b probe)
+- `experiments/poc-retrieval/eval/r4b_logs/{submit,poll}.json` (new -- audit artifacts)
+- `experiments/poc-retrieval/eval/r4b_logs/serve.log` (new -- consecutive_fails progression record)
+- `.planning/phases/codenexus-04-parity/04-04-FOLLOWUP-SUMMARY.md` (this file -- table row + addendum)
+
+### Wall-clock
+
+~10 minutes total (probe write + run + summary edit + commit), matching the 04-04 SUMMARY estimate for action #2.
+
+*Addendum closure timestamp: 2026-04-28T17:38+08:00*
+*Phase 4 first slice: 4 of 6 deferred runtime gates now lifted to PASS (was 3 of 6). Residual 2 still in First-run UX P1 cluster.*
