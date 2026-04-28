@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 4 context gathered
-last_updated: "2026-04-28T06:47:37.919Z"
-last_activity: 2026-04-28 -- Phase 4 planning complete
+stopped_at: Phase 4 first slice code-complete (runtime DEFERRED on hf-hub Windows bug)
+last_updated: "2026-04-28T16:10:00.000Z"
+last_activity: 2026-04-28 -- Phase 4 first slice closed PARTIAL (Waves 0-3 commits landed; full E2E DEFERRED)
 progress:
   total_phases: 8
   completed_phases: 1
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-04-26)
 
 ## Current Position
 
-Phase: 3 of 6 (MVP) — **CLOSED 2026-04-28 via Phase 03.6**
-Plan: REQ-06 + REQ-07 + REQ-08 + REQ-09 + REQ-10 done (5 of 5); Phase 03.6 Plan 1 (loader + equivalence) + Plan 2 (cross-corpus eval + closure) done
-Status: Ready to execute
-Last activity: 2026-04-28 -- Phase 4 planning complete
+Phase: 4 of 6 (Parity) — **first slice CODE-COMPLETE 2026-04-28 (Waves 0-3); runtime E2E DEFERRED (hf-hub Windows fresh-download bug)**
+Plan: 04-00 (Cargo bin rename) + 04-01 v2 (R1 redesign + R2.c + R3) + 04-02 v2 (R4 + R5 + fault injection) committed; 04-03 SUMMARY documents partial closure
+Status: First slice code-complete with documented runtime-validation deferrals; Phase 4 group 2 (multi-language tree-sitter) ready to start as separate slice
+Last activity: 2026-04-28 -- Phase 4 first slice closed PARTIAL — see .planning/phases/codenexus-04-parity/04-03-SUMMARY.md for hf-hub Windows bug + DEFERRED-gate rationale
 
 Progress: [██████████] 100%
 
