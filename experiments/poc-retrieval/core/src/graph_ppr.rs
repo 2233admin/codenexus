@@ -54,7 +54,7 @@ impl EdgeKind {
 /// ```ignore
 /// // Synthetic 5-node graph, edges: 1→2, 2→3, 3→2, 4→5
 /// let edges = vec![(1, 2), (2, 3), (3, 2), (4, 5)];
-/// let result = poc_retrieval::graph_ppr::ppr_from_edge_list(&edges, &[1], 0.85, 30);
+/// let result = codenexus_core::graph_ppr::ppr_from_edge_list(&edges, &[1], 0.85, 30);
 /// // Entry node 1 → mass leaks to 2; 2↔3 cycle distributes; 4 and 5 unreachable
 /// assert_eq!(result[0].0, 1);  // entry retains highest mass
 /// // 2 should outrank 4 and 5 (which get only teleport residual = 0)

@@ -646,6 +646,8 @@ CodeNexus core is a single Cargo crate for MVP. ANY ONE of the following trigger
 
 Review checkpoint: at Phase 4 entry, run measurements 1 and 2 and write results to that phase's summary. Owner: phase planner.
 
+**Trigger #4 fired (2026-04-29, Phase 04.5-01).** Sentrux adaptation lift requires three sub-crates (`core` / `metrics` / `parser`) over ~8000 LoC of liftable MIT-licensed material. Inline-match multi-language pattern from 04-09-SPEC was superseded by sentrux's data-driven `lang_extractors` framework (configs over match arms), and that framework requires its own sub-crate boundary to avoid cross-pollinating with `core`. Workspace promotion landed in slice 04.5-01: `experiments/poc-retrieval/` is now a `[workspace]` root with `core` as the only member; `metrics` (04.5-02) and `parser` (04.5-03) join in subsequent slices. `package.name` rewrote `poc-retrieval` → `codenexus-core` to match the existing `[[bin]]` name and avoid the reserved `core` crate name (which shadows `std::core`). No semantic change: same source tree, same dependencies, same `embedder.version_hash = f2b47aa16b17` per §9.8. G-D gate evidence (B1-B7 mean = 67.86% from `eval/req10_alpha06_candle.json`, in [65.9%, 69.9%]) plus 22/22 tests plus fsc.db end-to-end smoke confirm semantic equivalence under the new layout.
+
 ### 10.2 ONNX Runtime backend — D-W7
 
 `ort` (ONNX Runtime Rust binding) covers AMD GPUs, Intel Arc, and NPUs that `candle-cuda` does not. Snowflake-arctic-embed has official ONNX export; switching cost is low. Path stays open as a Future embedder backend; NOT implemented in MVP.

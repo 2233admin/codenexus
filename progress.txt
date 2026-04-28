@@ -853,3 +853,118 @@ KEY DOCS POINTERS:
 
 Session ended: 2026-04-28 evening, 04-09-SPEC committed.
 Next session: /gsd-discuss-phase 4 (HOW refinement, 15-20 min).
+
+==========================================================================
+2026-04-29 -- Phase 04.5-01 workspace promotion (1 commit)
+==========================================================================
+
+QUICK TASK: codenexus-04.5-sentrux-adaptation-layer / slice 04.5-01
+SCOPE EXECUTED: Promote experiments/poc-retrieval/ from single-crate to
+                Cargo workspace per canonical plan
+                ~/.claude/plans/https-github-com-2233admin-sentrux-optimized-diffie.md.
+                Only the structural slice -- NO metrics lift (04.5-02), NO
+                lang_extractors lift (04.5-03), NO Symbol.kind dual-field
+                or tree-sitter exact-lock (04.5-07). Pure scope.
+
+WHAT DONE (this commit):
+  experiments/poc-retrieval/Cargo.toml              -> core/Cargo.toml (git mv)
+  experiments/poc-retrieval/src/{*.rs,bin/*.rs}     -> core/src/{*.rs,bin/*.rs}  (14 files, git mv preserves history)
+  experiments/poc-retrieval/Cargo.toml              NEW workspace root: [workspace] resolver="2" members=["core"]
+  experiments/poc-retrieval/core/Cargo.toml         package.name: poc-retrieval -> codenexus-core
+                                                    (deviation from plan: plan said "core" but reserved Rust crate
+                                                    name shadows std::core, breaking clap+tokio macros; renamed to
+                                                    align with existing [[bin]] codenexus-core)
+  core/src/bin/compute_version_hash.rs              import path: poc_retrieval:: -> codenexus_core::
+  core/src/graph_ppr.rs                             doctest example: poc_retrieval:: -> codenexus_core::
+  docs/ARCHITECTURE.md                              §10.1 D-R1 trigger #4 firing record appended
+  .planning/PROJECT.md                              "Out of Scope" Cargo workspace line marked PROMOTED
+  .planning/STATE.md                                stopped_at + Next Session Order rewritten for 04.5 active
+  progress.txt                                      this entry
+
+PHASE STATUS:
+  Phase 1 (Foundation Design)        [x] closed
+  Phase 2 (Stack Spike)              [x] research-conclusive (sqlite-vec)
+  Phase 3 (MVP)                      [x] CLOSED 2026-04-28 via Phase 03.6
+  Phase 03.6 candle migration        [x] CLOSED 2026-04-28
+  Phase 04 first slice (UX cluster)  [x] CLOSED 2026-04-28
+  Phase 04-09 SPEC                   [x] SUPERSEDED 2026-04-28 (R2+R4 carry to 04.5-07)
+  Phase 04.5-01 workspace promotion  [x] CLOSED 2026-04-29 (this session)
+  Phase 04.5-02 metrics lift         [ ] NEXT
+  Phase 04.5-03 lang_extractors lift [ ] queued
+  Phase 04.5-04 DSM + evo            [ ] queued
+  Phase 04.5-05 rules DSL decision   [ ] queued (decide a/b/c after 04.5-04)
+  Phase 04.5-06 NOTICE + license     [ ] queued (or bundle into 04.5-02)
+  Phase 04.5-07 multi-language       [ ] queued (supersedes original 04-09)
+  Phase 04.1 graph clustering        [ ] needs PLAN first (DF/ND-Leiden bench on AU 5090 prereq)
+
+G-D GATE EVIDENCE (triangulated):
+  (1) eval/req10_alpha06_candle.json B1-B7 mean precision_at_5 = 0.6786 (67.86%)
+      gate band [0.659, 0.699] PASS. JSON predates poc.db corruption (27 Apr
+      22:45 vs 28 Apr 18:31), captures candle-flavor full poc.db state.
+      Workspace promotion does not change embedder version_hash (still
+      f2b47aa16b17 per ARCH §9.8), search algorithm, or storage layer --
+      so this number is binding for the post-promotion gate.
+  (2) cargo test --workspace --test-threads=1: 16/16 bin + 6/6 lib = 22/22 PASS
+      Same 16 bin tests as 03.6 baseline (per progress.txt 04-08 entry).
+      The 6 lib tests are now reported separately (workspace exposes lib
+      distinctly from bin) -- no new tests added.
+  (3) fsc.db end-to-end smoke under new layout:
+        codenexus-core query --db fsc.db --top 5 --alpha 0.6 "spawn agent subprocess"
+      returns daemon.ts:proc / agent.ts:execHost / dockerInstance.ts cluster --
+      same top-5 cluster as 03.6 cross-corpus F1 (precision_at_5 = 1.0 in
+      eval/fsc_blind_results.json; identity preserved).
+
+WHAT BLOCKED:
+  - poc.db pre-existing corruption (1 row, 28 Apr 18:31) from earlier
+    r4b_probe.sh run -- corruption itself is independent of this slice;
+    G-D gate routed around it via candle eval JSON + fsc.db smoke instead.
+    Restore via reindex (~70 min) before any future probe-driven eval. See
+    P1 follow-up in STATE.md "Next Session Order" item 9.
+  - Pre-existing dead-code warnings (3): personalized_pagerank, count_edges_by_kind_conf,
+    resolve. Carry forward unchanged. Phase 04.5-02 may exercise count_edges_by_kind_conf
+    via metrics ops; Phase 04.1 will exercise personalized_pagerank.
+
+PROCESS NOTES (worth remembering):
+  - The plan called for `package.name = "core"` but that's a reserved Rust
+    crate name. Renamed to codenexus-core; directory layout (`core/`) and
+    workspace member name ("core") remain as planned. Plan brief should
+    note this for any future workspace-promotion of similar shape.
+  - r4b_probe.sh ran against poc.db on 2026-04-28 even though server.rs
+    deferred-clear fix landed 04-06. Possible causes: stale binary used,
+    fix doesn't cover the path probe exercised, or probe was run with
+    --no-confirm. Worth a P1 investigation before next probe-driven eval.
+  - fsc.db survived because r4b_probe targets default --db (poc.db). The
+    probe script's own warning at line 4-22 explicitly flagged this as
+    destructive. Probe scripts should be moved to a quarantine directory
+    or gated on --confirm with an interactive prompt. Phase 04 cleanup.
+  - Slice scope held pure: zero new dependencies in Cargo.toml, zero new
+    src files, zero new tests. Pure structural lift. This is the clean
+    template for 04.5-02/03 sub-crate splits.
+
+KEY DOCS POINTERS:
+  ~/.claude/plans/https-github-com-2233admin-sentrux-optimized-diffie.md  canonical plan
+  .planning/phases/codenexus-04.5-sentrux-adaptation-layer/04.5-PLAN-OUTLINE.md
+                                                                          phase pointer
+  docs/ARCHITECTURE.md §10.1                                              D-R1 trigger record
+  .planning/PROJECT.md "Out of Scope"                                     workspace PROMOTED
+  experiments/poc-retrieval/Cargo.toml                                    NEW workspace root
+  experiments/poc-retrieval/core/                                         existing-code sub-crate
+  experiments/poc-retrieval/eval/req10_alpha06_candle.json                G-D gate evidence
+
+NEXT SESSION RESUME:
+  $ cd /d/projects/codenexus
+  $ git log --oneline -3                                                  # confirm 04.5-01 commit on top
+  $ cat .planning/STATE.md                                                # next: 04.5-02 metrics lift
+  $ cat ~/.claude/plans/https-github-com-2233admin-sentrux-optimized-diffie.md  # full slice cadence
+
+  User says "continue" or "04.5-02" -> Phase 04.5-02 metrics lift:
+    - Lift sentrux-core/src/metrics/{arch,evo,rules,dsm} (~2500 LoC) into a new
+      `metrics` sub-crate at experiments/poc-retrieval/metrics/.
+    - Wire A2A `query_metrics` operation into core/src/server.rs.
+    - G-C gate: `cargo build -p metrics` clean with no egui/pro_registry deps.
+    - Bundle NOTICE file with sentrux MIT attribution (small enough to fold in
+      vs deferring to 04.5-06).
+    Sentrux audit dir cached at C:/Users/Administrator/AppData/Local/Temp/sentrux-audit-LdXuzt/.
+
+Session ended: 2026-04-29, Phase 04.5-01 workspace promotion CLOSED.
+Next session: Phase 04.5-02 metrics module lift.

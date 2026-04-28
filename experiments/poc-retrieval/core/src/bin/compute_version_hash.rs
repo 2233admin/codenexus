@@ -17,7 +17,7 @@
 // validated in Plan 1 task 2.5 acceptance gate (two consecutive runs
 // produce byte-identical 12-char hex output).
 
-use poc_retrieval::embedder::QUERY_INSTRUCT;
+use codenexus_core::embedder::QUERY_INSTRUCT;
 use sha2::{Digest, Sha256};
 
 const MODEL_ID: &str = "Qwen/Qwen3-Embedding-0.6B";

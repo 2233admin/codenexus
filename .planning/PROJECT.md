@@ -45,7 +45,7 @@ Code + knowledge graph tool. A Rust core (parser/embedder/storage/git overlay) t
 - **Replacing memU / obsidian-llm-wiki** — CodeNexus owns code+git domain; vault layer stays in obsidian-llm-wiki; integration via Phase 5 Bridge.
 - **VS Code extension** — separate project if ever; CodeNexus exposes MCP for IDE integration, that's enough.
 - **GPL/AGPL license** — would conflict with A2A "open agent in any mesh" strategy; enterprise legal teams routinely ban GPL deps.
-- **Cargo workspace / sub-crates inside core/ (MVP)** — single binary, single crate; restructure to workspace only if Phase 4 demands it.
+- ~~**Cargo workspace / sub-crates inside core/ (MVP)** — single binary, single crate; restructure to workspace only if Phase 4 demands it.~~ **[PROMOTED 2026-04-29 via Phase 04.5-01]** — D-R1 trigger #4 (multi-language tree-sitter via plugin configs) fired. `experiments/poc-retrieval/` is now a Cargo workspace with `core` as the only member; `metrics` (04.5-02) and `parser` (04.5-03) sub-crates land in subsequent slices. Single fat-binary distribution invariant intact — `[[bin]]` `codenexus-core` continues to be the only release artifact, and `//go:embed` plumbing is unchanged. Detail: `docs/ARCHITECTURE.md` §10.1 trigger-firing record.
 - **Embedding GitNexus PolyForm code** — clean-room policy; designs studied, code never copied or referenced. CodeFlow MIT may be ported (Apache 2.0 upgrade, with attribution).
 
 ## Differentiation vs Prior Art

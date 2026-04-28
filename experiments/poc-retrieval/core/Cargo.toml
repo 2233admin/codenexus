@@ -1,0 +1,61 @@
+[package]
+name = "codenexus-core"
+version = "0.0.1"
+edition = "2021"
+description = "CodeNexus retrieval-only POC. Validates whether tree-sitter + qwen3-embedding + BM25/cosine RRF clears the 60% precision gate before locking Phase 1 architecture."
+
+[dependencies]
+tree-sitter = "0.25"
+tree-sitter-typescript = "0.23"
+tree-sitter-python = "0.25"
+streaming-iterator = "0.1"
+rusqlite = { version = "0.31", features = ["bundled", "modern_sqlite"] }
+reqwest = { version = "0.12", features = ["blocking", "json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+clap = { version = "4", features = ["derive"] }
+anyhow = "1"
+ignore = "0.4"
+
+# A2A endpoint (REQ-06) — axum HTTP server, async runtime, task state.
+axum = { version = "0.7", default-features = false, features = ["http1", "json", "tokio", "matched-path"] }
+tokio = { version = "1.40", features = ["rt-multi-thread", "macros", "signal", "sync"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["trace", "cors"] }
+uuid = { version = "1.10", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+
+# Phase 03.6: in-process embedder via candle (replaces ollama HTTP).
+# See .planning/phases/03.6-.../03.6-RESEARCH.md for stack rationale.
+# fastembed first (~1-2hr cap); fall back to direct candle if config knobs inadequate.
+candle-core = "0.10"
+candle-nn = "0.10"
+candle-transformers = "0.10"
+hf-hub = "0.5"
+# WARNING: keep `default-features = false`. Without it, tokenizers' `esaxx_fast`
+# feature pulls `esaxx-rs/cpp` whose build.rs hard-codes `/MT` static CRT, colliding
+# with ort's prebuilt `/MD` libs and breaking `cargo test` with LNK2038/LNK1319.
+# Phase 04-07 fix; basic Tokenizer::from_file API requires no features.
+tokenizers = { version = "0.22", default-features = false }
+fastembed = { version = "5.13", features = ["qwen3"] }
+sha2 = "0.10"
+
+# Phase 03.6 task 2.5.2: explicit lib + bin layout. Library facade exposes
+# `embedder` so `src/bin/compute_version_hash.rs` can import QUERY_INSTRUCT
+# without copy-paste (single source of truth for ARCH §9.8 version-hash).
+# main.rs continues to use file-local `mod embedder;` -- both bin and lib
+# share `src/embedder.rs` which is normal Rust idiom.
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "codenexus-core"
+path = "src/main.rs"
+
+[[bin]]
+name = "compute_version_hash"
+path = "src/bin/compute_version_hash.rs"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
