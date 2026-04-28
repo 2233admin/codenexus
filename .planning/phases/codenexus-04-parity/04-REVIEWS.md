@@ -1,21 +1,212 @@
 ---
 phase: 4
 slice: first-slice-ux-resilience
-reviewers: [gemini, codex]
-reviewers_failed: [opencode, claude]
-reviewer_failure_reasons:
-  opencode: "Invalid token (Copilot subscription auth expired) — exit 0 / 0 bytes output"
-  claude: "Skipped — running inside Claude Code (CLAUDE_CODE_ENTRYPOINT=sdk-ts), self-review excluded for independence per gsd-review workflow rule"
-reviewed_at: 2026-04-28T07:26:14
+sessions:
+  - session_id: morning-0726
+    reviewed_at: 2026-04-28T07:26:14
+    reviewers: [gemini, codex]
+    reviewers_failed: [opencode, claude]
+    consensus_classification: SPLIT
+    recommendation: "Replan via /gsd-plan-phase 4 --reviews"
+  - session_id: rerun-1303
+    reviewed_at: 2026-04-28T13:03+08:00
+    reviewers: [gemini, codex]
+    reviewers_failed: [opencode]
+    consensus_classification: CONFLICT
+    recommendation: "HALT-AND-REPLAN — new HIGH findings strengthen morning's diagnosis"
 plans_reviewed:
   - 04-01-PLAN.md
   - 04-02-PLAN.md
   - 04-03-PLAN.md
-consensus_classification: SPLIT
-consensus_recommendation: "Replan via /gsd-plan-phase 4 --reviews. Codex flagged 3 HIGH issues that are verifiable from plan text. Plans should NOT execute as-is."
+plans_replanned_after_morning_review: false
+plans_unchanged_since: 2026-04-28T07:10
+combined_high_findings_count: 10
+high_findings_orchestrator_verified: 2  # Makefile mismatch + fastembed from_hf re-fetch
+final_verdict: HALT-AND-REPLAN
 ---
 
 # Cross-AI Plan Review — Phase 4 First Slice
+
+## RE-REVIEW SUPPLEMENT — 2026-04-28T13:03 (rerun-1303 session)
+
+**Why this supplement exists:** Morning's review (committed at SHA `6110ae6`, 07:26:14) recommended REPLAN. Plans were not replanned in the intervening hours. User invoked `/gsd-review --phase 4 --all` again at 13:00. Re-running reviewers produced **convergent REPLAN verdict with NEW HIGH findings** — the morning Codex run and current Codex run found largely DIFFERENT HIGH issues (different agentic exec paths into different parts of the source tree), but both ended at HALT/REPLAN.
+
+This is consistent with the CCG adversarial-review gate's purpose: stochastic agentic exec catches different blind spots each run; the **union** of findings across runs is the load-bearing evidence.
+
+### Convergence summary (across both sessions)
+
+| HIGH Finding | Morning (07:26) | Current (13:03) | Orchestrator-verified |
+|---|---|---|---|
+| 04-03 silently defers R4.b/R5.b synthetic tests | ✅ flagged | ✅ flagged | n/a (plan text reads) |
+| 04-03 destructive cache mutation (`rm -rf blobs`) | HIGH | MEDIUM (downgraded) | n/a |
+| 04-03 pre-index ordering bug | HIGH | not flagged | n/a |
+| 04-01 `snapshot_dir()` under-specified | HIGH | MEDIUM (downgraded) | n/a |
+| **R1 fastembed `from_hf` re-fetches from `main`** | ❌ missed | ✅ flagged | ✅ confirmed at `qwen3.rs:1014` |
+| **D-06: hf-hub 0.5 DOES expose `download_with_progress<P>`** | ❌ missed | ✅ flagged | ✅ confirmed at `sync.rs:766-799` |
+| **Makefile binary name mismatch (`codenexus-core` vs `poc-retrieval`)** | ❌ missed | ✅ flagged | ✅ confirmed `Makefile:4` vs `Cargo.toml:2`; actual built binary is `poc-retrieval.exe` |
+| **04-03 harness uses Go CLI signature against Rust CLI semantics** | ❌ missed | ✅ flagged | not directly verified by orchestrator |
+| **Rust `/tasks/send` ↔ Go A2A client wire format incompatible** | ❌ missed | ✅ flagged | not directly verified by orchestrator |
+| SHA provenance fragility (cache+timestamp ≠ baseline-identity proof) | HIGH | not flagged | n/a |
+
+**Two HIGH findings independently verified by the orchestrator** before composing this supplement (R1 false-pass mechanic + Makefile broken pre-flight). Both are **structural false-pass scenarios**: the plan would compile clean, pass all greps, and silently fail the actual contract.
+
+### What's new vs morning (the load-bearing additions)
+
+Two findings the morning Codex run missed entirely, both **verified-correct by source-code inspection**:
+
+**(1) R1 SHA pin is decorative, not functional.** `Qwen3TextEmbedding::from_hf` at `fastembed-5.13.3/src/models/qwen3.rs:1002-1014` constructs `let repo = api.model(repo_id.to_string());` — meaning whatever path you pass (local snapshot dir or repo id), it gets wrapped in a fresh unpinned `api.model(...)` call that re-fetches from `main`. Plan 04-01's `snapshot_dir()` helper correctly downloads the pinned-revision files into the cache, but `from_hf` then ignores that work and fetches `config.json` from default `main`. **The entire purpose of R1 (supply-chain control) does not get delivered.** Plan needs R1 redesign to either:
+  (a) construct `Qwen3TextEmbedding::new(model, tokenizer)` directly from local files (bypassing `from_hf`),
+  (b) fork/patch fastembed-rs to honor `Repo::with_revision`, or
+  (c) verify whether `Qwen3TextInitOptions` exposes a `revision` parameter that fastembed honors (Codex did not confirm; planner must verify via cargo doc).
+
+**(2) `make build` fails before E2E starts.** `Makefile:4` declares `CORE_BIN := codenexus-core` and `Makefile:25` does `cp .../target/release/$(CORE_BIN)$(...).exe ...`. But `experiments/poc-retrieval/Cargo.toml:2` declares `name = "poc-retrieval"` and `[[bin]] name = "poc-retrieval"` at line 45-47. Actual built artifact: `experiments/poc-retrieval/target/release/poc-retrieval.exe`. The Makefile's `cp` references a file that does not exist — `make build-server` fails at that step. Plan 04-03 Task 1 has a `make build` fallback (line 148-154 of 04-03-PLAN.md) which therefore cannot succeed on a clean build. This is a **pre-existing project bug** that Plan 04-03 implicitly assumes is fixed.
+
+Plus four other new HIGH findings from current Codex run (Go CLI ≠ Rust CLI signatures, Go ↔ Rust A2A wire format incompatible, D-06 progress callback claim factually wrong, R4.b/R5.b dishonestly downgraded — see verbatim Codex review below).
+
+### Current run — Codex verbatim (rerun-1303)
+
+#### Summary
+SHOULD HALT. The plan has good scope discipline, but 04-01's core R1 implementation is based on a false fastembed assumption, and 04-03's release-artifact E2E path is incompatible with the current Go/Rust wiring. These are not polish defects; executor will either compile/run but still fetch HEAD, or fail before reaching the intended acceptance gates.
+
+#### Strengths
+- G-02 fallback to `hf-hub` is correct: `Cargo.toml:32` already declares `hf-hub = "0.5"`.
+- `Embedder::new()` exists at `experiments/poc-retrieval/src/embedder.rs:57`, so the proposed `embed_query_works` constructor call is valid.
+- `Role` removal from `search.rs` is valid after switching line 31: current only use is `search.rs:4` import + `search.rs:31` `Role::Query`.
+- `server.rs:64-66` does map `dispatch` `Err` into `TaskStore::fail`, and `task_state.rs:65-70` stores failed state + error string.
+- Bound check `1..=1000` in 04-02 rejects `Some(0)` as planned (`04-02-PLAN.md:365-380`).
+- Wave sequencing is justified: 04-01 and 04-02 both touch `embedder.rs` insertion points.
+
+#### Concerns
+- **HIGH** R1 implementation cannot work as written — `04-01-PLAN.md:199-218` passes a local snapshot path to `Qwen3TextEmbedding::from_hf`, but fastembed 5.13.3 treats the argument as a Hub repo id and immediately calls `api.model(repo_id.to_string())` at `.../fastembed-5.13.3/src/models/qwen3.rs:1002-1014`. It does not load from a local directory. This means the SHA pin wrapper is bypassed or fails by constructing a bogus HF repo from a filesystem path.
+
+- **HIGH** R1 "snapshot_dir + from_hf" double-fetches/wrong-revision risk — even after `hf-hub::Repo::with_revision` downloads the pinned files, fastembed's `from_hf` builds a fresh unpinned `api.model(repo_id)` at `qwen3.rs:1010-1018` and fetches `config.json` from default `main`. The plan does not actually pin the model load path.
+
+- **HIGH** D-06 progress decision is factually wrong — `04-01-PLAN.md:60` and `04-01-PLAN.md:306` say hf-hub exposes no programmable callback. Local hf-hub 0.5.0 exposes `download_with_progress<P: Progress>` at `.../hf-hub-0.5.0/src/api/sync.rs:766-799`. Per SPEC trigger, R2(c) should be promoted or the plan must explicitly choose not to.
+
+- **HIGH** `make build` is already broken for current binary names — Makefile copies `target/release/codenexus-core(.exe)` at `Makefile:4` and `Makefile:25`, but Cargo builds `poc-retrieval` per `experiments/poc-retrieval/Cargo.toml:45-47`. Current `target/release` contains `poc-retrieval.exe`, not `codenexus-core.exe`. 04-03 will fail at `make build` before E2E.
+
+- **HIGH** 04-03 uses the Go CLI as if it were the Rust CLI — `04-03-PLAN.md:174`, `192`, `233`, `261` call `$BIN index --repo ... --db ...` / `$BIN query ... --db ...`. Go CLI syntax is `index <repo>` and requires a running `codenexus serve` lockfile (`server/cmd/index.go:17-29`); query requires `--repo-hash`, not `--db` (`server/cmd/query.go:31-40`). The harness cannot run.
+
+- **HIGH** Go A2A client and Rust A2A server wire formats are incompatible — Rust `/tasks/send` expects `{ "operation": ... }` via `TaskSendBody` at `experiments/poc-retrieval/src/a2a.rs:141-142`. Go sends `{task_id, skill_id, messages[].parts[].data}` at `server/internal/proxy/a2a.go:38-41` and `:208-214`. Rust response uses `id`, not `task_id` (`a2a.rs:23-34`), while Go polls fallback client-generated ID (`proxy/a2a.go:238-255`). 04-03's "release artifact" path is not currently viable.
+
+- **HIGH** Required R4.b/R5.b tests are silently downgraded — SPEC requires synthetic-failure tests, but 04-03 explicitly excludes them at `04-03-PLAN.md:123-128` and `:290`, then allows DEFERRED in closure at `:408-410`. That contradicts Phase acceptance, not just implementation detail.
+
+- **MEDIUM** Eval jq filter is wrong for actual baseline JSON — `req10_alpha06.json` is a top-level array, not `{summary, results}`. The planned filter at `04-03-PLAN.md:350-362` indexes `.summary`/`.results`; use `if type=="array" then map(.precision_at_5)|add/length else ... end`.
+
+- **MEDIUM** `snapshot_dir()` root detection is fragile — `04-01-PLAN.md:149-195` only computes root from the first fetched file. Today first file is top-level `config.json`, so nested `1_Pooling/config.json` is not actually validating the depth logic. Add assertions that every returned path is under the same `snapshots/<QWEN3_REVISION>` root.
+
+- **MEDIUM** Cache deletion is too destructive — `04-03-PLAN.md:188` and `:229` remove `$HF_CACHE_DIR/blobs`, which can break other snapshots/revisions for the same model. R1.c only needs the target snapshot; full-blob eviction should be verifier-only and opt-in.
+
+- **MEDIUM** `OnceLock` lazy load has a duplicate-load race — `embedder.rs:63-76` does check-then-load-then-`set`; concurrent first queries can each load/download the 1.2GB model, with losers discarded. Use `get_or_try_init` equivalent or a `Mutex<Result>` guard if server concurrency matters.
+
+- **MEDIUM** A2A threshold override not plumbed through Go — Rust enum extension in `a2a.rs:56-59` does not update Go `IndexRepoArgs` at `server/internal/proxy/a2a.go:81-85` or CLI `server/cmd/index.go:36-39`. Direct Rust A2A clients can send it; the advertised fat-binary Go CLI cannot.
+
+- **LOW** Threat model overclaims SHA protection — `04-01-PLAN.md:481-482` says SHA pin prevents substituted weights. hf-hub validates etag/content-addressed blobs, but the planned fastembed second fetch from unpinned `main` invalidates that claim until R1 is redesigned.
+
+- **LOW** E2E "query returns results" can pass empty corpus setup — `04-03-PLAN.md:160-166` says fallback corpus may produce 0 symbols and "empty results" are fine. That no longer tests user-visible query success, only model loading.
+
+#### Suggestions
+- Replace 04-01 R1 design. Either fork/patch fastembed to accept `Repo::with_revision`, or manually construct `Qwen3TextEmbedding::new(model, tokenizer)` using local files. Do not pass snapshot paths to `from_hf`.
+- If staying with hf-hub, use `ApiRepo::download_with_progress` and a small `Progress` implementation; update R2(c) instead of deferring.
+- Fix packaging before 04-03: align Cargo bin name with `codenexus-core`, or change `Makefile:25` and supervisor expectations together.
+- Rewrite E2E harness around actual current interfaces: either Rust `target/release/poc-retrieval.exe query --db ...`, or start `./bin/codenexus serve` then use Go `index <repo>` and `query <text> --repo-hash ...`.
+- Fix Rust/Go A2A envelope mismatch before claiming release-artifact E2E coverage.
+- Add real failure injection for R4.b/R5.b, e.g. env-gated `CODENEXUS_EMBED_FAIL=always|once` in `embed_once`, guarded as test/dev-only if needed.
+- Change eval mean command to handle top-level arrays: `jq '[.[].precision_at_5] | add / length'` for current files.
+- Limit cache mutation to `$HF_CACHE_DIR/snapshots/$PINNED_SHA`; make blob eviction a clearly named `--destructive-redownload` mode.
+
+#### Risk Assessment
+**HIGH** — the plan's central pinning mechanism is technically invalid against fastembed's actual API, and the closure harness is aimed at a Go CLI/build path that is currently incompatible with the Rust core binary name and A2A schema. Proceeding would generate false confidence: grep checks can pass while the model load still uses unpinned `main`, and 04-03 cannot exercise the advertised release path.
+
+#### Verdict
+**HALT**
+
+### Current run — Gemini verbatim (rerun-1303)
+
+#### Summary
+**STRONG.** The implementation plan for CodeNexus Phase 4 (First Slice) is technically sound, rigorously aligned with the SPEC, and demonstrates high defensive engineering standards. The transition from the planned `huggingface_hub_rust` to the mature `hf-hub` 0.5 (transitive via `fastembed-rs`) is a prudent fallback that minimizes dependency bloat while satisfying the SHA pinning requirement. The hybrid approach to threshold configuration in the A2A handler (envelope > hardcoded) is well-balanced. The inclusion of a release-binary E2E harness (`e2e_first_run_smoke.sh`) and an eval no-regression gate provides critical validation that unit tests would miss, specifically regarding the `//go:embed` packaging chain and model weight consistency.
+
+#### Strengths
+- **Rigorous Version Pinning**: Correctly identifies `97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3` as the canonical SHA and integrates it into both the Rust core and the `ARCHITECTURE.md` §9.8 protocol.
+- **Defensive API usage**: The `snapshot_dir()` helper in `embedder.rs` correctly handles nested file structures (e.g., `1_Pooling/config.json`) by using a depth-aware `parent()` walk to find the snapshot root.
+- **UX-First Retry Logic**: The introduction of `embed_query()` in Task 04-02 explicitly decouples the interactive query budget (≤500ms) from the heavy indexing budget (~7.75s), preventing search-path stalls.
+- **Actionable Recovery Path**: Task 04-03's E2E harness specifically verifies the visibility of `docs/embedder-offline-bootstrap.md` in the failure path.
+- **Protocol Compliance**: Strictly adheres to the version-hash history protocol in `ARCHITECTURE.md` §9.8.
+
+#### Concerns
+- **MEDIUM** Snapshot File List Fragility — Plan 04-01 Task 1 — Hardcoded 9-file list might fail if future fastembed needs more metadata files. Suggest fetching one file and using its parent.
+- **MEDIUM** A2A JSON Deserialization — Plan 04-02 Task 2 — `#[serde(default)]` on `Option<usize>` correctly returns None on missing; verify it also handles explicit `null` from Go server.
+- **LOW** E2E Harness Disk Space — `rm -rf blobs` forces 1.2GB download every run; suggest "local-only" skip flag.
+- **LOW** Shell Portability — `set -o pipefail` is bash-specific.
+- **LOW** Wait-for-Previous on Sequential Tools — executor must enforce `wait_for_previous: true` for shared-file edits.
+
+#### Suggestions
+- Resilient snapshot path: fetch `config.json` first, return `p.parent()`.
+- Bound error detail: include `[1, 1000]` in error string.
+- E2E cleanup: ensure trap handles SIGINT/SIGTERM specifically.
+
+#### Risk Assessment
+**LOW** — mature libraries, disjoint regions, sequential waves, high-fidelity E2E + Eval verification.
+
+#### Verdict
+**PROCEED**
+
+### OpenCode (rerun-1303): FAILED again with auth error
+
+`Invalid token (request id: 202604280459478380405558268d9d6EhrY8AZW)` — same auth-pool issue as morning. Per `feedback_no_autonomous_provider_swap`, did NOT attempt fix. User can refresh OpenCode auth and re-run if desired.
+
+### Updated CCG consensus classification (rerun-1303)
+
+**CCG = CONFLICT** (stronger than morning's SPLIT). Verdicts directly oppose: Codex HALT vs Gemini PROCEED. Two HIGH findings verified by orchestrator source-code inspection. The disagreement is grounded in evidence Codex's agentic exec mode collected (file reads into fastembed/hf-hub/Go CLI source) that Gemini's text-reasoning mode cannot produce.
+
+### Updated recommendation (combining both sessions)
+
+**HALT-AND-REPLAN, with concrete plan-text changes spanning BOTH sessions' findings:**
+
+#### Top priority — false-pass blockers (must fix before any execution)
+
+1. **R1 redesign** — current design is decorative. Pick one:
+   - (a) `Qwen3TextEmbedding::new(model, tokenizer)` constructed from local snapshot files, bypassing `from_hf` entirely
+   - (b) fork fastembed-rs to honor `Repo::with_revision` on `from_hf` (heavier; upstream divergence)
+   - (c) verify whether `Qwen3TextInitOptions::revision` exists in fastembed 5.13.3 (Codex did not confirm; planner must check via cargo doc)
+
+2. **Pre-flight Makefile reconciliation** — either rename Cargo `[[bin]]` `name = "poc-retrieval"` → `"codenexus-core"` (Cargo.toml + every reference site) OR change `Makefile:4` to `CORE_BIN := poc-retrieval` and update embed paths. Pick one and land it as Plan 04-00 OR Plan 04-01 Task 0 BEFORE the substantive work.
+
+3. **04-03 harness rewrite** — use `target/release/poc-retrieval.exe query --db ...` directly, skipping the broken Go CLI chain. Codex's morning suggestion of isolated `HF_HOME=$(mktemp -d)` should also land — both protect the user's normal HF cache AND fix the pre-index ordering bug.
+
+#### Closure honesty — synthetic tests
+
+4. **R4.b / R5.b synthetic-failure tests** — implement env-gated fault injection (`CODENEXUS_EMBED_FAIL=always|once|after_N`) in `embed_once`, then add the SPEC-required synthetic tests using it. Don't silently DEFER. (Both sessions flagged this as HIGH — convergent.)
+
+#### Plan accuracy fixes
+
+5. **D-06 R2(c) progress** — promote since `download_with_progress<P: Progress>` exists at `hf-hub-0.5.0/src/api/sync.rs:766-799`. Plan 04-01's claim that "no programmatic callback exists" is factually wrong.
+
+6. **`snapshot_dir()` per-file path validation** — `assert!(snapshot.ends_with(QWEN3_REVISION))` and `for path in fetched_paths { assert!(path.starts_with(&snapshot)); }` (Codex morning + current both flagged the under-specification).
+
+7. **Cache eviction scope** — limit `rm -rf` to `$HF_CACHE_DIR/snapshots/$PINNED_SHA`; do NOT touch `blobs/`. Or better: isolated `HF_HOME=$(mktemp -d)` for the harness.
+
+8. **Eval jq filter** — `req10_alpha06.json` is a top-level array; use `jq '[.[].precision_at_5] | add / length'` not `.summary.mean_precision_at_5`.
+
+9. **Eval gate granularity** — n=7 queries × top-5 = 35 judged slots; 1 result shift = ~2.86pp; current ±2pp gate is below metric granularity. Either tighten to deterministic equality OR widen to ±5pp with explicit acknowledgment.
+
+10. **`OnceLock` race** — switch to `OnceLock::get_or_try_init` or `Mutex<Result<...>>` guard.
+
+#### Style / less critical
+
+11. **04-02 G-04 rationale rewrite** — clarify this is `OperationRequest::IndexRepo` schema extension, NOT A2A metadata pass-through.
+12. **`1..=1000` bound** — change to `1..=100` or document why 1000.
+13. **ARCH §9.8 row wording** — fix "version-hash-affecting" / "no version-hash change" contradiction.
+14. **`refs/main` instructions in offline doc** — clarify cache-internal vs user-facing.
+
+#### Verifier-time only (no plan change needed)
+
+15. `merges.txt` / `vocab.json` actually required by fastembed Qwen3 loader — sanity-check during R1 implementation
+16. `Role` unused import cleanup in `search.rs`
+
+---
+
+# ORIGINAL REVIEW — 2026-04-28T07:26 (morning-0726 session, preserved for audit)
 
 **Reviewers attempted:** 4 (gemini, claude, codex, opencode)
 **Reviewers succeeded:** 2 (gemini, codex)
@@ -128,23 +319,21 @@ These plans are marginal, not sound. The core direction is right: pin model revi
 
 ---
 
-## OpenCode Review
+## OpenCode Review (morning-0726)
 
-**FAILED.** Exit 0, 0 bytes output.
-
-**Error from stderr:** `Invalid token (request id: 20260427232548841111198268d9d67wGjbE5Q)` — Copilot subscription auth token expired. To re-enable: refresh GitHub Copilot subscription token via OpenCode CLI auth flow, then re-run `/gsd-review --phase 4 --opencode`.
+**FAILED.** Exit 0, 0 bytes output. Same auth issue as current run.
 
 ---
 
-## Claude Review
+## Claude Review (morning-0726)
 
-**SKIPPED for independence.** Running inside Claude Code (`CLAUDE_CODE_ENTRYPOINT=sdk-ts`). Per gsd-review workflow rule, self-review of own plans is excluded — would be self-confirming bias.
+**SKIPPED for independence.** Running inside Claude Code.
 
 The orchestrator (Claude Opus 4.7 = me) provides the consensus synthesis below as the synthesizer role per Curry's CCG pattern (Codex + Gemini → Claude synthesis), not as a fourth independent reviewer.
 
 ---
 
-## Consensus Synthesis (Claude as synthesizer, per CCG pattern)
+## Consensus Synthesis (morning, Claude as synthesizer)
 
 ### Classification: SPLIT
 
@@ -171,7 +360,7 @@ The synthesizer (me) sided with Codex on the 3 HIGH issues that Gemini missed en
 | Eval +/-2pp on n=7 statistically noisy | LOW | MEDIUM | MEDIUM — Codex correct: 1 result shift = 2.86pp, gate is stricter than metric granularity |
 | `1..=1000` arbitrary | LOW | MEDIUM | LOW-MEDIUM — fix recommended but not blocking |
 
-### Codex-only concerns (Gemini missed)
+### Codex-only concerns (Gemini missed) — morning
 
 | Concern | Severity | Synthesizer call |
 |---------|----------|------------------|
@@ -187,7 +376,7 @@ The synthesizer (me) sided with Codex on the 3 HIGH issues that Gemini missed en
 | ARCH row contradictory wording | LOW | LOW — minor cleanup |
 | Bash/Unix portability assumption | LOW | LOW — Git Bash assumption is fine for the project |
 
-### Gemini-only concerns (Codex missed)
+### Gemini-only concerns (Codex missed) — morning
 
 | Concern | Severity | Synthesizer call |
 |---------|----------|------------------|
@@ -195,53 +384,14 @@ The synthesizer (me) sided with Codex on the 3 HIGH issues that Gemini missed en
 | File list verification (merges.txt / vocab.json) | LOW | LOW — sanity-check during executor, not blocking plan |
 | Role unused import in search.rs | LOW | LOW — executor cleanup |
 
-### Divergent Views (worth flagging)
+### Divergent Views (morning) — worth flagging
 
 - **Severity of SHA provenance:** Gemini says MEDIUM (eval gate catches it); Codex says HIGH (provenance overclaim). Synthesizer split: the *implementation* risk is MEDIUM (eval gate is real safety), but the *plan-text honesty* is HIGH — Plan 04-01 Task 1 should say "SHA recovered from cache, eval no-regression at Plan 04-03 Task 2 is the canonical proof of model-identity" rather than implying the cache+timestamp is the proof.
 - **R4 envelope override:** Gemini calls it MEDIUM dead code; Codex doesn't flag it as dead code but flags the G-04 justification as muddled. Both views point at the same root cause: the rationale for adding the field isn't well-grounded. Synthesizer call: the field SHOULD be added (Rust-side A2A contract is the right scope for this slice; Go-side parity is later phase work), but the plan-time verification rationale should be rewritten per Codex's suggestion.
 
 ---
 
-## Recommendation
-
-**Replan via `/gsd-plan-phase 4 --reviews`.** The 3 Codex HIGH issues + the agreed-MEDIUM concerns require concrete plan text changes — not just SUMMARY footnotes at executor time. Specifically:
-
-### Changes the replan must produce
-
-1. **04-03 Task 1 rewrite (3 HIGH issues, top priority):**
-   - Replace `rm -rf "$HF_CACHE_DIR/..."` with `export HF_HOME="$(mktemp -d -t codenexus-e2e-XXXXXX)"; trap 'rm -rf "$HF_HOME"' EXIT`
-   - Move pre-index step INSIDE the isolated `HF_HOME` (or use a committed tiny test DB built ahead of time and ship with the harness)
-   - Add fault injection mechanism (`CODENEXUS_EMBED_FAIL=1` checked inside `embed_once`) and add R4.b + R5.b synthetic-failure tests that USE the fault injection
-   - Closure language: replace "phase complete" with "phase complete: R1/R2/R3/R4.a/R5.a/E2E/EVAL_NO_REGRESSION verified; R4.b/R5.b verified via fault injection"
-
-2. **04-01 Task 1 hardening:**
-   - Add post-fetch assertion: `assert!(snapshot.ends_with(QWEN3_REVISION))` and `for path in fetched_paths { assert!(path.starts_with(&snapshot)); }`
-   - Add unit smoke test that `snapshot_dir()` returns path containing `/snapshots/<QWEN3_REVISION>`
-   - Reword SHA provenance language: cache+timestamp is *recovery method*, eval no-regression is *proof of model-identity*
-
-3. **04-01 Task 3 doc cleanup:**
-   - Remove or clarify `refs/main` instructions in offline-bootstrap.md (pinned snapshot dir is the contract; refs/main is cache-internal)
-
-4. **04-02 Plan-Time G-04 rewrite:**
-   - Reframe: `max_consecutive_fail` is added to `OperationRequest::IndexRepo` as a CodeNexus operation-schema field. A2A metadata pass-through is a separate concept. Justification should reference operation-schema versioning (semver-compatible field addition with `serde(default)`), not A2A metadata.
-
-5. **04-02 Task 3 bound check:**
-   - Change `1..=1000` → `1..=100` (operationally sane; even pathological repos rarely have >100 consecutive embedder failures before the user kills the job) OR add a named constant `MAX_RAISED_THRESHOLD: usize = 1000` with a comment explaining the upper bound
-
-6. **04-03 Task 2 eval gate:**
-   - Either tighten to "deterministic equality" (mean precision_at_5 must equal Phase 03.6 exactly; any drift = wrong SHA) OR widen to ±5pp with explicit acknowledgment that ±2pp is below metric granularity for n=7
-
-### Changes for SUMMARY (not requiring replan)
-
-- 04-02-SUMMARY.md must note the Go-side `OperationRequest` parity work as P3 follow-up (Gemini's R4 dead-code concern)
-- Executor cleanup: remove `Role` unused import in search.rs (Gemini)
-
-### Verifier-time checks (no plan change needed)
-
-- `merges.txt` / `vocab.json` actually required by fastembed Qwen3 loader — sanity-check during R1 implementation; if loader fails, add to FILES list
-
----
-
-*Review completed: 2026-04-28T07:26:14*
-*Synthesis classification: SPLIT (resolved in favor of Codex's HIGH calls)*
-*Recommended next step: `/gsd-plan-phase 4 --reviews` to incorporate this feedback before execute*
+*Morning review completed: 2026-04-28T07:26:14*
+*Re-review supplement appended: 2026-04-28T13:03+08:00*
+*Final verdict (combining both sessions): HALT-AND-REPLAN*
+*Recommended next step: `/gsd-plan-phase 4 --reviews` to incorporate combined feedback before any execution*
