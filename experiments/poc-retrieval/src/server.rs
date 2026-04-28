@@ -35,6 +35,22 @@ use crate::search;
 use crate::storage::Store;
 use crate::task_state::TaskStore;
 
+/// R4 (Phase 4 first slice): default consecutive-embed-failure abort
+/// threshold for the A2A IndexRepo handler. Mirrors `main.rs` CLI flag
+/// `--max-consecutive-fail` default from Phase 3.5b commit `8f4da66`.
+/// Override per-call via `OperationRequest::IndexRepo.max_consecutive_fail`.
+/// Plan 04-02 v2 G-04: operation-schema versioning via `#[serde(default)]`,
+/// not A2A metadata pass-through (M6 corrected framing).
+const MAX_CONSECUTIVE_FAIL_DEFAULT: usize = 5;
+
+/// R4 (Plan 04-02 v2, M2 fix): upper bound on per-call envelope override.
+/// 100 = pathological-repo upper bound; even a fully-broken embedder hits
+/// 100 consecutive failures within ~13 minutes (5 attempts x ~7.75s x 100 /
+/// 60s = ~12.9 min) -- fast enough to be useful as a sanity bound. Tighter
+/// than 1000 (which defeats the purpose of a safety bound while a fully-
+/// broken embedder still consumes ~130 minutes wall-clock).
+const MAX_RAISED_THRESHOLD: usize = 100;
+
 pub fn router(state: Arc<TaskStore>) -> Router {
     Router::new()
         .route("/tasks/send", post(task_send))
@@ -180,7 +196,7 @@ fn dispatch(db_path: String, op: OperationRequest) -> anyhow::Result<OperationRe
             Ok(OperationResponse::ListCallers { callers })
         }
 
-        OperationRequest::IndexRepo { repo } => {
+        OperationRequest::IndexRepo { repo, max_consecutive_fail } => {
             // Phase 3 MVP: destructive reindex matching CLI Cmd::Index behaviour.
             // Phase 4 should incrementally emit task progress events.
             let store = Store::open(&db_path).context("open db")?;
@@ -189,15 +205,54 @@ fn dispatch(db_path: String, op: OperationRequest) -> anyhow::Result<OperationRe
             let repo_path = FsPath::new(&repo);
             let symbols = parser::parse_repo(repo_path).context("parse repo")?;
             let total = symbols.len();
+            // R4 (D-05): envelope override > hardcoded default. Bound check
+            // `1..=MAX_RAISED_THRESHOLD` (1..=100 per M2 / T-04-06 envelope
+            // injection guard). `Some(0)` rejected -- zero-tolerance threshold
+            // would abort on first failure regardless of recovery, which is
+            // not a knob users want.
+            let max_consecutive_fail = match max_consecutive_fail {
+                Some(n) if (1..=MAX_RAISED_THRESHOLD).contains(&n) => n,
+                Some(n) => {
+                    return Err(anyhow::anyhow!(
+                        "max_consecutive_fail out of bounds: {} (allowed 1..={})",
+                        n, MAX_RAISED_THRESHOLD
+                    ));
+                }
+                None => MAX_CONSECUTIVE_FAIL_DEFAULT,
+            };
             let mut indexed = 0usize;
-            for s in symbols.iter() {
+            let mut consecutive_fails: usize = 0;
+            for (i, s) in symbols.iter().enumerate() {
                 let dn = search::decompose(&s.name);
                 let ds = search::decompose(&s.snippet);
                 let blob = format!("{} {}", dn, ds);
                 let text = format!("{} {} {}", s.kind, s.name, s.snippet);
                 let emb = match embedder.embed(&text, embedder::Role::Passage) {
-                    Ok(v) => v,
-                    Err(_) => continue, // best-effort skip on embed failure
+                    Ok(v) => {
+                        consecutive_fails = 0;
+                        v
+                    }
+                    Err(e) => {
+                        consecutive_fails += 1;
+                        eprintln!(
+                            "[a2a-index {}/{}] embed fail {}: {} (consecutive={}/{})",
+                            i + 1, total, s.name, e,
+                            consecutive_fails, max_consecutive_fail
+                        );
+                        if consecutive_fails >= max_consecutive_fail {
+                            // R4 bail: return Err -- server.rs:64-66 maps this to
+                            // `store.fail(&task_id, "op error: ...")` which sets
+                            // A2A task state to `failed` with structured message
+                            // containing the consecutive count. Server keeps
+                            // running to serve next request (vs main.rs CLI
+                            // which `anyhow::bail!` exits the process).
+                            return Err(anyhow::anyhow!(
+                                "aborting a2a indexer: {} consecutive embed failures (threshold {}), last symbol={}, indexed={}/{}, last error={:#}",
+                                consecutive_fails, max_consecutive_fail, s.name, indexed, total, e
+                            ));
+                        }
+                        continue;
+                    }
                 };
                 store.insert(s, &blob, &emb)?;
                 indexed += 1;
