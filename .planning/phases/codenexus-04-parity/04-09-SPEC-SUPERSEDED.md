@@ -1,3 +1,27 @@
+> # SUPERSEDED 2026-04-28
+>
+> **This SPEC is no longer the active contract.** Superseded by Phase 04.5 (Sentrux Adaptation Layer), which rebases the multi-language framework onto sentrux's data-driven `lang_extractors` pattern instead of this SPEC's inline-match Go-entry plan.
+>
+> **Active phase:** `.planning/phases/codenexus-04.5-sentrux-adaptation-layer/`
+> **Canonical plan outline:** `~/.claude/plans/https-github-com-2233admin-sentrux-optimized-diffie.md`
+> **Rebased multi-language SPEC:** Will be written as part of Phase 04.5 slice 04.5-07.
+>
+> **What carries forward unchanged from this SPEC into Phase 04.5:**
+> - **R2** -- `Symbol.kind_raw` + `Symbol.kind_norm` dual-field taxonomy (6-variant `SymbolKind` enum: `Function | Class | Method | Variable | Type | Module`)
+> - **R4** -- `tree-sitter*` + `streaming-iterator` exact-lock policy in `Cargo.toml`
+> - **REQ-10 B1-B7 +/-2pp no-regression gate** calibrated against Phase 03.6's 67.9% baseline
+>
+> **What was abandoned:**
+> - **R1** -- Inline-match Go-entry plan via `Language::Go` enum variant + dispatch arm. Replaced by `plugin.toml` config-driven extractor in Phase 04.5.
+> - **R3** -- Per-language fixture pattern keyed to inline-match. Replaced by config-driven test pattern that doesn't require `parser.rs` edits per language.
+> - **R5** -- Out-of-scope guard against `graph_build.rs` edits. Concern carries forward but is now scoped to the Phase 04.5 PR boundary, not this SPEC's branch.
+>
+> **Why superseded:** Mid-`/gsd-discuss-phase 4` on 2026-04-28, the user identified `github.com/2233admin/sentrux` (MIT) as a lift candidate. Recon confirmed sentrux's `lang_extractors.rs` is materially better than this SPEC's inline-match pattern (config-driven scaling, ~10x lower per-language cost, ~8000 LoC of MIT-licensed adjacent capability including metrics layer, DSM/evo, TOML rules engine). Plan-mode locked the rebase decision (Q1=Rebase + Q2=Full port). 04-09's R2+R4 survive as sentrux-orthogonal; R1+R3+R5 retire to historical record below.
+>
+> The original SPEC text is preserved verbatim below for forensic reference and the carried-forward R2+R4 acceptance contracts.
+
+---
+
 # Phase 4 (Group 2 Entry): Multi-Language Tree-Sitter -- Specification
 
 **Created:** 2026-04-28

@@ -112,6 +112,30 @@ Plans:
 Plans:
 - [ ] TBD (run /gsd-plan-phase 04.1 to break down)
 
+### Phase 04.5: Sentrux Adaptation Layer (INSERTED)
+
+**Goal**: Lift `github.com/2233admin/sentrux` MIT modules (metrics layer / lang_extractors framework / DSM+evo metrics) into CodeNexus. Promote `experiments/poc-retrieval/` from single-crate to Cargo workspace (resolves PROJECT.md "single binary, single crate" Out-of-Scope pre-authorization). Supersedes `codenexus-04-parity/04-09-SPEC.md`'s inline-match Go-entry plan — the rebased multi-language activation lands here as 04.5-07.
+**Depends on:** Phase 4 first slice (shipped 2026-04-28). NOT on Phase 04.1; runtime sequencing decision — Phase 04.1's graph clustering will need to re-evaluate against the new lang_extractors-produced symbol set if 04.1 lands first, so 04.5-before-04.1 ordering is recommended.
+**Requirements**: TBD (sentrux lift scope locked via plan-mode 2026-04-28: full port ~8000 LoC excluding egui + pro_registry; rules DSL fate decided in 04.5-05)
+**Success Criteria** (what must be TRUE):
+  1. `experiments/poc-retrieval/` is a Cargo workspace with `core` / `metrics` / `parser` sub-crates
+  2. Sentrux metrics module (arch / evo / dsm / rules) lifted with NOTICE attribution; A2A `query_metrics` op exposed
+  3. lang_extractors framework lifted; `parser.rs` deleted; TS+Python+Go run via `plugin.toml` configs
+  4. Symbol.kind dual-field (kind_raw + kind_norm, 6-variant SymbolKind) and tree-sitter exact-lock carry forward from superseded 04-09 SPEC
+  5. REQ-10 B1-B7 mean precision_at_5 stays in `[65.9%, 69.9%]` (±2pp of 67.9% baseline) post-rebase
+  6. NOTICE file at repo root with sentrux MIT + CodeFlow MIT (preemptive) attribution
+  7. ARCHITECTURE.md has new sections: workspace promotion / sentrux adoption / lang_extractors / metrics layer / exact-lock policy / Symbol.kind dual-field
+**Plans**: 7 slices (outline at `~/.claude/plans/https-github-com-2233admin-sentrux-optimized-diffie.md`)
+
+Plans:
+- [ ] 04.5-01: Workspace promotion (cargo workspace + sub-crate split)
+- [ ] 04.5-02: Lift sentrux metrics module + A2A query_metrics op
+- [ ] 04.5-03: Lift lang_extractors framework, replace parser.rs
+- [ ] 04.5-04: Lift DSM + evo metrics, gix overlay scaffolding
+- [ ] 04.5-05: Rules DSL design decision (a/b/c) + lift
+- [ ] 04.5-06: NOTICE + license audit + SPDX headers
+- [ ] 04.5-07: Multi-language framework activation (supersedes 04-09)
+
 ### Phase 5: Bridge
 **Goal**: Connect CodeNexus to obsidian-llm-wiki vault layer; produce three-way viz (code ↔ vault ↔ memU memory); resolve memU integration question (self-contained vs shared PG)
 **Depends on**: Phase 4
