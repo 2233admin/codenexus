@@ -292,3 +292,70 @@ fn dispatch(db_path: String, op: OperationRequest) -> anyhow::Result<OperationRe
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::parser::Symbol;
+
+    /// Plan 04-06 deferred-clear invariant: when IndexRepo bails before any
+    /// embed succeeds (here: empty repo dir -> 0 symbols -> embed loop body
+    /// never runs), pre-existing rows MUST survive. Pre-04-06 had unconditional
+    /// `store.clear()` at handler entry which wiped all rows on every bail
+    /// path (R4.b probe with CODENEXUS_EMBED_FAIL=always destroyed poc.db).
+    /// Post-04-06: clear() is gated behind `cleared = false` and fires only
+    /// after the first successful embed -- empty repo means no embed runs,
+    /// so the marker survives.
+    ///
+    /// Companion to r4b_probe.sh (synthetic A2A path); this is the unit-test
+    /// regression guard so a future server.rs edit cannot silently revert
+    /// the deferred-clear pattern.
+    #[test]
+    fn index_repo_empty_repo_preserves_existing_data() {
+        let uid = uuid::Uuid::new_v4();
+        let tmp = std::env::temp_dir();
+        let repo_dir = tmp.join(format!("codenexus_test_repo_{}", uid));
+        let db_dir = tmp.join(format!("codenexus_test_db_{}", uid));
+        std::fs::create_dir_all(&repo_dir).expect("mk repo dir");
+        std::fs::create_dir_all(&db_dir).expect("mk db dir");
+        let db_path = db_dir.join("test.db").to_str().unwrap().to_string();
+
+        // Pre-existing marker symbol (must survive empty-repo IndexRepo).
+        {
+            let store = Store::open(&db_path).expect("open db");
+            let marker = Symbol {
+                kind: "test_marker".into(),
+                name: "MARKER_DEFERRED_CLEAR".into(),
+                path: "test/marker.ts".into(),
+                start_line: 1,
+                end_line: 1,
+                snippet: "// 04-06 invariant guard".into(),
+            };
+            let dummy_emb = vec![0.0f32; 1024];
+            store
+                .insert(&marker, "MARKER_DEFERRED_CLEAR", &dummy_emb)
+                .expect("insert marker");
+        }
+
+        // Act: empty repo -> parser returns 0 symbols -> embed loop never runs
+        // -> `cleared` stays false -> store.clear() never fires.
+        let req = OperationRequest::IndexRepo {
+            repo: repo_dir.to_str().unwrap().to_string(),
+            max_consecutive_fail: None,
+        };
+        let _resp = dispatch(db_path.clone(), req).expect("dispatch IndexRepo");
+
+        // Assert: marker survived. Pre-04-06 this assertion would fail.
+        let store = Store::open(&db_path).expect("reopen db");
+        let ids = store
+            .find_symbols_by_name("MARKER_DEFERRED_CLEAR")
+            .expect("find marker");
+        assert!(
+            !ids.is_empty(),
+            "MARKER must survive empty-repo IndexRepo (deferred-clear invariant from Plan 04-06)"
+        );
+
+        let _ = std::fs::remove_dir_all(&repo_dir);
+        let _ = std::fs::remove_dir_all(&db_dir);
+    }
+}
