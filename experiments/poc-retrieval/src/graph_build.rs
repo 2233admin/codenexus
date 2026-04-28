@@ -2,6 +2,7 @@ use anyhow::{Context, Result};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::time::Instant;
+use streaming_iterator::StreamingIterator;
 use tree_sitter::{Parser, Query, QueryCursor};
 
 use crate::storage::Store;
@@ -95,7 +96,7 @@ const Q_EXTENDS: &str = r#"
 impl<'a> EdgeBuilder<'a> {
     pub fn new(storage: &'a Store, repo_root: PathBuf) -> Result<Self> {
         let mut parser = Parser::new();
-        let lang = tree_sitter_typescript::language_typescript();
+        let lang: tree_sitter::Language = tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into();
         parser.set_language(&lang).context("set ts lang")?;
         let q_calls = Query::new(&lang, Q_CALLS).context("compile Calls query")?;
         let q_imports = Query::new(&lang, Q_IMPORTS).context("compile Imports query")?;
@@ -209,7 +210,8 @@ impl<'a> EdgeBuilder<'a> {
             .ok_or_else(|| anyhow::anyhow!("source capture missing"))?;
 
         let mut cursor = QueryCursor::new();
-        for m in cursor.matches(&self.q_imports, tree.root_node(), src.as_bytes()) {
+        let mut matches = cursor.matches(&self.q_imports, tree.root_node(), src.as_bytes());
+        while let Some(m) = matches.next() {
             // Each named-import match corresponds to ONE import_specifier inside one import_statement.
             // We only get one source per match (the string_fragment under the same import_statement).
             let mut source_str: Option<String> = None;
@@ -312,7 +314,8 @@ impl<'a> EdgeBuilder<'a> {
                 .ok_or_else(|| anyhow::anyhow!("callee capture missing"))?;
             let ns_obj_idx = self.q_calls.capture_index_for_name("ns_obj");
             let mut cursor = QueryCursor::new();
-            for m in cursor.matches(&self.q_calls, root, src.as_bytes()) {
+            let mut matches = cursor.matches(&self.q_calls, root, src.as_bytes());
+            while let Some(m) = matches.next() {
                 let mut callee_name: Option<(String, usize)> = None;
                 let mut ns_obj_name: Option<String> = None;
                 for cap in m.captures {
@@ -363,7 +366,8 @@ impl<'a> EdgeBuilder<'a> {
                 .capture_index_for_name("impl")
                 .ok_or_else(|| anyhow::anyhow!("impl capture missing"))?;
             let mut cursor = QueryCursor::new();
-            for m in cursor.matches(&self.q_implements, root, src.as_bytes()) {
+            let mut matches = cursor.matches(&self.q_implements, root, src.as_bytes());
+            while let Some(m) = matches.next() {
                 for cap in m.captures {
                     if cap.index != cap_idx {
                         continue;
@@ -398,7 +402,8 @@ impl<'a> EdgeBuilder<'a> {
                 .capture_index_for_name("ext")
                 .ok_or_else(|| anyhow::anyhow!("ext capture missing"))?;
             let mut cursor = QueryCursor::new();
-            for m in cursor.matches(&self.q_extends, root, src.as_bytes()) {
+            let mut matches = cursor.matches(&self.q_extends, root, src.as_bytes());
+            while let Some(m) = matches.next() {
                 for cap in m.captures {
                     if cap.index != cap_idx {
                         continue;

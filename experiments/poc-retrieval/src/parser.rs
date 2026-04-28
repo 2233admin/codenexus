@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
 use ignore::WalkBuilder;
 use std::path::{Path, PathBuf};
+use streaming_iterator::StreamingIterator;
 use tree_sitter::{Parser, Query, QueryCursor};
 
 #[derive(Debug, Clone, serde::Serialize)]
@@ -28,7 +29,7 @@ const QUERY_SRC: &str = r#"
 pub fn parse_repo(root: &Path) -> Result<Vec<Symbol>> {
     let mut symbols = Vec::new();
     let mut parser = Parser::new();
-    let lang = tree_sitter_typescript::language_typescript();
+    let lang: tree_sitter::Language = tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into();
     parser.set_language(&lang).context("set ts lang")?;
     let query = Query::new(&lang, QUERY_SRC).context("compile query")?;
     let name_idx = query.capture_index_for_name("name").unwrap();
@@ -49,7 +50,8 @@ pub fn parse_repo(root: &Path) -> Result<Vec<Symbol>> {
         };
         let mut cursor = QueryCursor::new();
         let rel = path.strip_prefix(root).unwrap_or(path).to_string_lossy().into_owned();
-        for m in cursor.matches(&query, tree.root_node(), src.as_bytes()) {
+        let mut matches = cursor.matches(&query, tree.root_node(), src.as_bytes());
+        while let Some(m) = matches.next() {
             let mut name = String::new();
             let mut body_node = None;
             for cap in m.captures {
