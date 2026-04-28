@@ -57,6 +57,11 @@ make build         # builds core (Rust) then server (Go), produces bin/codenexus
 ./bin/codenexus query "where is rate limiting?"
 ```
 
+> First-run downloads ~1.2 GB of model weights from `huggingface.co`. If
+> you are offline or behind Clash, see
+> [docs/embedder-offline-bootstrap.md](docs/embedder-offline-bootstrap.md)
+> for recovery (manual download / HF_HOME pre-seeding / HF_HUB_OFFLINE / mirror).
+
 ## License
 
 Apache 2.0. See `LICENSE` (canonical text from apache.org) and `NOTICE` (attribution).
