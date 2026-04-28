@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 4 first slice code-complete (runtime DEFERRED on hf-hub Windows bug)
-last_updated: "2026-04-28T16:10:00.000Z"
-last_activity: 2026-04-28 -- Phase 4 first slice closed PARTIAL (Waves 0-3 commits landed; full E2E DEFERRED)
+stopped_at: Phase 4 first slice MOSTLY PASS (3 of 6 deferred runtime gates lifted via 04-04 cache-first fix; 3 residual gates owned by First-run UX P1 cluster)
+last_updated: "2026-04-28T17:00:00.000Z"
+last_activity: 2026-04-28 -- Phase 4 04-04 followup: cache-first fix in embedder.rs::snapshot_dir lifts EVAL_NO_REGRESSION + R1.d + R5.b from DEFERRED to runtime PASS; RCA correction supersedes 04-03 upstream-bug framing
 progress:
   total_phases: 8
   completed_phases: 1
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-04-26)
 
 ## Current Position
 
-Phase: 4 of 6 (Parity) — **first slice CODE-COMPLETE 2026-04-28 (Waves 0-3); runtime E2E DEFERRED (hf-hub Windows fresh-download bug)**
-Plan: 04-00 (Cargo bin rename) + 04-01 v2 (R1 redesign + R2.c + R3) + 04-02 v2 (R4 + R5 + fault injection) committed; 04-03 SUMMARY documents partial closure
-Status: First slice code-complete with documented runtime-validation deferrals; Phase 4 group 2 (multi-language tree-sitter) ready to start as separate slice
-Last activity: 2026-04-28 -- Phase 4 first slice closed PARTIAL — see .planning/phases/codenexus-04-parity/04-03-SUMMARY.md for hf-hub Windows bug + DEFERRED-gate rationale
+Phase: 4 of 6 (Parity) — **first slice MOSTLY PASS 2026-04-28 (Waves 0-3 + 04-04 followup); 3 of 6 runtime gates lifted to PASS, 3 residual in First-run UX P1 cluster**
+Plan: 04-00 (Cargo bin rename) + 04-01 v2 (R1 redesign + R2.c + R3) + 04-02 v2 (R4 + R5 + fault injection) + 04-04 followup (cache-first fix in `embedder.rs::snapshot_dir` -- single-file ~50-line surgical change replacing always-fetch `download_with_progress` with cache-aware `repo.get` + fallback)
+Status: First slice runtime MOSTLY PASS. EVAL_NO_REGRESSION = byte-identical 30/30 vs Phase 03.6 baseline. R1.d offline-mode + R5.b synthetic-fail Query <1s = PASS. R1.c reload + E2E 1b/4/5/6 + R4.b queued in First-run UX P1 cluster (PROJECT.md line 71) — separate slice. Phase 4 group 2 (multi-language tree-sitter) unblocked.
+Last activity: 2026-04-28 -- 04-04-FOLLOWUP-SUMMARY supersedes 04-03 upstream-bug framing; see `.planning/phases/codenexus-04-parity/04-04-FOLLOWUP-SUMMARY.md` for RCA correction (real cause = `download_with_progress` is always-fetch API not cache-aware, NOT hf-hub upstream bug)
 
 Progress: [██████████] 100%
 
