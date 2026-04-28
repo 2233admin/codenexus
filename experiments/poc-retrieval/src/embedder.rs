@@ -347,7 +347,65 @@ impl Embedder {
         Err(last_err.unwrap())
     }
 
+    /// Query path retry budget: 2 attempts, 250ms total. Single failure
+    /// surfaces as Err in <1s, NOT 7.75s like the shared Index wrapper.
+    ///
+    /// Per ARCH §9.9 D-W9: caller-policy split — Query callers (interactive
+    /// UX) need fast-fail, Index callers (long indexing loops) need the
+    /// 5-attempt wrapper. Same `embed_once` primitive, two retry policies.
+    pub fn embed_query(&self, text: &str) -> Result<Vec<f32>> {
+        const QUERY_MAX_ATTEMPTS: u32 = 2;
+        const QUERY_DELAY_MS: u64 = 250;
+        let mut last_err: Option<anyhow::Error> = None;
+        for attempt in 0..QUERY_MAX_ATTEMPTS {
+            match self.embed_once(text, Role::Query) {
+                Ok(v) => return Ok(v),
+                Err(e) => {
+                    last_err = Some(e);
+                    if attempt + 1 < QUERY_MAX_ATTEMPTS {
+                        std::thread::sleep(std::time::Duration::from_millis(QUERY_DELAY_MS));
+                    }
+                }
+            }
+        }
+        Err(last_err.unwrap())
+    }
+
     fn embed_once(&self, text: &str, role: Role) -> Result<Vec<f32>> {
+        // R4.b / R5.b fault injection (Plan 04-02 v2 per REVIEWS.md HIGH#4).
+        // Env-gated synthetic failure for E2E synthetic-failure tests in
+        // Plan 04-03. Operator MUST `unset CODENEXUS_EMBED_FAIL` before
+        // production deployment (test-only feature; threat-modeled in
+        // 04-02-PLAN.md T-04-15).
+        //
+        // Modes:
+        //   always   -> every call returns synthetic Err
+        //   once     -> first call returns Err; subsequent succeed
+        //   after_N  -> first N calls succeed, then every call returns Err
+        if let Ok(mode) = std::env::var("CODENEXUS_EMBED_FAIL") {
+            use std::sync::atomic::{AtomicUsize, Ordering};
+            static FAULT_COUNTER: AtomicUsize = AtomicUsize::new(0);
+            let n = FAULT_COUNTER.fetch_add(1, Ordering::Relaxed);
+            let should_fail = match mode.as_str() {
+                "always" => true,
+                "once" => n == 0,
+                s if s.starts_with("after_") => {
+                    if let Ok(threshold) = s.trim_start_matches("after_").parse::<usize>() {
+                        n >= threshold
+                    } else {
+                        false
+                    }
+                }
+                _ => false,
+            };
+            if should_fail {
+                return Err(anyhow::anyhow!(
+                    "CODENEXUS_EMBED_FAIL={}: synthetic embed failure (n={})",
+                    mode,
+                    n
+                ));
+            }
+        }
         let model = self.ensure_loaded()?;
         let prompt: String = match role {
             Role::Query => format!("{}{}", QUERY_INSTRUCT, text),
@@ -424,5 +482,43 @@ mod tests {
         let e = Embedder::new();
         let v = e.embed("retry sanity", Role::Passage).expect("embed");
         assert_eq!(v.len(), 1024);
+    }
+
+    /// Test 5 (R5): embed_query method exists, returns 1024-dim, distinct
+    /// from embed() (which uses 5-attempt wrapper). Compile-time signature
+    /// pin guards against accidental signature drift.
+    #[test]
+    fn embed_query_works() {
+        let _: fn(&Embedder, &str) -> Result<Vec<f32>> = Embedder::embed_query;
+        let e = Embedder::new();
+        let v = e.embed_query("query test").expect("embed_query");
+        assert_eq!(v.len(), 1024);
+    }
+
+    /// Test 6 (R5.b probe): with CODENEXUS_EMBED_FAIL=always, embed_query
+    /// returns Err in <1s wall clock (single 250ms sleep + processing).
+    /// Full E2E timing test runs in Plan 04-03 against the release binary.
+    /// Note: this test sets and unsets the env var; if multiple tests run
+    /// in parallel the env var may leak between threads. Run with
+    /// `cargo test embed_query_fault_injection -- --test-threads=1` if so.
+    #[test]
+    fn embed_query_fault_injection() {
+        let prev = std::env::var("CODENEXUS_EMBED_FAIL").ok();
+        std::env::set_var("CODENEXUS_EMBED_FAIL", "always");
+        let e = Embedder::new();
+        let start = std::time::Instant::now();
+        let result = e.embed_query("fault test");
+        let elapsed = start.elapsed();
+        // restore env even on assertion failure
+        match prev {
+            Some(v) => std::env::set_var("CODENEXUS_EMBED_FAIL", v),
+            None => std::env::remove_var("CODENEXUS_EMBED_FAIL"),
+        }
+        assert!(result.is_err(), "expected Err with CODENEXUS_EMBED_FAIL=always");
+        assert!(
+            elapsed < std::time::Duration::from_millis(900),
+            "embed_query budget exceeded: {:?} (expected <900ms = 250ms sleep + headroom)",
+            elapsed
+        );
     }
 }
