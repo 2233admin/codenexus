@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 4 first slice 8 of 9 runtime gates PASS (04-04 cache-first + 04-05 first-run UX workaround + 04-06 IndexRepo non-destructive fix); 1 cluster (E2E 1b/4/5/6) demoted to P3 Linux/macOS smoke
-last_updated: "2026-04-28T18:55:00.000Z"
-last_activity: 2026-04-28 -- Phase 4 plans 04-05 (first-run UX residual workaround: preseed-hf-cache.sh + r1c_probe.sh + offline-bootstrap doc + README + PROJECT.md reframe) + 04-06 (IndexRepo deferred-clear fix lifts P1 finding from 04-05; r4b_probe.sh now non-destructive on existing DB)
+stopped_at: Phase 4 first slice 8 of 9 runtime gates PASS + 04-07 cargo test linker fix + IndexRepo deferred-clear unit-test regression guard landed; multi-language tree-sitter (Phase 4 group 2) is the next major slice
+last_updated: "2026-04-28T19:35:00.000Z"
+last_activity: 2026-04-28 -- 04-07 micro-slice closes post-04-06 reflection priority #1: tokenizers default-features=false strips esaxx_fast/cpp -> kills LNK2038/LNK1319; cargo test now builds (commit 6ba3f88); IndexRepo deferred-clear empty-repo-preserves-marker unit test added with mutation-test-verified failure mode (commit 42f01f0); 14/14 PASS under --test-threads=1
 progress:
   total_phases: 8
   completed_phases: 1
@@ -33,8 +33,8 @@ Status: First slice runtime 8 of 9 gates PASS. EVAL_NO_REGRESSION + R1.d offline
 
 Recommended sequence per Curry's session-end review (2026-04-28T19:00+08:00):
 
-1. **cargo test linker conflict** (esaxx-rs/ort RuntimeLibrary mismatch LNK2038/LNK1319, pre-existing from 04-02) — P2 by tag but **higher impact than the tag**: the 04-06 IndexRepo deferred-clear fix has no unit test coverage because the linker conflict prevents `cargo test`. The fix is probe-only-protected; a future server.rs edit could regress silently. Estimated < 1 hr to resolve via build-system / dep-feature-flag tweaking; bundle into the next session opening.
-2. **Multi-language tree-sitter** (Phase 4 group 2) — substantive feature work, unblocked since 04-04 cache-first fix. THIS, not 04.1, is the next major slice.
+1. ~~**cargo test linker conflict**~~ — **CLOSED 2026-04-28 via 04-07 micro-slice** (commits 6ba3f88 + 42f01f0). RCA: tokenizers default features include `esaxx_fast` -> `esaxx-rs/cpp`; esaxx-rs build.rs hard-codes `static_crt(true)` (`/MT`), colliding with ort's prebuilt `/MD` libs (LNK2038/LNK1319). Fix: `tokenizers = { version = "0.22", default-features = false }` strips esaxx_fast at the only direct-dep source (fastembed already imports tokenizers cleanly). Companion unit test `index_repo_empty_repo_preserves_existing_data` lands as regression guard — empty-repo path exercises deferred-clear without env var collision; mutation test confirmed it catches pre-04-06 destructive entry-clear in 0.11s. **Pre-existing gap (P2, not fixed in 04-07):** parallel `cargo test` races on CODENEXUS_EMBED_FAIL env var between two embedder tests; --test-threads=1 workaround documented in embedder.rs:557-559; future fix = static Mutex or serial_test crate. Non-blocking.
+2. **Multi-language tree-sitter** (Phase 4 group 2) — substantive feature work, unblocked since 04-04 cache-first fix + 04-07 cargo test. THIS, not 04.1, is the next major slice.
 3. **Phase 04.1 Graph Clustering and Evolution Layer** — needs plan first (no PLAN.md exists in `codenexus-04.1-graph-clustering-and-evolution-layer/`, only PRE-PLAN-NOTES.md). Do NOT start execution before plan; without plan, scope drift is the primary failure mode. Run `/gsd-plan-phase 04.1` (or inline write per the bypass convention if gsd-sdk init still returns phase_dir=null) as a separate session bracket from #2.
 4. **(P3 citizenship)** hf-hub upstream issue filing + Linux/macOS smoke regression + poc.db reindex from `D:/projects/obsidian-llm-wiki` to restore B1-B7 baseline — defer to a dedicated short slice when convenient. Not blocking active work.
 Last activity: 2026-04-28 -- 04-04-FOLLOWUP-SUMMARY supersedes 04-03 upstream-bug framing; see `.planning/phases/codenexus-04-parity/04-04-FOLLOWUP-SUMMARY.md` for RCA correction (real cause = `download_with_progress` is always-fetch API not cache-aware, NOT hf-hub upstream bug)
