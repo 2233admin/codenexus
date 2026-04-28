@@ -199,8 +199,19 @@ fn dispatch(db_path: String, op: OperationRequest) -> anyhow::Result<OperationRe
         OperationRequest::IndexRepo { repo, max_consecutive_fail } => {
             // Phase 3 MVP: destructive reindex matching CLI Cmd::Index behaviour.
             // Phase 4 should incrementally emit task progress events.
+            //
+            // Phase 4 plan 04-06 (2026-04-28): `store.clear()` is deferred from
+            // here to the loop body, gated by `cleared = false` until the first
+            // successful embed. Reason: pre-04-06 behaviour cleared symbols at
+            // handler entry, so any failure mode that bailed before the first
+            // insert (e.g. R4.b probe with CODENEXUS_EMBED_FAIL=always)
+            // destroyed pre-existing data with no transaction wrapping. Discovered
+            // 2026-04-28 during Plan 04-05 T2 design (eval-based R1.c probe broke
+            // because R4.b probe had emptied poc.db). Fix preserves existing data
+            // when all embeds fail; new data still replaces old once at least one
+            // embed succeeds. Same semantic as main.rs CLI Index's
+            // consecutive_fails pattern.
             let store = Store::open(&db_path).context("open db")?;
-            store.clear()?;
             let embedder = embedder::Embedder::new();
             let repo_path = FsPath::new(&repo);
             let symbols = parser::parse_repo(repo_path).context("parse repo")?;
@@ -222,6 +233,10 @@ fn dispatch(db_path: String, op: OperationRequest) -> anyhow::Result<OperationRe
             };
             let mut indexed = 0usize;
             let mut consecutive_fails: usize = 0;
+            // Plan 04-06 fix: deferred clear -- only wipe existing rows once the
+            // first embed succeeds, so synthetic-fail / network-down / any
+            // bail-before-first-insert path leaves pre-existing data intact.
+            let mut cleared = false;
             for (i, s) in symbols.iter().enumerate() {
                 let dn = search::decompose(&s.name);
                 let ds = search::decompose(&s.snippet);
@@ -254,6 +269,14 @@ fn dispatch(db_path: String, op: OperationRequest) -> anyhow::Result<OperationRe
                         continue;
                     }
                 };
+                // First successful embed: clear pre-existing rows now (deferred
+                // from handler entry per Plan 04-06). Brief non-atomic window
+                // between clear and insert is acceptable since this is one-client
+                // -per-A2A-request and embedder confirmed working.
+                if !cleared {
+                    store.clear()?;
+                    cleared = true;
+                }
                 store.insert(s, &blob, &emb)?;
                 indexed += 1;
             }

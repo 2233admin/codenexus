@@ -1,6 +1,23 @@
 #!/usr/bin/env bash
 # r4b_probe.sh -- standalone R4.b synthetic-failure A2A IndexRepo probe.
 #
+# WARNING: DESTRUCTIVE on the target --db. The server.rs IndexRepo handler
+# calls `Store::clear()` (storage.rs:243: DELETE FROM symbols + symbols_fts)
+# BEFORE the embed loop. With CODENEXUS_EMBED_FAIL=always all embeds bail,
+# leaving the symbols table empty. Any subsequent eval/query against the
+# affected DB will return "Error: Query returned no rows".
+#
+# Discovered 2026-04-28 during Plan 04-05 T2 design (eval-based R1.c probe
+# stopped working after this probe ran). Fix is queued as Phase 4 plan
+# 04-06 / sub-phase candidate codenexus-04.3-indexrepo-transactional-safety
+# (wrap the IndexRepo handler in a transaction, OR move clear() to after
+# first successful embed).
+#
+# Until that lands: only run this probe against a throwaway DB or a DB
+# you can afford to reindex (~70 min for the 2116-symbol obsidian-llm-wiki
+# corpus). Do NOT run against a poc.db or fsc.db you rely on for eval
+# verification.
+#
 # Lifts R4.b gate from DEFERRED (per 04-04-FOLLOWUP-SUMMARY) to PASS by
 # exercising 04-02 R4 server.rs `consecutive_fails` counter via the release
 # binary, isolated from the e2e_first_run_smoke.sh harness fresh-install
