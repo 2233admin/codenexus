@@ -71,6 +71,51 @@ Or override the cache root globally with `HF_HOME=/path/to/cache
 ./bin/codenexus query "..."` if your default `~/.cache` lives on
 a small partition.
 
+## Pre-seed automation (script-driven, canonical Windows install)
+
+The manual tar workflow above is the foundation; for repeated installs
+or Windows clean-install (where the upstream hf-hub 0.5 has a fresh-
+download bug at 49% / 567 MB, see PROJECT.md line 98), use the
+`scripts/preseed-hf-cache.sh` automation:
+
+```bash
+# From a sibling host's HF cache (after rsync / scp / SMB mount)
+bash experiments/poc-retrieval/scripts/preseed-hf-cache.sh \
+  --source /path/to/working/.cache/huggingface/hub/models--Qwen--Qwen3-Embedding-0.6B
+
+# From a tarball produced via the manual section above
+bash experiments/poc-retrieval/scripts/preseed-hf-cache.sh \
+  --source ~/Downloads/qwen3-cache.tar.gz
+
+# Verify-only -- check target has snapshot/<sha>/model.safetensors > 1GB
+bash experiments/poc-retrieval/scripts/preseed-hf-cache.sh --verify-only
+```
+
+Defaults: model=`Qwen/Qwen3-Embedding-0.6B`, revision=`97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3`,
+target=`${HF_HOME:-~/.cache/huggingface}/hub`. Override via
+`--model`, `--revision`, `--target`.
+
+The script uses `cp -rL` for directory mode (resolves symlinks so the
+target gets independent real files, no dangling links if blob layouts
+differ across hosts) and `tar -xzf` / `tar -xf` for tarballs. On
+Windows + git-bash it works without symlink-creation privileges -- the
+target snapshot dir contains real files instead of symlinks; hf-hub
+loads them either way.
+
+After running pre-seed, set `HF_HUB_OFFLINE=1` (next section) to disable
+all network roundtrips and force cache-only loads. This is the
+canonical Windows install path -- it bypasses the broken fresh-download
+without touching upstream.
+
+To prove the pre-seed cycle is deterministic (R1.c reload probe):
+
+```bash
+cd experiments/poc-retrieval
+bash eval/r1c_probe.sh
+# Asserts byte-identical sha256 across pre-seed cycle:
+# pre-seed -> sha256 -> delete snapshot -> re-pre-seed -> sha256 -> diff
+```
+
 ## HF_HUB_OFFLINE mode
 
 Once the cache is seeded (via either path above), set

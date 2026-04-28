@@ -57,10 +57,18 @@ make build         # builds core (Rust) then server (Go), produces bin/codenexus
 ./bin/codenexus query "where is rate limiting?"
 ```
 
-> First-run downloads ~1.2 GB of model weights from `huggingface.co`. If
-> you are offline or behind Clash, see
-> [docs/embedder-offline-bootstrap.md](docs/embedder-offline-bootstrap.md)
-> for recovery (manual download / HF_HOME pre-seeding / HF_HUB_OFFLINE / mirror).
+> **First-run model download (~1.2 GB from `huggingface.co`):**
+>
+> - **Linux / macOS:** standard install runs as above; the embedder fetches the model on first run (~30-60 s on broadband).
+> - **Windows clean-install (recommended path):** the upstream hf-hub 0.5 has a fresh-download bug on Windows that walls deterministically at 49 % / 567 MB. Use the [pre-seed automation](docs/embedder-offline-bootstrap.md#pre-seed-automation-script-driven-canonical-windows-install) to copy a working HF cache from any sibling host once, then run with `HF_HUB_OFFLINE=1`:
+>
+>   ```bash
+>   bash experiments/poc-retrieval/scripts/preseed-hf-cache.sh \
+>     --source /path/to/working/.cache/huggingface/hub/models--Qwen--Qwen3-Embedding-0.6B
+>   HF_HUB_OFFLINE=1 ./bin/codenexus serve --port 8080
+>   ```
+>
+> Behind Clash / restricted proxy / air-gapped: see [docs/embedder-offline-bootstrap.md](docs/embedder-offline-bootstrap.md) for the full recovery menu (manual download, HF mirror, HF_HUB_OFFLINE).
 
 ## License
 
