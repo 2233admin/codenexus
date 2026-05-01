@@ -7,10 +7,32 @@ This product is licensed under the Apache License, Version 2.0
 Third-party attributions
 ========================
 
-This file will list NOTICE entries from third-party code as it is
-incorporated. Current state: clean — no third-party code yet ported.
+This file lists NOTICE entries from third-party code incorporated into
+CodeNexus.
 
-Planned attributions (Phase 1 onward):
+Incorporated (Phase 04.5-02a, this commit forward):
+
+- sentrux (MIT, github.com/2233admin/sentrux):
+  Copyright (c) 2026 Sentrux.
+  Lifted modules:
+    - experiments/poc-retrieval/metrics/src/arch.rs
+        from: sentrux-core/src/metrics/arch/graph.rs
+        adaptations: import paths rewritten to crate-local types;
+                     test helpers reimplemented locally.
+    - experiments/poc-retrieval/metrics/src/types.rs
+        (ImportEdge, EntryPoint structs)
+        from: sentrux-core/src/core/types.rs
+        adaptations: minimal-contract derivation; no Serde derive;
+                     is_mod_declaration_edge stubbed for non-Rust targets.
+  MIT compliance is satisfied by:
+    1. Per-file `// SPDX-License-Identifier: MIT` headers in lifted files,
+    2. This NOTICE entry attributing copyright to Sentrux,
+    3. The upstream sentrux repository remaining publicly accessible.
+  Phase 04.5-02b will lift sentrux's evo / dsm / rules modules and
+  add a Snapshot adapter against codenexus_core::storage. Phase 04.5-06
+  will pin a verbatim copy of the MIT license text alongside.
+
+Planned attributions (Phase 1+ feature porting):
 
 - CodeFlow (MIT, github.com/braedonsaunders/codeflow):
   Visualization layer, git overlay (blame/heatmap), pattern detectors,

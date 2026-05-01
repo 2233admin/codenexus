@@ -968,3 +968,133 @@ NEXT SESSION RESUME:
 
 Session ended: 2026-04-29, Phase 04.5-01 workspace promotion CLOSED.
 Next session: Phase 04.5-02 metrics module lift.
+
+==========================================================================
+2026-05-02 -- Phase 04.5-02a metrics lift cheap probe (1 commit)
+==========================================================================
+
+QUICK TASK: codenexus-04.5-sentrux-adaptation-layer / slice 04.5-02a
+SCOPE EXECUTED: Sub-slice deviation from canonical 04.5-02 per
+                feedback rules 36 (cheap-probe-evidence-generation),
+                39 (adapt-before-build-hard), 43 (test-before-bulk).
+                Lift only sentrux-core/src/metrics/arch/graph.rs (478 LoC,
+                pure graph algorithms) into a new `metrics` sub-crate.
+                Defer evo/dsm/rules + Snapshot adapter + A2A op to 04.5-02b.
+
+WHY SUB-SLICE: Recon revealed sentrux metrics layer cross-deps on
+  crate::core::types::{ImportEdge, EntryPoint, FileNode}, crate::core::snapshot::Snapshot,
+  crate::analysis::plugin::profile::LanguageProfile, crate::lang_registry::profile().
+  None of these exist in codenexus. Full 4-module lift would require
+  designing a Snapshot adapter against codenexus_core::storage::Store
+  PLUS adapting 4 separate modules in one slice. High blast-radius if
+  any module reveals hidden egui/pro_registry deps mid-lift. Probe
+  validates the type-adaptation pattern on the cleanest module first.
+
+WHAT WAS LIFTED:
+  experiments/poc-retrieval/metrics/Cargo.toml         NEW  (zero deps, stdlib only for arch)
+  experiments/poc-retrieval/metrics/src/lib.rs         NEW  (pub mod arch; pub mod types;)
+  experiments/poc-retrieval/metrics/src/types.rs       NEW  (ImportEdge, EntryPoint, is_mod_declaration_edge stub)
+  experiments/poc-retrieval/metrics/src/arch.rs        NEW  (sentrux arch/graph.rs lifted, 3 import-path swaps)
+
+ADAPTATIONS:
+  - `use crate::core::types::{EntryPoint, ImportEdge}` -> `use crate::types::{...}`
+  - `crate::metrics::types::is_mod_declaration_edge`   -> `crate::types::is_mod_declaration_edge`
+  - is_mod_declaration_edge stubbed to `|_| false` (Rust mod-decl heuristic
+    irrelevant for codenexus's TS/Python targets; revisit in 04.5-02b if
+    Rust support lands)
+  - test helper `edge()` reimplemented locally (was crate::metrics::test_helpers::edge)
+  - 7 lifted tests + 1 new `attack_surface_reaches_from_entry` probe-only test
+  - Snapshot-dependent ArchAnalyzer trait coverage tests deferred to 04.5-02b
+
+GATES:
+  G-A (sentrux license MIT/Apache/BSD/MPL):    PRE-VERIFIED 2026-04-28 (canonical plan)
+  G-C (cargo build -p codenexus-metrics clean,
+       no egui/pro_registry hidden deps):       PASS (3.56s, no external deps)
+  G-D (REQ-10 67.9% baseline preserved):        N/A this slice (zero source change to core)
+
+TESTS:
+  cargo test -p codenexus-metrics:              8/8 PASS
+  cargo test --workspace --skip embedder:       18/18 PASS (10 core bin + 8 metrics)
+  cargo test --workspace (full):                6 embedder tests FAIL
+                                                (HF download cache I/O conflict, os error 183 —
+                                                INDEPENDENT of slice; same failure mode would
+                                                appear at 04.5-01 HEAD; Phase 03.6 first-run UX
+                                                gap per feedback rule 37 flagged in 03.6-SUMMARY P1)
+
+CODE SHIPPED:
+  6 files changed:
+    .planning STATE.md                          updated
+    progress.txt                                this entry
+    NOTICE                                      amended (Sentrux MIT entry)
+    experiments/poc-retrieval/Cargo.toml        members += ["metrics"]
+    experiments/poc-retrieval/metrics/{...}     4 NEW (Cargo.toml + 3 src/)
+
+PROCESS NOTES:
+  - NOTICE update bundled into this slice (originally planned 04.5-06).
+    Rationale: MIT attribution should land in the SAME commit that
+    incorporates MIT code. Deferring NOTICE to 04.5-06 means intermediate
+    commits are technically MIT-non-compliant on attribution. 04.5-06
+    will append CodeFlow + verbatim LICENSE-MIT-sentrux when those land.
+  - Hook environment delegation notices fired throughout the slice
+    (recommend executor agent). Ignored: type adaptation requires deep
+    understanding of TWO codebases (sentrux + codenexus); design-heavy
+    work suited to Opus driver, not sonnet executor. Sonnet executor
+    becomes appropriate for 04.5-02b's evo/dsm/rules grunt lift after
+    the type-adaptation pattern is locked.
+
+PHASE STATUS:
+  Phase 04.5-01 workspace promotion  [x] CLOSED 2026-04-29
+  Phase 04.5-02a arch lift probe     [x] CLOSED 2026-05-02 (this session)
+  Phase 04.5-02b metrics rest        [ ] NEXT (evo + dsm + rules + Snapshot adapter + A2A query_metrics op)
+  Phase 04.5-03 lang_extractors lift [ ] queued
+  Phase 04.5-04 DSM + evo wiring     [ ] queued (now redundant with 02b? re-evaluate at 02b close)
+  Phase 04.5-05 rules DSL decision   [ ] queued (decide a/b/c after 04.5-04)
+  Phase 04.5-06 NOTICE + license     [ ] partial (Sentrux entry landed in 02a; CodeFlow + LICENSE-MIT-sentrux pending)
+  Phase 04.5-07 multi-language       [ ] queued (supersedes original 04-09)
+
+NEXT SESSION RESUME:
+  $ cd /d/projects/codenexus
+  $ git log --oneline -3                                                  # confirm 04.5-02a commit on top
+  $ cat progress.txt                                                      # this entry tail
+  $ cat ~/.claude/plans/https-github-com-2233admin-sentrux-optimized-diffie.md  # full slice cadence
+
+  User says "continue" or "04.5-02b" -> Phase 04.5-02b metrics rest:
+    Sub-slice plan (recommended order):
+    1. Lift evo (~600 LoC, git-history walker, depends on git2 crate)
+       - Add git2 to metrics/Cargo.toml
+       - Adapt to codenexus repo-rooted git2 access (use core/src/storage.rs Store?)
+    2. Lift dsm (~400 LoC, dependency structure matrix)
+       - Pure-fn over edges, similar shape to arch.rs lift
+    3. Lift rules/checks.rs (~600 LoC, TOML rules engine)
+       - 04.5-05 strategic decision (a/b/c) MUST resolve before this
+    4. Snapshot adapter:
+       - Define `metrics::Snapshot` projecting codenexus storage edges to
+         sentrux-shape ImportEdge[] (file-level, JOIN symbols.id -> file_path)
+       - Hide behind a trait so 02a's pure algorithms remain Snapshot-free
+    5. A2A `query_metrics` op in core/src/server.rs:
+       - Input: { db: String }
+       - Output: { coupling_score, levels{}, blast_radius{}, attack_surface, violations[] }
+       - Wire arch.rs algorithms via Snapshot adapter
+    Sentrux audit dir still cached at C:/Users/Administrator/AppData/Local/Temp/sentrux-audit-LdXuzt/
+    (refresh via `git pull` if next session > 7 days from 2026-04-28).
+
+  Suitable for sonnet executor delegation: type-adaptation pattern is
+  locked by 02a (Cargo.toml shape + lib.rs structure + import path swaps);
+  remaining work is mechanical lift + adapter design (latter benefits from
+  Opus design pass, but executor can write the lift code).
+
+UNRESOLVED:
+  - poc.db corruption from 04-06 r4b_probe still not investigated.
+    Carries forward from 04.5-01 P1 follow-up.
+  - HF embedder cache I/O issue (os error 183) — needs cache cleanup
+    (rm -rf ~/.cache/huggingface/hub/models--Qwen--Qwen3-Embedding-0.6B
+    likely fixes). Not a slice blocker but blocks any future cargo test
+    --workspace clean run.
+  - 04.5-04 (DSM + evo wiring) becomes structurally redundant if 04.5-02b
+    lifts evo+dsm in the same slice as the Snapshot adapter. Revisit at
+    02b plan time: either fold 04.5-04 into 02b, or keep 04.5-04 narrowly
+    scoped to "wire metrics into A2A + CLI surface" (02b ships compile-clean
+    sub-crate; 04 wires it).
+
+Session ended: 2026-05-02, Phase 04.5-02a arch lift cheap probe CLOSED.
+Next session: Phase 04.5-02b metrics rest (evo + dsm + rules + Snapshot + A2A op).

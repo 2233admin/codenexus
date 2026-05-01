@@ -1,9 +1,12 @@
 [workspace]
 resolver = "2"
-members = ["core"]
+members = ["core", "metrics"]
 
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
 
-# Note: 04.5-02 (metrics) and 04.5-03 (parser) sub-crates will be added by their own slices.
+# Phase 04.5-02a (this commit) added the `metrics` sub-crate with arch graph
+# algorithms only (lifted from sentrux MIT). Phase 04.5-02b will expand metrics
+# with evo/dsm/rules + a Snapshot adapter against codenexus_core::storage.
+# Phase 04.5-03 will add `parser` sub-crate.

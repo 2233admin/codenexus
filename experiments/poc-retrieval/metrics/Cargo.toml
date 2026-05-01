@@ -1,0 +1,9 @@
+[package]
+name = "codenexus-metrics"
+version.workspace = true
+edition.workspace = true
+description = "CodeNexus structural metrics. Lifted from sentrux MIT (https://github.com/2233admin/sentrux) per Phase 04.5 plan."
+
+# Phase 04.5-02a probe scope: only `arch` graph algorithms lifted. Pure
+# stdlib, no external deps. evo/dsm/rules pending in 04.5-02b.
+[dependencies]
