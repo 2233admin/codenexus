@@ -572,3 +572,304 @@ fn normalize_relative_path(p: &str) -> String {
     }
     out.join("/")
 }
+
+#[cfg(test)]
+mod tests {
+    //! Characterization tests pinning EdgeBuilder's current resolver behavior
+    //! before Phase 04.5-03 splits this module into edge-find / edge-resolve /
+    //! edge-store. These pin today's *actual* behavior including known bugs
+    //! (T3 renamed import) and documented gaps (T4 default import). Refactor
+    //! must keep these green or update them in the same commit with rationale.
+    //!
+    //! Confidence values per resolve_with_conf: 1.0 (same-file), 0.9
+    //! (import-file via resolve_with_namespace OR step-2 import_targets),
+    //! 0.7 (global-unique fallback). resolve_with_namespace returns 0.9 for
+    //! `import * as X from "Y"; X.foo()` lookups.
+    use super::*;
+    use crate::parser::Symbol;
+    use tempfile::TempDir;
+
+    fn setup() -> (TempDir, Store) {
+        let dir = TempDir::new().expect("tempdir");
+        let db_path = dir.path().join("test.db");
+        let store = Store::open(db_path.to_str().unwrap()).expect("Store::open");
+        (dir, store)
+    }
+
+    fn write_file(dir: &TempDir, rel: &str, content: &str) {
+        let p = dir.path().join(rel);
+        if let Some(parent) = p.parent() {
+            std::fs::create_dir_all(parent).unwrap();
+        }
+        std::fs::write(p, content).unwrap();
+    }
+
+    fn insert_sym(
+        store: &Store,
+        kind: &str,
+        name: &str,
+        path: &str,
+        sl: usize,
+        el: usize,
+    ) -> i64 {
+        let s = Symbol {
+            kind: kind.to_string(),
+            name: name.to_string(),
+            path: path.to_string(),
+            start_line: sl,
+            end_line: el,
+            snippet: String::new(),
+        };
+        store.insert(&s, "", &[]).expect("insert sym")
+    }
+
+    /// Dump all edges as (from_name, kind, to_name, confidence) for assertion.
+    fn dump_edges(store: &Store) -> Vec<(String, String, String, f64)> {
+        let kinds = ["Calls", "Imports", "Implements", "Extends"];
+        let mut out = Vec::new();
+        for k in &kinds {
+            for (from, to, conf) in store.edges_of_kinds(&[k], 0.0).unwrap() {
+                let from_name = store
+                    .symbol_by_id(from)
+                    .unwrap()
+                    .map(|(_, n, _)| n)
+                    .unwrap_or_default();
+                let to_name = store
+                    .symbol_by_id(to)
+                    .unwrap()
+                    .map(|(_, n, _)| n)
+                    .unwrap_or_default();
+                out.push((from_name, k.to_string(), to_name, conf));
+            }
+        }
+        out
+    }
+
+    fn build_graph(store: &Store, dir: &TempDir) -> EdgeStats {
+        let mut builder = EdgeBuilder::new(store, dir.path().to_path_buf()).unwrap();
+        builder.build_all().unwrap()
+    }
+
+    fn approx(a: f64, b: f64) -> bool {
+        (a - b).abs() < 1e-9
+    }
+
+    /// T1: named import `import { foo } from "./X"; foo()` resolves the call
+    /// across files at confidence 0.9 (resolve_with_conf step 2 import-file).
+    /// Imports edge written at default conf 1.0.
+    #[test]
+    fn t1_named_import_resolves_calls_at_conf_0_9() {
+        let (dir, store) = setup();
+        write_file(
+            &dir,
+            "A.ts",
+            "import { foo } from \"./X\";\nexport function caller() { foo(); }\n",
+        );
+        write_file(&dir, "X.ts", "export function foo() {}\n");
+        insert_sym(&store, "function", "caller", "A.ts", 2, 2);
+        insert_sym(&store, "function", "foo", "X.ts", 1, 1);
+
+        let _stats = build_graph(&store, &dir);
+        let edges = dump_edges(&store);
+
+        assert!(
+            edges.iter().any(|(f, k, t, c)| f == "caller"
+                && k == "Imports"
+                && t == "foo"
+                && approx(*c, 1.0)),
+            "expected Imports caller->foo conf=1.0; got {:?}",
+            edges
+        );
+        assert!(
+            edges.iter().any(|(f, k, t, c)| f == "caller"
+                && k == "Calls"
+                && t == "foo"
+                && approx(*c, 0.9)),
+            "expected Calls caller->foo conf=0.9; got {:?}",
+            edges
+        );
+    }
+
+    /// T2: namespace import `import * as X from "./Y"; X.bar()` does NOT
+    /// produce an Imports edge (line 244 explicit skip), only writes
+    /// namespace_aliases. Calls edge resolves via resolve_with_namespace
+    /// at confidence 0.9.
+    #[test]
+    fn t2_namespace_import_resolves_calls_via_alias_at_conf_0_9() {
+        let (dir, store) = setup();
+        write_file(
+            &dir,
+            "A.ts",
+            "import * as X from \"./Y\";\nexport function caller() { X.bar(); }\n",
+        );
+        write_file(&dir, "Y.ts", "export function bar() {}\n");
+        insert_sym(&store, "function", "caller", "A.ts", 2, 2);
+        insert_sym(&store, "function", "bar", "Y.ts", 1, 1);
+
+        let _stats = build_graph(&store, &dir);
+        let edges = dump_edges(&store);
+
+        assert!(
+            !edges.iter().any(|(_, k, _, _)| k == "Imports"),
+            "namespace import should NOT produce Imports edge; got {:?}",
+            edges
+        );
+        assert!(
+            edges.iter().any(|(f, k, t, c)| f == "caller"
+                && k == "Calls"
+                && t == "bar"
+                && approx(*c, 0.9)),
+            "expected Calls caller->bar conf=0.9 via NS; got {:?}",
+            edges
+        );
+    }
+
+    /// T3: renamed import `{ foo as bar }` — KNOWN BUG pinned. Q_IMPORTS
+    /// captures the original `name` field (`foo`), so Imports edge points
+    /// to X.foo correctly. But at the callsite `bar()`, resolve_with_conf
+    /// looks up local binding `bar` in target file (fails — X exports `foo`)
+    /// then falls through to global-unique (also fails — no `bar` exists).
+    /// Net result: Imports edge OK, Calls edge MISSING. Refactor must
+    /// preserve this behavior; fix in a separate slice with explicit tracking.
+    #[test]
+    fn t3_renamed_import_callsite_silently_unresolved_today() {
+        let (dir, store) = setup();
+        write_file(
+            &dir,
+            "A.ts",
+            "import { foo as bar } from \"./X\";\nexport function caller() { bar(); }\n",
+        );
+        write_file(&dir, "X.ts", "export function foo() {}\n");
+        insert_sym(&store, "function", "caller", "A.ts", 2, 2);
+        insert_sym(&store, "function", "foo", "X.ts", 1, 1);
+
+        let _stats = build_graph(&store, &dir);
+        let edges = dump_edges(&store);
+
+        assert!(
+            edges.iter().any(|(_, k, t, _)| k == "Imports" && t == "foo"),
+            "expected Imports edge to foo (Q_IMPORTS captures original name); got {:?}",
+            edges
+        );
+        assert!(
+            !edges.iter().any(|(_, k, _, _)| k == "Calls"),
+            "renamed-import bar() should silently fail today (KNOWN BUG); got {:?}",
+            edges
+        );
+    }
+
+    /// T4: default import `import X from "./Y"` — DOCUMENTED GAP. Local
+    /// binding `X` does not match exported name in Y (Y exports default
+    /// function `foo`). pass_imports lookup fails, NO Imports edge. At
+    /// callsite `X()` resolution also fails (no symbol named X anywhere).
+    /// Pin this so a refactor that "accidentally fixes" it via different
+    /// resolution path triggers a loud test break instead of silent change.
+    #[test]
+    fn t4_default_import_silently_unresolved_today() {
+        let (dir, store) = setup();
+        write_file(
+            &dir,
+            "A.ts",
+            "import X from \"./Y\";\nexport function caller() { X(); }\n",
+        );
+        write_file(&dir, "Y.ts", "export default function foo() {}\n");
+        insert_sym(&store, "function", "caller", "A.ts", 2, 2);
+        insert_sym(&store, "function", "foo", "Y.ts", 1, 1);
+
+        let _stats = build_graph(&store, &dir);
+        let edges = dump_edges(&store);
+
+        assert!(
+            !edges.iter().any(|(_, k, _, _)| k == "Imports"),
+            "default-import name mismatch produces NO Imports edge; got {:?}",
+            edges
+        );
+        assert!(
+            !edges.iter().any(|(_, k, _, _)| k == "Calls"),
+            "default-import callsite silently fails today; got {:?}",
+            edges
+        );
+    }
+
+    /// T5: cross-file `class Derived extends Base` resolves via Imports +
+    /// import_targets at confidence 0.9 (step 2).
+    #[test]
+    fn t5_cross_file_extends_resolves_at_conf_0_9() {
+        let (dir, store) = setup();
+        write_file(
+            &dir,
+            "A.ts",
+            "import { Base } from \"./B\";\nexport class Derived extends Base {}\n",
+        );
+        write_file(&dir, "B.ts", "export class Base {}\n");
+        insert_sym(&store, "class", "Derived", "A.ts", 2, 2);
+        insert_sym(&store, "class", "Base", "B.ts", 1, 1);
+
+        let _stats = build_graph(&store, &dir);
+        let edges = dump_edges(&store);
+
+        assert!(
+            edges.iter().any(|(f, k, t, c)| f == "Derived"
+                && k == "Extends"
+                && t == "Base"
+                && approx(*c, 0.9)),
+            "expected Extends Derived->Base conf=0.9; got {:?}",
+            edges
+        );
+    }
+
+    /// T6: same-file call resolves at confidence 1.0 (resolve_with_conf
+    /// step 1 same-file).
+    #[test]
+    fn t6_same_file_call_resolves_at_conf_1_0() {
+        let (dir, store) = setup();
+        write_file(
+            &dir,
+            "A.ts",
+            "function foo() {}\nfunction bar() { foo(); }\n",
+        );
+        insert_sym(&store, "function", "foo", "A.ts", 1, 1);
+        insert_sym(&store, "function", "bar", "A.ts", 2, 2);
+
+        let _stats = build_graph(&store, &dir);
+        let edges = dump_edges(&store);
+
+        assert!(
+            edges.iter().any(|(f, k, t, c)| f == "bar"
+                && k == "Calls"
+                && t == "foo"
+                && approx(*c, 1.0)),
+            "expected Calls bar->foo conf=1.0 (same-file); got {:?}",
+            edges
+        );
+    }
+
+    /// T7: an unresolvable name produces no Calls edge and increments the
+    /// unresolved counter — does NOT silently false-match a coincidental
+    /// global symbol via find_global_unique. This guards against a refactor
+    /// that loosens fallback resolution.
+    #[test]
+    fn t7_unresolvable_call_is_not_silently_falsematched() {
+        let (dir, store) = setup();
+        write_file(
+            &dir,
+            "A.ts",
+            "export function caller() { nonexistent(); }\n",
+        );
+        insert_sym(&store, "function", "caller", "A.ts", 1, 1);
+
+        let stats = build_graph(&store, &dir);
+        let edges = dump_edges(&store);
+
+        assert!(
+            !edges.iter().any(|(_, k, _, _)| k == "Calls"),
+            "unresolvable call should produce no Calls edge; got {:?}",
+            edges
+        );
+        assert!(
+            stats.unresolved >= 1,
+            "expected stats.unresolved >= 1, got {}",
+            stats.unresolved
+        );
+    }
+}

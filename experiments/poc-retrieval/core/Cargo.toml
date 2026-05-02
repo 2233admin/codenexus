@@ -56,6 +56,9 @@ path = "src/main.rs"
 name = "compute_version_hash"
 path = "src/bin/compute_version_hash.rs"
 
+[dev-dependencies]
+tempfile = "3"
+
 [profile.release]
 opt-level = 3
 lto = "thin"
