@@ -1317,3 +1317,214 @@ tests / a0fa4d8 CONTEXT.md / f303d64 PRE-PLAN-NOTES / 81e81d7 primary
 close / 98c6a7c codex audit / 525d317 decision 2 locked).
 Next session: open with EVAL-CONTRACT.md authoring (~1-2hr) before
 resuming 04.5-03 plan-phase.
+
+
+==========================================================================
+2026-05-02 (continuation) -- EVAL-CONTRACT v1.0 frozen + 04.5-03 planned
+==========================================================================
+
+WHAT DONE (next-session resume per prior entry's recommendation, +2 commits):
+
+  (1) commit 49bae0d -- .planning/EVAL-CONTRACT.md v1.0 frozen
+      (310 lines, ASCII-clean per feedback rule 17). Per audit Decision 2
+      LOCKED gamma-split: preregister CONTRACT Week 0 to isolate motivation
+      independent of time order; populate DATA per Codex Week 4-6.
+      6 locked sections:
+        - Task taxonomy (10 bugfix / 10 refactor / 5 API / 5 forbidden-edit-
+          because-ADR; counts + categories LOCKED, instances NOT yet)
+        - 4 baselines: B0 no-tool / B1 rg+manual / B2 current-CodeNexus /
+          B3 CodeNexus-MVP-with-memory
+        - 6 metrics with mechanical/judgment/bifurcated typing:
+            M1 required-symbol-inspection recall (mechanical)
+            M2 forbidden-edit rate (mechanical, "emit" defined to close
+               git-commit-vs-attempted-edit ambiguity)
+            M3 ADR constraint recall (LLM-judge graded 0-3 N=3 seeds)
+            M4 wrong-file edit rate (mechanical, same emit definition)
+            M5 task completion (bifurcated: tests-pass mechanical OR
+               rubric-graded 0-3 by judge)
+            M6 tool-use latency budget (mechanical wall-clock)
+        - Run protocol (added during self-review): agent model held
+          constant across baselines, N=3 agent seeds, build commit SHA
+          recorded -- closes confound loopholes
+        - Success gate: gate_a >=25% relative reduction in BOTH bad-edit
+          metrics; gate_b >=20pp absolute improvement in required-symbol
+          recall; gate_c <=2x median wall-clock latency. ALL three must
+          hold for B3 to pass against B2.
+        - Repo selection criteria C1-C5 (anti-self-eval-bias / size band
+          5k-100k LoC / multi-lang TS+Python+Go / license / ADR
+          availability)
+        - Judge-method LOCKED (not punted): LLM-as-judge graded 0-3 N=3
+          seeds + 20% human stratified spot-check (>=1 per category per
+          baseline) + INVALIDATE on >25% disagreement. Judge-model id
+          rides instance authoring.
+        - Changelog discipline: silent relaxation = contract violation;
+          tightenings follow same discipline.
+      Self-review pass tightened M2/M4/M6 emit-not-commit definitions and
+      added Run protocol section to plug agent-model + temperature +
+      build-SHA confound holes that the initial draft left implicit.
+
+  (2) commit ca9d0a4 -- Phase 04.5-03 planned (6 PLAN.md across W0-W5)
+      via /gsd-plan-phase 04.5-03 sub-slice workflow (gsd-sdk init does
+      not natively recognize sub-slice 04.5-03, so the workflow was run
+      with PRE-PLAN-NOTES.md serving as CONTEXT.md surrogate per its own
+      header text). 5229 insertions / 256KB total across 6 PLAN.md +
+      PRE-PLAN-NOTES.md G-B framing fix.
+
+      Two-iteration revision loop:
+        iteration 1: 0 BLOCKERS / 5 WARNINGS / 2 INFO PASS
+        iteration 2: 0 / 0 / 0  (revision landed cleanly; stall-detection
+                                 not triggered, 5 -> 0 monotonic decrease)
+
+      Plan structure (linear depends_on chain W0 -> W1 -> W2 -> W3 -> W4 -> W5):
+
+        W0 schema migration (alias_decls separate table per L1; composite
+           (file, alias) UNIQUE INDEX at CREATE TABLE time, NOT
+           retrofitted; edges.kind CHECK left permissive at create-time
+           so W0-W2 don't break T1-T7; G-E loud-error reindex contract)
+
+        W1 sentrux verbatim lift -- KEY plan-time decision:
+           codenexus-types extraction added as Task 0, NOT W3 as the
+           planner originally drafted. Forced by foreseeable cargo dep
+           cycle that would surface at W3 (parser + core both need
+           Symbol/AliasDecl/FoundEdge/EdgeKind/ResolutionMethod/
+           ResolvedEdge; if Symbol stays in core then parser depends on
+           core, but W3's CallResolver::resolve replacement requires
+           core::graph_build to call into parser::call_resolver, which
+           creates the cycle). UQ1 RESOLUTION locked to option (a):
+           leaf codenexus-types crate consumed by both core and parser.
+           Extraction lands in W1 to give W2/W3 a stable dep graph.
+           Plus: plugin/{manifest, profile, loader} verbatim ~1300 LoC
+           + parser/{imports, ast_import_walker} ~885 LoC + [calls]
+           schema designed in 04.5-03 (L3.a, NOT deferred to 04.5-07
+           per Codex critical addition).
+
+        W2 PathResolver cherry-pick from sentrux resolver/suffix.rs
+           ~400 LoC + CallResolver native ~300 LoC + AliasIndex pure-fn
+           over &[AliasDecl] + SymbolIndex from Store + ResolutionMethod
+           enum (L5: SameFile / ImportResolved / GlobalUnique;
+           confidence DERIVES at Snapshot projection 1.0 / 0.9 / 0.7,
+           NOT raw f64 inline)
+
+        W3 graph_build.rs three-pass pipeline rewrite (edge-find ->
+           edge-resolve -> edge-store) + parser.rs DELETED + edges.kind
+           CHECK tightened to ('Calls','Implements','Extends') ONLY
+           (G-E carry-forward from W0; sequencing W3-not-W0 is
+           deliberate -- preserves T1-T7 across W0-W2 where Imports
+           rows still write the old way) + T1-T7 storage-relocation
+           assertion updates per PRE-PLAN-NOTES G-B definition (revised
+           this session to admit the relocation while keeping T3+T4
+           PINNED no-Calls-edge semantics). T3 + T4 are PINNED bugs
+           that 04.5-03 MUST preserve, NOT fix; fixes ride
+           codenexus-04.5-renamed-import-fix slice + Phase 4 backlog.
+
+        W4 TS-only calls AST walker consuming [calls] section of
+           plugin.toml + +/-5% Calls edge count tolerance vs pre-refactor
+           poc.db. CallsWalker plan-time decision: chose manual AST walk
+           over dynamic tree-sitter Query construction (L6 .tsg DSL
+           deferred per PRE-PLAN-NOTES). FoundEdge struct extended with
+           ns_obj+row IMPLEMENTATION-INTERNAL fields; CONTEXT.md
+           4-field public contract (from_file, from_name, to_raw, kind)
+           preserved -- W4 plan documents the divergence with
+           "do not surface ns_obj+row on public APIs without updating
+           CONTEXT.md first" gate.
+
+        W5 G-D acceptance + closure: cargo run --release -p
+           codenexus-core -- eval --queries eval/queries.json --db poc.db
+           --alpha 0.6 --out eval/req10_alpha06_post0453.json. Mean
+           precision_at_5 in [0.659, 0.699] band. HF cache pre-seed per
+           R3 mitigation (offline-bootstrap doc).
+
+      Iteration 1 -> 2 fixes (5 warnings, all coherence/framing):
+        - Moved codenexus-types extraction W3 -> W1 (resolves D5+D9 UQ1
+          flip waste in one edit; highest-leverage fix)
+        - Added G-E to W3 gates_satisfied (D2 ownership claim)
+        - Updated PRE-PLAN-NOTES G-B definition to admit storage-
+          relocation assertion updates while keeping T3+T4 PINNED (D6
+          framing)
+        - Documented FoundEdge implementation-internal extension vs
+          CONTEXT.md 4-field public contract (D7)
+        - W3 files_modified cleaned of types/* entries (D5
+          auto-resolved by W1 extraction move)
+
+      Plans coexist with EVAL-CONTRACT.md (commit 49bae0d): G-D is
+      the retrieval-layer regression check (REQ-10 +/-2pp); EVAL-CONTRACT
+      governs agent-outcome eval (separate beast, populated Week 4-6 per
+      Codex 6-week cadence). Plans encode L1-L6 locked decisions; audit
+      caveat ("aggressively bounded; do not metastasize into Sentrux-
+      as-product") honored -- no DSM/evo/rules creep into 04.5-03.
+
+  (3) Remote routine armed: trig_01PXoCEDjMwUfbx9t5KLCF6C
+      (claude.ai/code/routines), one-time fire at 2026-05-30T01:00:00Z
+      (Sat 09:00 Asia/Shanghai = start of Codex Week 4 window). Agent
+      will check two gates: (A) 04.5-03 shipped (W5-SUMMARY presence
+      / git log closure / STATE.md entry); (B) Week 2 minimal arch
+      metrics shipped (blast_radius / cycle / reachability /
+      StoreSnapshot in metrics/arch.rs). If both pass: drafts
+      .planning/EVAL-INSTANCES.md skeleton with TBDs (3 repo
+      nominations + agent-model + judge-model + task wording + run
+      harness + spot-check sample logic) + commits + pushes. If gates
+      fail: writes status note to STATE.md, prints reminder to
+      manually re-/schedule another nudge ~2 weeks out (CCR cannot
+      self-reschedule). NO MCP connectors needed (repo-local task).
+
+WHAT BLOCKED / OPEN (4 of 5 audit decisions still open per user directive):
+  - D1 roadmap pivot scope: full / partial / reject -- recommended pick (B)
+    partial per audit synthesis
+  - D3 PROJECT.md A2A framing surgery -- ~2-paragraph edit, low cost
+  - D4 30-language ambition cut -- impacts 04.5-07 spec (TS+Python+Go,
+    other 27+ stay as available-but-unmaintained sentrux configs)
+  - D5 30-task instance authoring assignee/timing -- partially covered
+    by Week 4 nudge routine above
+  - "workspace-weave / WeaveLock" injection raised mid-session and
+    PARKED -- zero hits anywhere in repo (not in CONTEXT.md vocabulary
+    lock, not in ROADMAP, not in PROJECT.md, not in source). Three
+    interpretations offered (cross-repo confusion / new CodeNexus
+    feature spec / external desynt-crate inspiration); user did not
+    pick. NOT riding 04.5-03 -- would violate L4 lift scope + audit's
+    "aggressively bounded" caveat + CONTEXT.md vocabulary lock. If
+    user wants it for CodeNexus, path is PROJECT.md Phase 4+ Backlog
+    candidate -> discuss-phase -> new sub-slice (e.g.,
+    04.5-08-workspace-weave-aliasing) AFTER 04.5-03 closes.
+
+NEXT SESSION (pick one):
+  (a) Execute W0 (cd D:/projects/codenexus &&
+      /gsd-execute-phase 04.5-03 -- but workflow expects integer
+      phase; running W0 directly via executor agent on
+      04.5-03-W0-PLAN.md is the practical path). W0 is smallest /
+      lowest-risk wave (schema migration only).
+  (b) Address open audit decisions before any code work. D3 (A2A
+      framing) is cheapest at ~2 paragraphs. D1 (roadmap revision) is
+      largest. D4 (30-lang cut) would touch 04.5-07 spec which is
+      itself not yet planned.
+  (c) Revisit "workspace-weave" question -- if it IS a real feature
+      Curry wants for CodeNexus, draft the Phase 4+ Backlog candidate
+      entry. NOT injectable into 04.5-03.
+  (d) Close session as-is; nothing else needs to ship today.
+
+  Default recommendation: (d) with handoff. Today's output is locked,
+  verified, committed. Executing W0 cold without the W1+ context loaded
+  is fine but doesn't pressure-test anything new -- W0 is mechanical.
+  Better: open next session fresh with explicit scope choice.
+
+KEY ARTIFACTS THIS SESSION:
+  .planning/EVAL-CONTRACT.md (frozen v1.0, commit 49bae0d)
+  .planning/phases/codenexus-04.5-sentrux-adaptation-layer/
+    04.5-03-W0-PLAN.md  (613 lines, schema migration, 2 tasks)
+    04.5-03-W1-PLAN.md  (796 lines, sentrux verbatim + types extract)
+    04.5-03-W2-PLAN.md  (1356 lines, PathResolver + CallResolver)
+    04.5-03-W3-PLAN.md  (929 lines, graph_build rewrite + parser delete)
+    04.5-03-W4-PLAN.md  (796 lines, TS calls walker)
+    04.5-03-W5-PLAN.md  (589 lines, REQ-10 G-D acceptance + closure)
+    04.5-03-PRE-PLAN-NOTES.md (G-B framing revised, line 61)
+  Remote routine: trig_01PXoCEDjMwUfbx9t5KLCF6C (one-time
+    2026-05-30T01:00:00Z; manage at claude.ai/code/routines)
+
+Session ended: 2026-05-02 (continuation), 2 commits this turn (49bae0d
+EVAL-CONTRACT + ca9d0a4 6 plans). Total session-pair count: 7 commits
+across the 04.5-03 prep arc (4ebffa9 chars tests -> a0fa4d8 CONTEXT
+-> f303d64 PRE-PLAN -> 81e81d7 primary close -> 98c6a7c codex audit
+-> 525d317 decision 2 -> 766d52a state close -> 49bae0d EVAL-CONTRACT
+-> ca9d0a4 6 plans).
+Next session: pick (a)/(b)/(c)/(d) above. Plans are SHIPPABLE per
+checker iter 2. 4 audit decisions open. Workspace-weave question
+PARKED pending interpretation pick.
