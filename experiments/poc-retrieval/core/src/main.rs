@@ -169,6 +169,36 @@ async fn main() -> Result<()> {
         }
         Cmd::Index { repo, db, max_consecutive_fail } => {
             let store = storage::Store::open(&db)?;
+
+            // Phase 04.5-03 W0 (G-E): if DB has pre-W0 schema state (Imports
+            // edge rows exist BUT alias_decls table is empty), emit loud
+            // migration error instead of silently continuing on stale schema.
+            // Reindex is the migration mechanism (8m22s wall-clock on fsc.db
+            // per Phase 03.6 SUMMARY). Note: Store::open will already have
+            // created the alias_decls table via CREATE IF NOT EXISTS, so on
+            // a pre-W0 DB the table exists but contains zero rows -- which is
+            // precisely the migration-required signature.
+            if store.has_imports_edges()? && !store.has_alias_decls()? {
+                eprintln!(
+                    "[codenexus] DB has pre-04.5-03 schema state (Imports edges present, alias_decls empty)."
+                );
+                eprintln!(
+                    "[codenexus] alias_decls migration required. Re-index to migrate:"
+                );
+                eprintln!(
+                    "[codenexus]   1. delete the existing DB (or use a fresh path):  rm '{}'",
+                    db
+                );
+                eprintln!(
+                    "[codenexus]   2. run `codenexus-core index --repo <repo> --db {}` again to fully re-index.",
+                    db
+                );
+                eprintln!(
+                    "[codenexus] reindex on fsc.db is ~8m22s wall-clock (Phase 03.6 baseline)."
+                );
+                std::process::exit(2);
+            }
+
             store.clear()?;
             let embedder = embedder::Embedder::new();
             let symbols = parser::parse_repo(&repo)?;

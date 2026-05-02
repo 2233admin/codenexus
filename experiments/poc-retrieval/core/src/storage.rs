@@ -163,6 +163,31 @@ impl Store {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
+    /// Returns true if the `edges` table contains any row with kind='Imports'.
+    /// Used by Phase 04.5-03 W0 G-E migration check: a pre-04.5-03 fsc.db will
+    /// have `Imports` rows that need to be re-emitted as alias_decls rows
+    /// (W3 stops writing Imports rows; reindex is the migration mechanism).
+    pub fn has_imports_edges(&self) -> Result<bool> {
+        let n: i64 = self.conn.query_row(
+            "SELECT COUNT(*) FROM edges WHERE kind = 'Imports'",
+            [],
+            |r| r.get(0),
+        )?;
+        Ok(n > 0)
+    }
+
+    /// Returns true if `alias_decls` table has any row. Used together with
+    /// `has_imports_edges` to detect a pre-W0 DB: imports>0 AND alias_decls=0
+    /// is the migration-required signature.
+    pub fn has_alias_decls(&self) -> Result<bool> {
+        let n: i64 = self.conn.query_row(
+            "SELECT COUNT(*) FROM alias_decls",
+            [],
+            |r| r.get(0),
+        )?;
+        Ok(n > 0)
+    }
+
     /// Counts edges grouped by (kind, confidence_bucket) where bucket = round(confidence*10)/10.
     /// Returns Vec<(kind, confidence_bucket, count)> sorted by kind asc, conf desc.
     pub fn count_edges_by_kind_conf(&self) -> Result<Vec<(String, f64, i64)>> {
