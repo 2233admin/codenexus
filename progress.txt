@@ -1528,3 +1528,123 @@ across the 04.5-03 prep arc (4ebffa9 chars tests -> a0fa4d8 CONTEXT
 Next session: pick (a)/(b)/(c)/(d) above. Plans are SHIPPABLE per
 checker iter 2. 4 audit decisions open. Workspace-weave question
 PARKED pending interpretation pick.
+
+
+==========================================================================
+2026-05-02 (continuation tail) -- drift probe + Beta V1 spec freeze
+==========================================================================
+
+WHAT DONE (post-658f8a3, +2 commits):
+  (1) Drift evidence probe SPEC frozen (commit 2582dae).
+
+      Artifact:
+        .planning/probes/drift_evidence_probe.md
+        287 lines; cheap-probe-evidence-generation artifact
+
+      Purpose locked:
+        Test whether current pre-04.5-03 symbol identity / edge drift is
+        bad enough to make Phase 5 memory MVP eval noisy. This is NOT a
+        post-04.5-03 validation and NOT an indexer refactor.
+
+      Scope locked:
+        - Re-index poc.db corpus 5 times
+        - Re-index fsc.db corpus 5 times
+        - Compare symbols + edges pairwise across runs
+        - Report M1-M6:
+            M1 stable symbol identity (path+name+kind Jaccard)
+            M2 stable rowid
+            M3 stable edge resolution
+            M4 T3+T4 PINNED bug sanity
+            M5 synthetic memory attachment loss
+            M6 absolute symbol count delta
+        - Emit JSON output + one-paragraph decision evidence
+
+      Decision rule locked:
+        If M5_fnk_min >= 0.99 AND M3_min >= 0.99 AND M6_max_abs == 0:
+          04.5-03 demotes to QUALITY IMPROVEMENT.
+        If M5_fnk_min < 0.99 OR M3_min < 0.99:
+          04.5-03 is CONFIRMED PHASE 5 PRECONDITION.
+        Otherwise:
+          PROBE INCOMPLETE; defer drift evidence question.
+
+      Downstream:
+        Feeds BETA-V1-SPEC MUST 3 and Section 3 timeline compression.
+        Drift outcome decides whether W5-W6 Beta compression is available
+        or whether 04.5-03 stays on critical path before Phase 5 eval.
+
+  (2) BETA-V1-SPEC.md v1.0 frozen (commit ce52049).
+
+      Artifact:
+        .planning/BETA-V1-SPEC.md
+        FROZEN; governs CodeNexus Beta V1 definition + timeline + scope cuts
+
+      Locked surface:
+        - Beta V1 = locked feature set + eval evidence + public release
+          hygiene, NOT "whatever ships first"
+        - 8 MUSTs:
+            REQ-10 no-regression
+            clean-machine queryable server
+            04.5-03 lands OR drift probe demotes it
+            language scope decided before W4 entry
+            Phase 5 Bridge memory-assisted edit surface
+            EVAL-INSTANCES.md frozen
+            B3 vs B2 gate passes OR evidence-failed Beta ships honestly
+            public release hygiene / no overclaim
+        - 4-scenario timeline:
+            A planned: W8 ~ 2026-06-27 p50
+            B drift compression: W5-W6 ~ 2026-06-06 to 2026-06-13
+            C eval stall: W9-W10 ~ 2026-07-04 to 2026-07-11
+            D Phase 5 unspecced at W4: W10+ hard stop
+        - Trade-off ledger:
+            Gains G1-G5, losses L1-L5
+        - Beta V1.1+ named backlog:
+            30-language activation, broad parity, clustering/evolution,
+            VS Code extension, shared-PG memU coupling, workspace-weave,
+            IDE affordances, remote A2A mesh, Obsidian wiki graph,
+            telemetry/cloud, enterprise controls
+        - Section 8:
+            Phase 5 Bridge PLAN.md is W1 first task.
+
+WHAT BLOCKED:
+  Nothing blocked these two tail commits.
+
+  Still open from prior state:
+    D1 roadmap pivot scope
+    D3 PROJECT.md A2A framing surgery
+    D4 30-language ambition cut
+    D5 30-task instance authoring details
+    workspace-weave remains parked unless reintroduced as V1.1+ backlog work
+
+NEXT SESSION:
+  First task per BETA-V1-SPEC Section 8:
+    Author Phase 5 Bridge PLAN.md.
+
+  Required shape:
+    .planning/phases/codenexus-05-bridge-memory-mvp/05-PLAN.md
+    or equivalent phase-dir convention.
+
+  The plan must make drift probe M5 metrics actionable as Phase 5
+  acceptance gates and scope the memory-assisted edit surface:
+    query_constraints
+    remember_symbol_note
+    get_edit_context
+
+  If Phase 5 PLAN.md is not authored early in W1, BETA-V1-SPEC Scenario D
+  becomes live: W10+ hard stop if Phase 5 remains unspecced at W4 entry.
+
+KEY ARTIFACTS:
+  .planning/probes/drift_evidence_probe.md (commit 2582dae)
+  .planning/BETA-V1-SPEC.md (commit ce52049)
+  .planning/EVAL-CONTRACT.md (commit 49bae0d)
+  .planning/phases/codenexus-04.5-sentrux-adaptation-layer/
+    04.5-03-W0-PLAN.md
+    04.5-03-W1-PLAN.md
+    04.5-03-W2-PLAN.md
+    04.5-03-W3-PLAN.md
+    04.5-03-W4-PLAN.md
+    04.5-03-W5-PLAN.md
+
+Session ended: 2026-05-02 (continuation tail), +2 commits after state close
+(2582dae drift probe + ce52049 Beta V1 spec). Today's locked surface now
+includes EVAL-CONTRACT v1.0, 04.5-03 W0-W5 plans, drift evidence probe, and
+BETA-V1-SPEC v1.0. Next session starts with Phase 5 Bridge PLAN.md authoring.

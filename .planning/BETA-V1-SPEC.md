@@ -177,7 +177,7 @@ future Codex: do not silently re-admit. Each item gets a discuss-phase
   `019de7d9-63bd-7ef1-8c66-9500116c14a5` + Curry synthesis (alpha drift
   compression / beta parallel decisions / gamma named V1.1+ backlog /
   delta private-beta hybrid) + Curry's trade-off ledger directive
-- Commit hash for this freeze: filled at commit time
+- Commit hash for this freeze: `ce52049`
 - Next scheduled review: W4 entry (~2026-05-30), triggered by Phase 5
   Bridge PLAN.md authoring decision (see § 8)
 - Amendment discipline: any MUST change requires `docs(beta-v1):` commit
