@@ -115,7 +115,34 @@ Week 6 -- Symbol memory store + get_edit_context op + eval run against all
    - (C) Reject: stay on current ROADMAP; treat R2 as advisory; revisit at Phase 4 entry.
    The "incremental" pick is (B). The "decisive" pick is (A).
 
-2. **Eval methodology overhaul -- when?** R1 #2 (RIGHT BUT FRAGILE, eval is endogenous) was not pushed back in R2; the verdict holds. R2's prescription has Week 4 as eval-v1-creation. Should this front-load before 04.5-03 lands, or ride along with it? Front-loading is uncomfortable (eval-without-anything-to-eval) but locks the bar before motivated reasoning kicks in.
+2. ~~**Eval methodology overhaul -- when?**~~ **LOCKED 2026-05-02 -- gamma position: pre-register CONTRACT now, populate DATA per Codex Week 4-6.** Decision walked through three positions:
+
+   - alpha (full front-load contract + 30 tasks pre-04.5-03): rejected -- 30-task authoring is SPEC-slice scale, parallel-with-04.5-03 = direct doom-march hit; current-CodeNexus baseline measured against known-broken resolver (T3/T4 pinned bugs) puts "improvement" on noise floor.
+   - beta (full back-load per Codex Week 4): rejected -- "eval written after build" is exactly the endogenous-eval failure mode R1 #2 named. R2 itself said "Frozen eval v1 created BEFORE any tuning lands" -- that discipline applies pre-04.5-03 too, not just pre-MVP.
+   - gamma (split): pre-register CONTRACT Week 0, populate DATA Week 4-6. Selected.
+
+   Rationale: R1 #2 keyword is "preregistered scoring rubric" -- preregistration isolates motivation, not time order. Contract authoring is ~1-2hr (pure doc, no code), runs serial-not-parallel with 04.5-03 land. Net effect: 04.5-03 G-D gate quality upgrades from "REQ-10 +/- 2pp band" (the narrow endogenous eval R1 #2 critiqued) to "REQ-10 + contract-locked baseline".
+
+   Contract scope to write next-session opening (~1-2hr, then close before 04.5-03 work resumes):
+
+   - Task taxonomy: 10 bugfix / 10 refactor / 5 API behavior change / 5 forbidden-edit-because-ADR (numbers + categories locked, specific task instances NOT yet)
+   - 4 baselines (locked names): no-tool / `rg` + manual reads / current-CodeNexus query+list_callers / CodeNexus-MVP-with-memory
+   - 6 metrics (locked definitions): required-symbol-inspection recall / forbidden-edit rate / ADR constraint recall / wrong-file edit rate / task completion (tests-or-rubric) / tool-use latency budget
+   - Success gate (locked numbers): >=25% reduction in forbidden/wrong-file edits AND >=20pp improvement in required-symbol recall AND <=2x median task time
+   - Repo selection criteria (locked, but specific repos NOT yet): >=1 non-author primary repo (anti self-eval-bias); size band; multi-language coverage
+   - Judge-method lock (LLM-judge vs human grader -- to be decided in contract; do not punt past contract)
+   - Meta-rule: contract changes after lock require changelog entry + rationale; relaxation never silent
+
+   Three known-unsolved-by-contract risks acknowledged (revisit at instance authoring):
+   - Self-eval bias if all 3 repos are author's
+   - Forbidden-edit task ground-truth needs ADR set, which needs 04.5-03 + minimal arch metrics first
+   - Judge-method (LLM-as-judge) cost vs reliability tradeoff at scale
+
+   File path target: `.planning/EVAL-CONTRACT.md` at repo root of `.planning/` for discoverability (sibling to PROJECT.md / ROADMAP.md / STATE.md). Format: markdown with frontmatter `frozen_at: <date>`, sections matching the locked-fields above, explicit changelog table at bottom.
+
+   Coexistence note: spike-001 B1-B7 retrieval eval and FSC F1-F10 hand-eval continue as retrieval-layer regression guards. EVAL-CONTRACT.md governs agent-outcome eval (different beast). Both run; one does not replace the other.
+
+   Status: position locked this session 2026-05-02; contract authoring deferred to next-session opening before 04.5-03 work resumes. ~1-2hr budgeted.
 
 3. **A2A framing surgery in PROJECT.md -- do now or wait?** Two-paragraph edit, low cost. Could land in next session opening as a clarity-fix not a strategic decision.
 
