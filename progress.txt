@@ -1214,3 +1214,106 @@ NEXT SESSION:
 
 Session ended: 2026-05-02, Phase 04.5-03 PRE-PLAN locked (3 commits).
 Next session: /gsd-plan-phase 04.5-03 (recommended) OR /gsd-plan-phase 04.5-02b.
+
+==========================================================================
+2026-05-02 -- SESSION EXTENSION: Codex strategic audit R1+R2 + decision 2
+==========================================================================
+
+WHAT DONE (post-session-close extension, +2 commits):
+
+  After original close commit 81e81d7, user invoked /mine:codex with
+  "adversarial zoom-out" mode. Two rounds of Codex (gpt-5.5, codex CLI
+  v0.128.0) with substantive verdict shifts:
+
+  (4) commit 98c6a7c -- Codex strategic adversarial audit R1+R2 archived.
+      R1: 10 attacks at artifact level (PROJECT.md / ROADMAP.md / STATE
+      / ARCHITECTURE / CONTEXT / 04.5-03-PRE-PLAN-NOTES). 4 WRONG / 4
+      RIGHT-FOR-WRONG-REASON-or-FRAGILE / 1 RIGHT-BUT-MIS-SEQUENCED /
+      1 RIGHT-FOR-WRONG-REASON.
+      R2: 6 pushes attacking R1's strongest internal contradictions
+      and weakest framings. Result: 2 CONCEDE / 4 UPDATE / 0 DEFEND --
+      Codex moved on every push. Updated single biggest risk =
+      "persisting sophisticated memory and decision intelligence on
+      top of unstable graph semantics" (replacing R1's "too much
+      parity"). Concrete 6-week falsifiable cadence: Week 1 04.5-03
+      land + resolver stable; Week 2 minimal arch metrics; Week 4
+      ADR extraction + query_constraints + frozen eval v1; Week 6
+      symbol memory + get_edit_context + eval run vs 4 baselines.
+      Synthesis at .planning/audits/2026-05-02-codex-strategic-review.md
+      (173 lines), raw transcripts at .planning/audits/*-r{1,2}-raw.txt
+      (4815 lines combined). Plus .gitleaksignore allowlist for 2
+      false-positive findings on the public HuggingFace Qwen3 model
+      revision SHA replayed in transcripts (sourcegraph-access-token
+      rule entropy false-match).
+
+  (5) commit 525d317 -- Decision 2 of the 5 next-session decisions
+      LOCKED: gamma split (preregister CONTRACT Week 0, populate DATA
+      per Codex Week 4-6). Walked alpha (full front-load) / beta (full
+      back-load Codex prescription) / gamma (split). Rationale: R1 #2
+      keyword "preregistered scoring rubric" -- preregistration
+      isolates motivation, not time order. Contract scope locked:
+      task taxonomy (10 bugfix / 10 refactor / 5 API / 5 forbidden-
+      edit), 4 baselines (no-tool / rg / current-CN / CN-MVP), 6
+      metrics (recall + forbidden-edit rate + ADR-constraint recall +
+      wrong-file edit rate + task completion + latency), success gate
+      (>=25% reduction in forbidden/wrong-file + >=20pp recall + <=2x
+      median time), repo selection criteria, judge-method. Contract
+      authoring deferred to next-session opening (~1-2hr) before
+      04.5-03 plan-phase resumes. Target file:
+      .planning/EVAL-CONTRACT.md.
+
+  Implications confirmed for current locked work:
+    - 04.5-03 work IS justified (R2 confirmed precondition for memU
+      bridge); keep middle-path lift but bound aggressively
+    - 04.5-04 RECONSIDERED (thin Snapshot+arch yes, broad DSM/evo no)
+    - 04.5-05 LIKELY-DEFER unless rules engine adapts to ADR-derived
+      constraints (decision (c) pre-aligned)
+    - 04.5-07 30-language ambition DOWNGRADES to TS+Python+Go only
+    - Phase 4 broader Parity + Phase 04.1 clustering DEFERRED
+    - Phase 5 Bridge PROMOTED to next-after-04.5-03 as
+      "memory-assisted agent edit MVP"
+    - PROJECT.md A2A framing needs surgery (architecture stays;
+      Codex R2 CONCEDE confirmed architecture matches its prescription)
+
+WHAT BLOCKED (extension):
+  - 4 of 5 next-session decisions still open (decision 2 locked):
+      D1 full pivot vs partial vs reject roadmap revision
+      D3 PROJECT.md A2A framing surgery (low cost, ~2 paragraphs)
+      D4 30-lang -> 3-lang ambition cut (impacts 04.5-07 spec)
+      D5 instance 30-task authoring assignee/timing
+  - Codex CLI ran with reasoning effort actually low despite -c
+    reasoningEffort=high; deeper analysis available if R2 verdicts
+    themselves become contested
+  - Kimi pool 403 quota still dead until billing reset (carries from
+    primary session)
+
+NEXT SESSION:
+  Three valid entries (pick at session start):
+    (a) Open with EVAL-CONTRACT.md authoring (1-2hr, locked scope per
+        decision 2 gamma) -- close before any 04.5-03 plan work
+        resumes. This is the "preregistration before motivation" play.
+    (b) Address 4 remaining open decisions (D1/D3/D4/D5) before any
+        code work -- roadmap revision is the largest, A2A framing is
+        cheapest.
+    (c) Resume per original recommendation: /gsd-plan-phase 04.5-03 OR
+        04.5-02b. CodeX audit findings ride along as advisory until
+        next pivot decision.
+
+  Recommend (a) + (c) in sequence: contract first (~1-2hr), then
+  /gsd-plan-phase 04.5-03 with audit findings as input constraint.
+  Codex's verdicts on 04.5-03 are JUSTIFIED but BOUNDED -- the plan
+  must encode "aggressively bound the lift, do not metastasize into
+  Sentrux-as-product."
+
+GEMINI INFRASTRUCTURE BUG (still unfixed):
+  gemini-companion.mjs unix-path issue on Windows; workaround documented
+  in primary session entry. Codex used as solo audit voice this
+  extension since Kimi quota dead. CCG triangulation reduced to
+  2-source (Codex + Curry); Gemini cross-source unavailable until fix.
+
+Session truly ended: 2026-05-02 (extension), Codex audit archived +
+decision 2 locked. 5 commits total this session pair (4ebffa9 chars
+tests / a0fa4d8 CONTEXT.md / f303d64 PRE-PLAN-NOTES / 81e81d7 primary
+close / 98c6a7c codex audit / 525d317 decision 2 locked).
+Next session: open with EVAL-CONTRACT.md authoring (~1-2hr) before
+resuming 04.5-03 plan-phase.
