@@ -1098,3 +1098,119 @@ UNRESOLVED:
 
 Session ended: 2026-05-02, Phase 04.5-02a arch lift cheap probe CLOSED.
 Next session: Phase 04.5-02b metrics rest (evo + dsm + rules + Snapshot + A2A op).
+
+==========================================================================
+2026-05-02 -- Phase 04.5-03 PRE-PLAN session (3 commits, deepening-driven)
+==========================================================================
+
+WHAT DONE:
+  User invoked /improve-codebase-architecture skill on CodeNexus. After
+  6-candidate punch list + 3 grilling rounds on #4 (graph_build.rs split)
+  + CCG triangulation, synthesized A3.3 + RepoCtx 2-layer + TOML-first
+  + middle-path lift scope (~2200 LoC verbatim + ~400 cherry-pick + ~300
+  native CallResolver) + ResolutionMethod enum + tsg deferred. Landed 3
+  pre-refactor artifacts:
+
+  (1) commit 4ebffa9 -- 7 fixture-based characterization tests on
+      graph_build.rs (zero pre-existing tests). Pin 4 import variants
+      (named/namespace/renamed/default) + cross-file extends + same-file
+      call + unresolvable-no-falsematch. T3 (renamed-import callsite bug)
+      + T4 (default-import gap) explicitly pinned, NOT fixed in 04.5-03.
+      7/7 PASS in 0.10s after 7.82s compile. Cargo.toml gained tempfile
+      dev-dependency.
+
+  (2) commit a0fa4d8 -- docs/CONTEXT.md vocabulary lock at repo root
+      following grill-with-docs CONTEXT-FORMAT. 19 terms across 4
+      clusters (graph primitives / edge pipeline / snapshot layer /
+      lift architecture). Critical naming split: PathResolver
+      (file-level, sentrux-lift) vs CallResolver (symbol-level, native).
+      4 flagged ambiguities (import / resolver / kind / namespace alias)
+      explicitly resolved. Example dialogue walks T3 bug through new
+      vocabulary as self-test.
+
+  (3) commit f303d64 -- 04.5-03-PRE-PLAN-NOTES.md with 6 CCG-locked
+      decisions (L1-L6), 5-wave slice cadence (W0 schema migration ->
+      W5 REQ-10 closure), 5 gates (G-A through G-E), T3/T4 pinning,
+      5 risks (R1-R5), 5 unresolved questions (UQ1-UQ5). Mechanical
+      input for /gsd-plan-phase 04.5-03.
+
+  Honesty correction: confidence values misreported in candidate #6
+  of the deepening punch list. Truth verified by reading
+  resolve_with_conf at graph_build.rs:441-461 + T1-T7 round-trip
+  assertions: step 1 same-file = 1.0 (unchanged), step 2 import-file
+  = 0.9 (NOT 0.95), step 3 global-unique = 0.7 (NOT 0.9),
+  resolve_with_namespace = 0.9.
+
+CCG TRIANGULATION:
+  Codex (consult mode, codex:rescue subagent): Strong AGREE on Lock
+    1/2/3. Confirmed A3.3 with composite-index requirement, RepoCtx
+    multi-language-file caveat, [calls] schema must-design-in-04.5-03.
+    Cross-cutting finding: graph_build.rs zero-tests = highest-risk
+    pre-refactor gap. Addressed by W0 of this session.
+  Gemini (gemini-3.1-pro-preview): Survey verdicts -- BORROW
+    tree-sitter-graph; LEARN SCIP / stack-graphs / ast-grep; SKIP LSP
+    callHierarchy / CodeQL / Glean / GitHub-semantic-archived.
+    Adversarial: ATTACKED counter-arg 1 (plugin/loader is cheap
+    insurance, defended the lift); DEFENDED counter-arg 2 (sentrux
+    resolver solves file-level not symbol-level, fatal flaw); DEFENDED
+    counter-arg 3 (regression risk on existing tree-sitter queries).
+    Strongest: counter-arg 2.
+  Kimi (claude-codingplan-kimi.ps1 -p): 403 quota exhausted this
+    billing cycle. Cross-source via Kimi unavailable.
+  Verdict: AGREE on A3.3 + RepoCtx + TOML-first + [calls]-in-04.5-03.
+  SPLIT on lift scope (Codex 3300 LoC vs Gemini 1300 LoC). Synthesis
+  pick: middle path ~2900 LoC total (~2200 verbatim + ~400 cherry-pick
+  + ~300 native).
+
+GEMINI INFRASTRUCTURE BUG (workaround documented):
+  gemini-companion.mjs script does `which gemini` which on Windows
+  git-bash returns unix-style /c/Users/.../gemini path. Node spawn
+  cannot resolve this -> ENOENT. Workaround: invoke
+  C:/Users/Administrator/AppData/Roaming/npm/node_modules/@google/gemini-cli/bundle/gemini.js
+  directly via node + PowerShell array splat to preserve quoting:
+  `node $jsPath --skip-trust -m gemini-3.1-pro-preview -p $prompt`.
+  Companion script needs upstream patch (use `where gemini` on win32
+  + prefer .cmd extension); P3 backlog.
+
+WHY DEVIATION FROM 04.5-02b: User invoked deepening skill which
+surfaced graph_build.rs split as highest-leverage AND hard-deadline
+(must precede 04.5-03 lang_extractor lift anyway). 04.5-02b queue
+position unchanged -- sibling slice, either order works. 04.5-03
+prep does not block 02b.
+
+CODE SHIPPED:
+  3 commits, 4 files, 609 insertions:
+    4ebffa9 (305+) graph_build.rs +251 (test mod) + Cargo.toml +3 + Cargo.lock +1
+    a0fa4d8 (173+) CONTEXT.md +173 (new file at repo root)
+    f303d64 (131+) 04.5-03-PRE-PLAN-NOTES.md +131 (new in phase dir)
+
+GATES PASSED THIS SESSION:
+  T1-T7 PASS:                cargo test -p codenexus-core graph_build::tests
+                             7/7 in 0.10s after 7.82s compile
+  cargo build --workspace:   clean, 3 pre-existing dead-code warnings unchanged
+                             (resolve / personalized_pagerank /
+                             count_edges_by_kind_conf) -- no new warnings
+
+WHAT BLOCKED:
+  - HF cache I/O (os error 183) blocks G-D REQ-10 candle eval at
+    04.5-03 closure. Cleanup of
+    ~/.cache/huggingface/hub/models--Qwen--Qwen3-Embedding-0.6B
+    likely fixes; carries over from 04.5-02a.
+  - poc.db corruption from 04-06 r4b_probe still uninvestigated
+    (carries forward from 04.5-01 P1 follow-up).
+  - Gemini companion script unix-path bug (workaround documented above).
+  - Kimi pool 403 quota dead until billing reset.
+
+NEXT SESSION:
+  Two valid paths -- pick at session start:
+    (a) /gsd-plan-phase 04.5-03 -- consume PRE-PLAN-NOTES.md into
+        PLAN.md with task breakdown per W0-W5 waves; mostly mechanical
+        because L1-L6 are locked.
+    (b) /gsd-plan-phase 04.5-02b -- originally-queued metrics rest
+        slice (evo + dsm + rules + Snapshot adapter + A2A query_metrics
+        op). Still valid; sibling slice independent of 04.5-03 work.
+  Recommendation: (a) since deepening session primes 04.5-03 context,
+  but (b) is fine if metrics-first ordering preferred.
+
+Session ended: 2026-05-02, Phase 04.5-03 PRE-PLAN locked (3 commits).
+Next session: /gsd-plan-phase 04.5-03 (recommended) OR /gsd-plan-phase 04.5-02b.
