@@ -1,0 +1,18 @@
+# gitleaks allowlist -- explicit per-fingerprint exemptions
+#
+# Each entry is `<file>:<rule>:<line>` matching gitleaks's own fingerprint output.
+# Only add entries for VERIFIED false positives. If you can't justify why this
+# is not a secret in a code review, remove the entry and redact the file instead.
+
+# 2026-05-02 -- Codex strategic review transcripts replay ARCHITECTURE.md
+# section 9.8 which contains the public HuggingFace Qwen3-Embedding-0.6B
+# model commit SHA. That SHA is the supply-chain pin documented as
+# load-bearing for the Phase 03.6 67.9% B1-B7 baseline (recovered from
+# local HF cache refs/main 2026-04-26 14:48 timestamp, enforced via
+# embedder.rs::QWEN3_REVISION + hf-hub::Repo::with_revision). It is
+# intentionally public and reproducible; gitleaks's sourcegraph-access-token
+# rule false-positives on the 40-char hex entropy. See ARCHITECTURE.md
+# section 9.8 history table for the SHA itself; not duplicated here to
+# avoid creating a third gitleaks fingerprint inside this allowlist.
+.planning/audits/2026-05-02-codex-r1-raw.txt:sourcegraph-access-token:1605
+.planning/audits/2026-05-02-codex-r2-raw.txt:sourcegraph-access-token:1385
