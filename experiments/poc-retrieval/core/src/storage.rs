@@ -36,6 +36,21 @@ impl Store {
             );
             CREATE INDEX IF NOT EXISTS edges_from ON edges(from_id, kind);
             CREATE INDEX IF NOT EXISTS edges_to   ON edges(to_id,   kind);
+
+            -- Phase 04.5-03 W0: alias_decls separate table per L1 (A3.3).
+            -- Composite UNIQUE index created AT TABLE CREATION (not retrofitted)
+            -- per Codex L1 critical addition. target_member is nullable; None
+            -- means namespace import (* as X) where the actual member is
+            -- resolved at the callsite, not the import.
+            CREATE TABLE IF NOT EXISTS alias_decls (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                file TEXT NOT NULL,
+                alias TEXT NOT NULL,
+                target_file TEXT NOT NULL,
+                target_member TEXT
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS alias_decls_file_alias ON alias_decls(file, alias);
+            CREATE INDEX IF NOT EXISTS alias_decls_target ON alias_decls(target_file);
             "#,
         )
         .context("schema")?;
@@ -58,6 +73,57 @@ impl Store {
             "INSERT OR IGNORE INTO edges(from_id,to_id,kind,confidence) VALUES (?,?,?,?)",
             params![from, to, kind, confidence],
         )?;
+        Ok(())
+    }
+
+    /// Insert an AliasDecl row. Idempotent on (file, alias) -- the composite
+    /// UNIQUE index on `alias_decls(file, alias)` ensures a second insert
+    /// with the same (file, alias) but different target is silently dropped
+    /// (INSERT OR IGNORE). Per L1 / CONTEXT.md vocabulary lock.
+    ///
+    /// Used by Phase 04.5-03 W3 graph_build.rs rewrite (replaces the
+    /// in-memory `namespace_aliases` HashMap with persisted rows) and by
+    /// W4 TS calls AST walker. W2 CallResolver consumes via list_alias_decls.
+    #[allow(dead_code)] // consumed by W1+ (Phase 04.5-03)
+    pub fn insert_alias_decl(
+        &self,
+        file: &str,
+        alias: &str,
+        target_file: &str,
+        target_member: Option<&str>,
+    ) -> Result<()> {
+        self.conn.execute(
+            "INSERT OR IGNORE INTO alias_decls(file, alias, target_file, target_member) \
+             VALUES (?, ?, ?, ?)",
+            params![file, alias, target_file, target_member],
+        )?;
+        Ok(())
+    }
+
+    /// List all AliasDecls for a given file (consumed by CallResolver in W2).
+    /// Returns Vec<AliasDecl> in insertion order (id ASC).
+    #[allow(dead_code)] // consumed by W2 CallResolver (Phase 04.5-03)
+    pub fn list_alias_decls(&self, file: &str) -> Result<Vec<crate::types::AliasDecl>> {
+        let mut st = self.conn.prepare(
+            "SELECT file, alias, target_file, target_member FROM alias_decls \
+             WHERE file = ? ORDER BY id ASC",
+        )?;
+        let rows = st.query_map(params![file], |r| {
+            Ok(crate::types::AliasDecl {
+                from_file: r.get::<_, String>(0)?,
+                alias: r.get::<_, String>(1)?,
+                target_file: r.get::<_, String>(2)?,
+                target_member: r.get::<_, Option<String>>(3)?,
+            })
+        })?;
+        Ok(rows.filter_map(|r| r.ok()).collect())
+    }
+
+    /// Clear alias_decls during a re-index (parallel to clear_edges). W3 will
+    /// call this at the start of build_all() to ensure idempotent re-index.
+    #[allow(dead_code)] // consumed by W3 build_all() (Phase 04.5-03)
+    pub fn clear_alias_decls(&self) -> Result<()> {
+        self.conn.execute_batch("DELETE FROM alias_decls;")?;
         Ok(())
     }
 
@@ -297,5 +363,69 @@ impl Store {
             },
         )?;
         Ok(s)
+    }
+}
+
+#[cfg(test)]
+mod alias_decls_tests {
+    use super::*;
+    use crate::types::AliasDecl;
+
+    #[test]
+    fn schema_creates_alias_decls_table() {
+        let store = Store::open(":memory:").unwrap();
+        let count: i64 = store
+            .conn
+            .query_row(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='alias_decls'",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap();
+        assert_eq!(count, 1, "alias_decls table missing");
+    }
+
+    #[test]
+    fn schema_creates_composite_unique_index() {
+        let store = Store::open(":memory:").unwrap();
+        let count: i64 = store
+            .conn
+            .query_row(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type='index' AND name='alias_decls_file_alias'",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap();
+        assert_eq!(count, 1, "composite UNIQUE index missing");
+    }
+
+    #[test]
+    fn insert_and_list_named_and_namespace() {
+        let store = Store::open(":memory:").unwrap();
+        store.insert_alias_decl("A.ts", "foo", "X.ts", Some("foo")).unwrap();
+        store.insert_alias_decl("A.ts", "X", "Y.ts", None).unwrap();    // namespace
+        let rows = store.list_alias_decls("A.ts").unwrap();
+        assert_eq!(rows.len(), 2);
+        assert!(rows.iter().any(|r: &AliasDecl| r.alias == "foo" && r.target_member == Some("foo".into())));
+        assert!(rows.iter().any(|r: &AliasDecl| r.alias == "X" && r.target_member.is_none()));
+    }
+
+    #[test]
+    fn composite_unique_idempotent() {
+        let store = Store::open(":memory:").unwrap();
+        store.insert_alias_decl("A.ts", "foo", "X.ts", Some("foo")).unwrap();
+        // Second insert with same (file, alias) -- INSERT OR IGNORE drops it.
+        store.insert_alias_decl("A.ts", "foo", "X.ts", Some("foo")).unwrap();
+        let rows = store.list_alias_decls("A.ts").unwrap();
+        assert_eq!(rows.len(), 1, "composite UNIQUE not enforced");
+    }
+
+    #[test]
+    fn clear_alias_decls_removes_all() {
+        let store = Store::open(":memory:").unwrap();
+        store.insert_alias_decl("A.ts", "foo", "X.ts", Some("foo")).unwrap();
+        store.clear_alias_decls().unwrap();
+        let rows = store.list_alias_decls("A.ts").unwrap();
+        assert!(rows.is_empty());
     }
 }

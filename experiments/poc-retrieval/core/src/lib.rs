@@ -11,3 +11,4 @@
 // needs.
 
 pub mod embedder;
+pub mod types;

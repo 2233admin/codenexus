@@ -8,6 +8,7 @@ mod search;
 mod server;
 mod storage;
 mod task_state;
+mod types;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
