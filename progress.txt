@@ -1648,3 +1648,147 @@ Session ended: 2026-05-02 (continuation tail), +2 commits after state close
 (2582dae drift probe + ce52049 Beta V1 spec). Today's locked surface now
 includes EVAL-CONTRACT v1.0, 04.5-03 W0-W5 plans, drift evidence probe, and
 BETA-V1-SPEC v1.0. Next session starts with Phase 5 Bridge PLAN.md authoring.
+
+
+==========================================================================
+2026-05-02 (continuation tail 2) -- 04.5-03 W0 shipped + codex PASS
+==========================================================================
+
+WHAT DONE (post-6f5a833, +3 commits):
+
+  (1) W0 schema migration shipped (commits e0fab3b + 627cfec).
+
+      Artifacts:
+        experiments/poc-retrieval/core/src/types.rs (NEW, 28 lines)
+          AliasDecl struct: from_file / alias / target_file / target_member
+          (Option<String>, None for namespace imports)
+        experiments/poc-retrieval/core/src/storage.rs (+157 lines)
+          alias_decls table with composite UNIQUE index `(file, alias)`
+          created at table-creation time (L1 critical, not retrofitted)
+          5 new APIs: insert_alias_decl / list_alias_decls /
+            clear_alias_decls / has_imports_edges / has_alias_decls
+          5 new unit tests in alias_decls_tests module (all PASS)
+        experiments/poc-retrieval/core/src/lib.rs (+1: pub mod types;)
+        experiments/poc-retrieval/core/src/main.rs (+30 lines)
+          Cmd::Index pre-flight migration check (G-E loud-error path)
+          Triggers exit(2) when has_imports_edges() && !has_alias_decls()
+
+      Gate evidence (all PASS):
+        G-A: cargo build --workspace --release clean; 3 baseline dead-code
+             warnings only (resolve / personalized_pagerank /
+             count_edges_by_kind_conf), zero new warnings.
+        G-B: cargo test -p codenexus-core --bin codenexus-core
+             graph_build::tests -- --test-threads=1 -> 7/7 green;
+             T3+T4 PINNED behavior preserved.
+        G-E: pre-W0 DB (poc.db.ollama.bak with 120 Imports rows) ->
+             exit(2) + "alias_decls migration required" stderr;
+             fresh DB -> zero migration-required hits (no false-positive).
+
+  (2) W0 SUMMARY closed (commit 1fbbfc6).
+
+      Artifact:
+        .planning/phases/codenexus-04.5-sentrux-adaptation-layer/
+          04.5-03-W0-SUMMARY.md (251 lines)
+        Sections: what landed / gate evidence / T1-T7 status / 5 new tests /
+          UQ1 still open (deferred to W1) / honest gap list.
+
+  (3) Two executor deviations from PLAN (both sound, no scope creep):
+
+      D1 -- `mod types;` added in BOTH src/lib.rs AND src/main.rs.
+            Reason: crate has both [lib] and [[bin]] roots sharing source
+            (lib facade for src/bin/compute_version_hash.rs; bin is the
+            codenexus-core binary). Both crate roots need the module
+            declaration for `crate::types::AliasDecl` to resolve. Plan's
+            Step B specified only the lib side.
+      D2 -- `#[allow(dead_code)]` on the 4 new alias_decls APIs (struct +
+            insert_alias_decl + list_alias_decls + clear_alias_decls).
+            Reason: G-A's "no NEW warnings" criterion would fail since
+            W0 is schema-only; W1+ consumes the APIs. Each allow has
+            inline comment naming consuming wave (W1/W2/W3); will be
+            removed naturally as those waves ship.
+
+  (4) Codex independent review of 3 commits -- VERDICT: PASS.
+
+      Run: codex 0.128.0 exec from D:/projects/codenexus root with
+      prompt at C:/tmp/codex_w0_review_prompt.txt (4.7K, file-based per
+      omc-ask-file-prompt rule).
+
+      Codex findings:
+        - Schema honors L1 (alias_decls separate table; composite UNIQUE
+          in same Store::open execute_batch, not retrofitted)
+        - AliasDecl shape matches 4-field vocabulary contract
+        - bin/lib mod types duplication acceptable in current layout
+          (matches existing pattern); W1's planned codenexus-types leaf
+          crate is cleaner long-term boundary
+        - #[allow(dead_code)] tightly scoped + documented with consuming
+          waves; does not mask unrelated dead code
+        - G-E check correctly placed BEFORE store.clear(); matches
+          pre-W0 signature; no false-positive on fresh DBs
+        - One residual note (NOT a gate fail): list_alias_decls uses
+          filter_map(|r| r.ok()) which silently drops row-mapping errors.
+          Pre-existing storage pattern across storage.rs; controlled
+          inserts + NOT NULL columns mean low risk. Would not block W0.
+
+WHAT BLOCKED:
+  Nothing on W0. Three untracked items in working tree pre-date W0 and
+  remain unmanaged pending Curry decision:
+    .sentrux/
+    docs/sentrux-pro-feature-parity.md
+    experiments/sentrux_diagnostics_poc/
+  These look like sentrux lift POC artifacts not from W0; need
+  commit / archive / ignore / discard decision.
+
+  Still open from prior state (unchanged by W0):
+    D1 roadmap pivot scope
+    D3 PROJECT.md A2A framing surgery
+    D4 30-language ambition cut
+    D5 30-task instance authoring details
+    workspace-weave parked unless reintroduced as Beta V1.1+ backlog
+    drift evidence probe SPEC frozen (commit 2582dae) but UNRUN -- next
+      strategic decision-gate per BETA-V1-SPEC MUST 3.
+
+NEXT SESSION (pick one):
+
+  (a) Run drift evidence probe (cheap-probe-evidence-generation rule 36).
+      Spec at .planning/probes/drift_evidence_probe.md is frozen but
+      unexecuted. Outcome decides whether 04.5-03 W1-W5 stays critical
+      path or demotes to QUALITY IMPROVEMENT.
+        - If M5_fnk_min >= 0.99 AND M3_min >= 0.99 AND M6_max_abs == 0:
+          04.5-03 demotes; W1-W5 deferred; saves multi-day work.
+        - If M5_fnk_min < 0.99 OR M3_min < 0.99: 04.5-03 confirmed
+          phase 5 precondition; proceed with W1.
+      Recommended.
+
+  (b) Execute W1 (04.5-03-W1-PLAN.md, 796 lines).
+      Sentrux verbatim lift + parser sub-crate (resolves UQ1). Largest
+      remaining wave. AliasDecl + storage APIs from W0 ready for
+      consumption.
+
+  (c) Triage 3 untracked sentrux POC files. Decide commit / archive /
+      ignore / discard. Likely belongs to W1 prep work.
+
+  (d) Address open audit decisions. D3 (A2A framing) is cheapest at
+      ~2 paragraphs.
+
+  Default recommendation: (a) drift probe. Per rule 36, hours of probe
+  upgrades vibe to evidence and may demote weeks of W1-W5 work.
+
+KEY ARTIFACTS THIS SESSION:
+  experiments/poc-retrieval/core/src/types.rs (NEW)
+  experiments/poc-retrieval/core/src/{lib,main,storage}.rs (modified)
+  .planning/phases/codenexus-04.5-sentrux-adaptation-layer/
+    04.5-03-W0-SUMMARY.md (commit 1fbbfc6)
+  Codex independent review: VERDICT PASS (no artifact, run-time only)
+
+Session ended: 2026-05-02 (continuation tail 2), +3 commits after state
+close (e0fab3b W0 schema + 627cfec G-E migration check + 1fbbfc6 SUMMARY).
+W0 wave closed clean. W1 unblocked.
+
+Total session-pair count for 04.5-03 prep+W0 arc: 10 commits
+(4ebffa9 chars tests -> a0fa4d8 CONTEXT -> f303d64 PRE-PLAN ->
+81e81d7 primary close -> 98c6a7c codex audit -> 525d317 decision 2 ->
+766d52a state close -> 49bae0d EVAL-CONTRACT -> ca9d0a4 6 plans ->
+2582dae drift probe spec -> ce52049 Beta V1 spec -> 6f5a833 state close ->
+e0fab3b W0 schema -> 627cfec G-E migration check -> 1fbbfc6 W0 SUMMARY).
+
+Next session: pick (a)/(b)/(c)/(d). Default (a) drift probe per rule 36.
