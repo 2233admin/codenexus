@@ -29,12 +29,128 @@ gates:
  - G-E  # supersede semantics: re-running extract_adrs on changed source DOES NOT delete prior rows; updates superseded_by chain
 ---
 
-> **!! PROVISIONAL !!** This plan was authored 2026-05-03 in parallel with
-> CCG round 2 challenge. Codex surfaced 4 critical issues (CI-1 G2 LOC,
-> CI-2 G3 SQL FK, CI-3 G4 handler, CI-4 G5 FTS5) plus 3 missed constraints
-> that affect this slice. **Do NOT execute this plan as-is.** See
-> `.planning/phases/codenexus-05-bridge-memory-mvp/05-CCG-ROUND-2-FINDINGS.md`
-> for required amendments before plan-checker iter and execution.
+> **!! AMENDED 2026-05-03 per CCG round 2 !!** Round-2 amendment below
+> SUPERSEDES the storage-layer specifics in the original plan. Extraction
+> logic (sources / patterns / paragraph segmentation / supersede semantics)
+> is unchanged. See `05-DISCUSS-SUMMARY.md § Round-3 Amendments LANDED`.
+
+## Round-2 Amendment Block (W4 -- CI-1 cascade; storage targets shift)
+
+W4 inherits W0's amended schema. Original W4 wrote ADRs to a separate `adrs`
+table. Amended W4 writes to `symbols` (kind='ADR') + `adr_metadata` sidecar.
+Extraction logic unchanged; persistence path different.
+
+### Storage write targets (amended)
+
+For each extracted paragraph, executor calls TWO inserts in a single
+transaction:
+
+```rust
+// 1. Insert into symbols (W0 created the schema)
+let symbol_id = store.insert_adr_symbol(
+    source_path,                        // e.g. "docs/ARCHITECTURE.md"
+    heading_anchor,                     // e.g. "9.4-cross-encoder" or None
+    source_line,                        // paragraph start line
+    body_text,                          // full paragraph text
+)?;
+// (insert_adr_symbol creates a Symbol row with kind='ADR',
+//  name='{heading_anchor || "anon"}#{source_line}', body_text=paragraph,
+//  start_line=source_line, end_line=source_end_line)
+
+// 2. Insert sidecar metadata
+store.insert_adr_metadata(symbol_id, AdrMeta {
+    keyword,                            // MUST_NOT|MUST|SHOULD|...
+    confidence,                         // 1.0 / 0.7 / 0.4
+    source_line, source_end_line,
+    heading_anchor,
+    doc_version_sha,                    // git blob sha
+    extracted_at: Utc::now().timestamp(),
+    superseded_by_symbol_id: None,      // populated on next supersede
+})?;
+```
+
+### Supersede semantics (amended)
+
+Same append-only discipline as G3 notes (UQ-A4 honored). On re-extraction:
+- If paragraph at `(source_path, source_line)` has SAME body_text + SAME
+  doc_version_sha -> SKIP (idempotent re-run)
+- If paragraph has SAME source_line but NEW doc_version_sha + DIFFERENT
+  body_text -> INSERT new Symbol row + new adr_metadata row, then UPDATE
+  old `adr_metadata.superseded_by_symbol_id = new_symbol_id`. Old rows
+  stay intact. `idx_adr_active` filters to leaves.
+
+Idempotency check uses `(source_path, source_line, doc_version_sha)` triple
+as logical-but-not-DB-enforced uniqueness. Executor implements de-dupe in
+extract_from_paths logic, not via SQL constraint (avoids brittle CHECK
+on body_text equality).
+
+### FTS indexing (amended)
+
+NO new FTS table. ADR Symbol rows are indexed automatically by
+`symbols_fts` (W0 rebuilt symbols_fts to include body_text in indexed
+columns + triggers). No special W4 FTS work needed.
+
+### adr_symbol_links (unchanged scope, FK target shifted)
+
+`adr_symbol_links` table created empty in W0. Columns:
+- `adr_symbol_id INTEGER REFERENCES symbols(id)` -- the ADR Symbol row
+- `code_symbol_id INTEGER REFERENCES symbols(id)` -- the code Symbol row
+- `link_kind TEXT` -- mention | topic_match | file_overlap
+- `score REAL`
+
+V1.0 W4 leaves this table empty. V1.1+ populates lazily from text-mention
+heuristic (e.g. parser.rs scans body_text for `Symbol::name` substrings).
+
+### Removed plan_time_decisions
+
+- Any reference to `Store::insert_adr` writing to a separate adrs table
+  -- REPLACE with `Store::insert_adr_symbol` + `Store::insert_adr_metadata`
+- Any reference to `adrs_fts` virtual table -- DROP (CI-4 dissolved; symbols_fts
+  handles ADR FTS via W0's body_text column)
+
+### New plan_time_decisions
+
+- **D-W4-amended-01 (Symbol name encoding):** ADR Symbol `name` field =
+  `"{heading_anchor || \"anon\"}#{source_line}"`. Stable across runs given
+  same heading + line. Drift on heading rename caught at supersede check
+  (different name -> new Symbol; old marked superseded only if doc_version_sha
+  matches OLD line position; otherwise both rows coexist as "anon move" --
+  acceptable for V1.0).
+- **D-W4-amended-02 (kind='ADR' uppercase):** SQL string literal `'ADR'`
+  uppercase to match Symbol.kind enum convention (Function, Class, ADR).
+  Case-sensitive comparisons throughout.
+- **D-W4-amended-03 (transactional insert):** symbols + adr_metadata inserts
+  wrapped in `Connection::transaction()`. If adr_metadata insert fails, both
+  rollback. Avoids dangling kind='ADR' Symbol with no metadata.
+
+### W4 acceptance test additions
+
+- [ ] Extract a single paragraph from a fixture .md file -> verify Symbol
+      row with kind='ADR' exists + adr_metadata row joined by symbol_id
+- [ ] Extract with heading anchor -> verify Symbol.name format matches
+      `{heading}#{line}`
+- [ ] Extract without heading anchor -> verify Symbol.name = `anon#{line}`
+- [ ] Re-extract idempotent (same SHA + same line + same body) -> 0 new rows
+- [ ] Re-extract with new SHA + same line + diff body -> NEW Symbol + NEW
+      adr_metadata + OLD metadata.superseded_by_symbol_id = new_id
+- [ ] symbols_fts MATCH 'NOT introduce reranker' -> returns the kind='ADR'
+      Symbol row (verifies W0 body_text indexing)
+- [ ] adr_metadata insert failure -> both inserts rolled back (no orphan
+      kind='ADR' Symbol)
+
+### W4 unaffected items
+
+- Source globs (docs/**, .planning/*.md one-level, README.md) -- unchanged
+- RFC 2119 keyword scan PRIMARY + ## ADR SECONDARY -- unchanged
+- Confidence levels (1.0 / 0.7 / 0.4) -- unchanged
+- tree-sitter-markdown for paragraph segmentation (UQ-B5) -- unchanged
+- Auto-coupling to index_repo -- unchanged
+- Manual escape hatch via standalone extract_adrs op -- unchanged
+- All G5 ranking signals (keyword strength, confidence, text relevance,
+  source-doc weight, recency) -- column sources shift to adr_metadata
+  (was adrs.keyword, now adr_metadata.keyword) but ranking weights unchanged
+
+---
 
 
 <objective>

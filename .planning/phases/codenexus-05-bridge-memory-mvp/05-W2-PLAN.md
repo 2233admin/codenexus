@@ -24,12 +24,109 @@ gates:
   - G-E   # search.rs corpus_scope extension does not break existing Query path
 ---
 
-> **!! PROVISIONAL !!** This plan was authored 2026-05-03 in parallel with
-> CCG round 2 challenge. Codex surfaced 4 critical issues (CI-1 G2 LOC,
-> CI-2 G3 SQL FK, CI-3 G4 handler, CI-4 G5 FTS5) plus 3 missed constraints
-> that affect this slice. **Do NOT execute this plan as-is.** See
-> `.planning/phases/codenexus-05-bridge-memory-mvp/05-CCG-ROUND-2-FINDINGS.md`
-> for required amendments before plan-checker iter and execution.
+> **!! AMENDED 2026-05-03 per CCG round 2 !!** Round-2 amendment below
+> SUPERSEDES the original objective + plan_time_decisions for this slice.
+> Original sections retained as audit trail. See
+> `05-DISCUSS-SUMMARY.md § Round-3 Amendments LANDED`.
+
+## Round-2 Amendment Block (W2 -- CI-1 cascade; corpus_scope -> kind_filter + notes_fts)
+
+W2 is the second-heaviest amended slice. Codex CI-1 surfaced that the
+original `corpus_scope` parameter underestimated LOC because search.rs is
+symbol-shaped throughout (Hit embeds parser::Symbol; storage accessors are
+symbol-specific). Cascade resolution: ADRs become Symbol kind='ADR' (W0
+amendment), so search.rs only needs a `kind_filter` parameter, NOT a result-
+type abstraction. Notes get a separate dedicated FTS accessor.
+
+### Replaces original Output items
+
+**OUT (original, now superseded):**
+- `core/src/search.rs::search` gains `corpus_scope: Option<CorpusScope>`
+  parameter
+- `pub enum CorpusScope { Symbols, Constraints }`
+- `core/src/storage.rs::all_constraint_embeddings()`
+- `embed_symbol_note(note_id, vec)` per-row embedding column on symbol_notes
+
+**IN (amended, authoritative):**
+- `core/src/search.rs::search` gains `kind_filter: Option<Vec<String>>`
+  parameter (~30-50 LOC). Default None preserves existing behavior. When
+  Some(["ADR"]), filter both BM25 results (`store.bm25(...)`) AND vector
+  results (`store.all_embeddings()`) to allowed Symbol kinds. Filtering
+  applied AFTER store calls, BEFORE RRF/scoring -- minimal change to
+  search() body.
+- `core/src/storage.rs::search_notes_fts(text: &str, top: usize)
+  -> Result<Vec<(NoteId, BM25Score)>>` -- BM25-only over notes_fts
+  (W0 created). NO vector index for notes in V1.0; if a future eval shows
+  recall gap, add vector in V1.1.
+- `core/src/server.rs::handle_query_constraints(~80-120 LOC)`:
+  - File mode: SQL on symbol_notes for symbols-in-file + Symbol kind='ADR'
+    rows WHERE adr_metadata.source_path=path OR adr_symbol_links join
+  - Symbol mode: SQL on symbol_notes for fnk + adr_symbol_links join for
+    code_symbol_id=target
+  - Topic mode: parallel calls to (a) `search::search(kind_filter=Some(vec!["ADR".into()]),...)`
+    over symbols_fts and (b) `Store::search_notes_fts(text, top)` over notes_fts;
+    merge via simple RRF (k=60 default) in handler.
+
+### LOC re-sizing (CI-1 honest)
+
+Original W2 estimate: ~30-80 LOC for corpus_scope thread + ~30 LOC for
+list_notes handler = ~110 LOC. Amended W2 estimate:
+- search.rs kind_filter: ~30-50 LOC
+- Store::search_notes_fts accessor: ~30-50 LOC
+- query_constraints handler with two-stream RRF: ~80-120 LOC
+- list_notes handler: ~30 LOC
+- a2a.rs new request/response variants: ~50 LOC
+- tests (file/symbol/topic dispatch + RRF merge correctness): ~80-100 LOC
+- **Total: ~300-400 LOC** (in line with Codex's "100-200 plus tests" estimate
+  when tests are split out)
+
+### Removed plan_time_decisions
+
+- D-W2-01 "per-row embedding storage" -- DROP (no embedding on notes in V1.0)
+- Any reference to `bm25_constraints` / `all_constraint_embeddings` -- DROP
+  (single notes_fts surface; ADRs ride symbols_fts)
+- Any reference to `corpus_scope: Option<CorpusScope>` -- REPLACE with
+  `kind_filter: Option<Vec<String>>`
+
+### New plan_time_decisions
+
+- **D-W2-01-amended (kind_filter cardinality):** `Option<Vec<String>>` not
+  `Option<HashSet<String>>` -- typical filter is 1-2 kinds; Vec linear scan
+  is faster than hash setup + lookup for n<=4.
+- **D-W2-02-amended (RRF k constant):** k=60 default per literature; expose
+  as struct field on QueryConstraints request with `#[serde(default = "default_rrf_k")]`
+  if eval requires tuning. Hardcode for V1.0.
+- **D-W2-03-amended (notes BM25-only):** No vector embedding on notes in
+  V1.0. Notes are short, agent-authored, BM25 captures keyword overlap
+  adequately. Revisit V1.1 if eval recall < 0.7 on note-targeted topic
+  queries.
+- **D-W2-04-amended (graceful W4 degradation):** if extract_adrs (W4) hasn't
+  populated kind='ADR' Symbol rows yet, query_constraints Topic mode just
+  returns notes-only results (symbols search returns 0 hits naturally; no
+  special-case branch needed). Response envelope still sets
+  `adr_extracted: false` if `Store::count_symbols_kind('ADR') == 0`.
+
+### W2 acceptance test additions
+
+- [ ] kind_filter=Some(["ADR"]) returns ONLY ADR Symbol rows from
+      search::search; no code Symbols leak
+- [ ] kind_filter=None preserves existing Query path bytewise (regression)
+- [ ] Store::search_notes_fts returns BM25-ranked NoteId list; empty for
+      query that matches no notes
+- [ ] query_constraints Topic mode with both ADRs and notes present merges
+      via RRF; ADR with score=10 + note with score=5 ranks ADR first
+- [ ] query_constraints File mode returns notes for all symbols in file
+      AND ADRs anchored to file
+- [ ] adr_extracted=false when symbols table has no kind='ADR' rows
+
+### W2 unaffected items
+
+- list_notes handler (~30 LOC) unchanged in shape -- amended only inasmuch
+  as it queries symbol_notes table whose FK is now against symbols unique
+  index (CI-2; W0 deliverable, transparent to W2)
+- UQ-A3 (5 ops) and UQ-B2 (active leaves default) unchanged
+
+---
 
 
 <objective>

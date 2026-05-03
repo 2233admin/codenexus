@@ -21,12 +21,49 @@ gates:
  - G-D  # BETA-V1-SPEC section 8 line 213 amendment shipped (3 ops -> 5 ops named explicitly)
 ---
 
-> **!! PROVISIONAL !!** This plan was authored 2026-05-03 in parallel with
-> CCG round 2 challenge. Codex surfaced 4 critical issues (CI-1 G2 LOC,
-> CI-2 G3 SQL FK, CI-3 G4 handler, CI-4 G5 FTS5) plus 3 missed constraints
-> that affect this slice. **Do NOT execute this plan as-is.** See
-> `.planning/phases/codenexus-05-bridge-memory-mvp/05-CCG-ROUND-2-FINDINGS.md`
-> for required amendments before plan-checker iter and execution.
+> **!! AMENDED 2026-05-03 per CCG round 2 (light) !!** W5 amendments are
+> minimal because MCP descriptions are wire-protocol-facing -- they describe
+> the tool surface, not the backend. The only round-2 cascade affecting W5
+> is the new `warnings: Vec<String>` field in `EditContextBrief` (per W3 §
+> Round-2 Amendment Block CI-3b) -- the `get_edit_context` description text
+> should mention this field briefly so agents know partial briefs are
+> possible. All other description prose unchanged. See
+> `05-DISCUSS-SUMMARY.md § Round-3 Amendments LANDED`.
+
+## Round-2 Amendment Block (W5 -- minimal; warnings field surface)
+
+### get_edit_context description prose addition
+
+The G6-locked description for `get_edit_context` (in 05-discuss-mcp.md § 4)
+should be augmented with one sentence about the `warnings` field:
+
+> ... (existing prose) ... Returns `{symbol, callers, constraints, notes,
+> edges_in, edges_out, warnings}` as a single JSON object. **The `warnings`
+> field is non-empty when sub-calls returned partial data** (e.g., callers
+> timeout, legacy Imports edges skipped) -- inspect it before relying on
+> a missing or empty list. Do NOT call this as a generic ...
+
+W5 executor adds the bolded sentence to the existing prose. Idiomatic
+phrasing acceptable variation; substance is "warnings field exists, check
+it".
+
+### Other ops -- unchanged
+
+- query_constraints: backend swap (kind_filter + notes_fts) is invisible
+  to MCP description (still returns ranked constraint hits)
+- remember_symbol_note: supersede semantics unchanged at API surface
+- list_notes: unchanged
+- extract_adrs: storage shift (Symbol kind='ADR' + sidecar) invisible to
+  MCP (still returns extraction stats)
+
+### BETA-V1-SPEC line 213 amendment (still authoritative)
+
+Original W5 D-W5 deliverable still applies: amend BETA-V1-SPEC sec 8 line 213
+from "3 ops" to "5 ops named explicitly (query_constraints,
+remember_symbol_note, list_notes, get_edit_context, extract_adrs)" per
+UQ-A3. No change.
+
+---
 
 
 <objective>

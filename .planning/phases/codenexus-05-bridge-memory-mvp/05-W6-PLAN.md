@@ -21,12 +21,45 @@ gates:
  - G-D  # eval result schema documented; downstream plan-checker / Curry can interpret without authoring
 ---
 
-> **!! PROVISIONAL !!** This plan was authored 2026-05-03 in parallel with
-> CCG round 2 challenge. Codex surfaced 4 critical issues (CI-1 G2 LOC,
-> CI-2 G3 SQL FK, CI-3 G4 handler, CI-4 G5 FTS5) plus 3 missed constraints
-> that affect this slice. **Do NOT execute this plan as-is.** See
-> `.planning/phases/codenexus-05-bridge-memory-mvp/05-CCG-ROUND-2-FINDINGS.md`
-> for required amendments before plan-checker iter and execution.
+> **!! AMENDED 2026-05-03 per CCG round 2 (light) !!** W6 amendments are
+> minimal because the eval harness consumes the wire-format MCP responses.
+> The only round-2 cascade affecting W6 is the new `warnings: Vec<String>`
+> field in `EditContextBrief` (per W3 § Round-2 Amendment Block CI-3b) --
+> the eval result schema should record `warnings_count` per task to detect
+> graceful-degradation behavior. All other harness design unchanged. See
+> `05-DISCUSS-SUMMARY.md § Round-3 Amendments LANDED`.
+
+## Round-2 Amendment Block (W6 -- minimal; warnings telemetry)
+
+### Eval result schema addition
+
+Per-task result row gains one field:
+
+```json
+{
+  "task_id": "...", "mode": "B3", "seed": 1,
+  "tool_invocations": [...],
+  "final_success": true,
+  "cost_tokens": ...,
+  "warnings_observed": [                            // NEW per round-2
+    {"tool": "get_edit_context", "warnings": ["list_callers timeout: ..."]},
+    ...
+  ]
+}
+```
+
+Aggregate metric: `warnings_rate = tasks_with_>=1_warning / total_tasks`.
+Eval gate does NOT penalize warnings (graceful degradation is desirable);
+metric exists for diagnostic visibility.
+
+### Other items unchanged
+
+- B2 / B3 / B3-min mode definitions -- unchanged
+- 30-task curated set -- unchanged
+- Spurious-call penalty (UQ-B4) -- unchanged
+- judge + agent model locks in EVAL-INSTANCES.md -- unchanged
+
+---
 
 
 <objective>

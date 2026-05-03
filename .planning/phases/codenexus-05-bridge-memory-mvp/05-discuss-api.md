@@ -1,8 +1,8 @@
 ---
 phase: 5
 title: "Phase 5 Bridge -- A2A API Surface Discussion (G2/G3/G4)"
-status: DISCUSS-API (input to plan-phase)
-authority: BETA-V1-SPEC section 8 (proposed scope) + drift probe M5_fnk = 1.0 (storage key locked) + audit synthesis lines 60-67 (3 ops surface)
+status: AMENDED 2026-05-03 per CCG round 2 (CI-1/CI-2/CI-3 cascade applied; see Round-2 Amendment Block below)
+authority: BETA-V1-SPEC section 8 (proposed scope) + drift probe M5_fnk = 1.0 (storage key locked) + audit synthesis lines 60-67 (3 ops surface) + 05-CCG-ROUND-2-FINDINGS.md (Codex challenge 2026-05-03)
 parent_artifacts:
   - .planning/phases/codenexus-05-bridge-memory-mvp/05-PRE-PLAN-NOTES.md (G2/G3/G4 specs)
   - .planning/BETA-V1-SPEC.md section 8
@@ -20,6 +20,171 @@ get_edit_context. Each has gray-area shape decisions that must be locked before
 plan-phase carves W0-W3. This doc resolves those shape decisions with opinions
 plus concrete Rust struct sketches that match the existing OperationRequest /
 OperationResponse style at core/src/a2a.rs:54-116.
+
+---
+
+## Round-2 Amendment Block (2026-05-03, CCG round 2 cascade)
+
+Codex round-2 challenge surfaced 4 critical issues; this block supersedes
+specific subsections below where flagged. Original text retained for audit
+trail. Authoritative resolution path: this block first, original below as
+historical record.
+
+### A-CI-1: G2 backend dispatch -- replace `corpus_scope` with `kind_filter` + notes_fts
+
+**Supersedes:** § "G2 query_constraints / Backend dispatch (per modality)" Topic
+row + § "G2 / Reuse vs new path -- decision" + § "Cross-coupling / G2 + G3"
+corpus_scope sentence.
+
+**New decision:** ADRs become Symbols with `kind='ADR'` (G5 cascade per A-CI-1
+in 05-discuss-adr.md). search.rs gains `kind_filter: Option<Vec<String>>` (NOT
+a corpus abstraction) -- ~30-50 LOC parameter thread through search() ->
+hybrid scoring. Notes get a separate dedicated FTS accessor
+`Store::search_notes_fts(text, top)` -- BM25-only, no vector index in V1.0.
+query_constraints Topic mode merges two result streams via RRF in the handler.
+
+**Backend dispatch (revised):**
+
+| Modality | Backend |
+|---|---|
+| File { path } | Store::symbols_in_file_full(path) -> per-symbol list_notes + (Symbol kind='ADR' WHERE adr_metadata.source_path = path OR adr_symbol_links join) |
+| Symbol { id, include_callers=false } | Store::symbol_by_id(id) -> list_notes for fnk + adr_symbol_links join for ADR Symbols linked to this code Symbol |
+| Symbol { id, include_callers=true } | Above + list_callers (PPR) -> per-caller notes + ADR links |
+| Topic { text } | search::search(store, embedder, kind_filter=Some(vec!["ADR"]), text, top, alpha) over symbols_fts (existing, with body_text indexed via W0 ALTER) **+** Store::search_notes_fts(text, top) BM25-only over notes_fts (W0 creates) -> RRF-merged in handler |
+
+**LOC re-sizing (honest):** ~30-50 LOC kind_filter on search.rs + ~30-50 LOC
+notes FTS accessor + ~80-120 LOC query_constraints handler with two-stream
+fusion = ~150-220 LOC total. In line with Codex's 100-200 estimate.
+
+### A-CI-2: G3 notes table FK target -- unique index on symbols(path,name,kind)
+
+**Supersedes:** § "G3 / SQL schema (notes table)" sketch + § "Honest gap" P1.
+
+**New decision:** Pick **(a) unique index on symbols** per Codex CI-2. W0
+storage migration adds:
+
+```sql
+CREATE UNIQUE INDEX IF NOT EXISTS idx_symbols_fnk
+  ON symbols (path, name, kind);
+```
+
+Then `symbol_notes` declares the FK against the unique index target:
+
+```sql
+CREATE TABLE IF NOT EXISTS symbol_notes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    -- fnk identity (drift-probe-vindicated; FK targets symbols unique index)
+    path TEXT NOT NULL,
+    name TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    note_text TEXT NOT NULL,
+    tags TEXT NOT NULL DEFAULT '[]',
+    confidence REAL NOT NULL,
+    source_session TEXT NOT NULL,
+    supersedes_note_id INTEGER REFERENCES symbol_notes(id),
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (path, name, kind) REFERENCES symbols(path, name, kind)
+);
+CREATE INDEX IF NOT EXISTS idx_notes_fnk ON symbol_notes(path, name, kind);
+-- prevent supersede fork (concurrent supersede on same note rejected at DB layer):
+CREATE UNIQUE INDEX IF NOT EXISTS idx_notes_no_double_supersede
+  ON symbol_notes(supersedes_note_id) WHERE supersedes_note_id IS NOT NULL;
+-- notes FTS (BM25-only; external-content + triggers, mirrors symbols_fts):
+CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
+    note_text, tags, content='symbol_notes', content_rowid='id'
+);
+-- triggers symbol_notes_ai/ad/au mirror existing symbols_fts pattern (W0 spec)
+```
+
+Note: `constraints_fts` from the original sketch is REMOVED (no separate
+constraints corpus exists under A-CI-1=(b) cascade). The notes_fts above is
+the only new FTS table; ADRs reuse symbols_fts via the W0 `body_text` column
+addition.
+
+**Transaction discipline:** supersede operation is a single INSERT (new row
+points at old via supersedes_note_id; old row never mutated). The unique
+index `idx_notes_no_double_supersede` prevents fork at DB layer rather than
+requiring application-level locks. No multi-step BEGIN/COMMIT needed for
+remember_symbol_note write. (Original Codex CI-2 transaction concern dissolves.)
+
+### A-CI-3: G4 get_edit_context -- internal-fn prerequisite + partial-failure contract
+
+**Supersedes:** § "G4 / Composite vs independent backend decision" + § "G4 /
+Signature" EditContextBrief + § "G4 / Recommendation" LOC.
+
+**New decision:**
+
+1. **Internal-fn extraction is a W3 prerequisite:** Before composite handler
+   is written, refactor server.rs match arms (server.rs:100-197) to extract
+   `handle_query_internal()`, `handle_get_symbol_internal()`,
+   `handle_list_callers_internal()` -- all returning typed result structs.
+   Composite handler then calls those internals directly, NOT the A2A
+   endpoint recursively.
+
+2. **Partial-failure contract: partial brief with warnings.** Composite
+   returns the brief with whatever sub-calls succeeded; failed sub-calls
+   surface in a new `warnings: Vec<String>` field (e.g., "list_callers
+   timeout: 250ms exceeded"). Only validation errors on the request itself
+   (bad target shape, unknown symbol_id) cause TaskState::Failed. This is
+   per Codex CI-3 recommendation -- never return zero brief if symbol body
+   was retrievable.
+
+   ```rust
+   pub struct EditContextBrief {
+       pub symbol: SymbolView,
+       pub callers: Vec<CallerView>,
+       pub constraints: Vec<ConstraintHit>,
+       pub notes: Vec<NoteView>,
+       pub edges_in: Vec<EdgeView>,
+       pub edges_out: Vec<EdgeView>,
+       pub warnings: Vec<String>,    // NEW per A-CI-3: missing-data flags
+   }
+   ```
+
+3. **LOC re-sizing (honest):** ~120 LOC internal-fn extraction (server.rs
+   refactor) + ~80 LOC composite handler + ~40 LOC partial-failure tests =
+   **~240 LOC total**, not the original 80. Plan-checker should sanity-check
+   against the actual server.rs match-arm size.
+
+### A-MC-1: Imports edges handling (mixed-schema DBs)
+
+**Supersedes:** § "G4 / Recommendation" "NOT Imports" footnote.
+
+**Decision:** EdgeView builders MUST handle pre-W0 DBs containing legacy
+`Imports` edges. On encountering an Imports edge during edges_in/out load:
+log warning + skip the edge + add `"skipped Imports edge: {edge_id}"` to
+the brief's `warnings` field (per A-CI-3). Do NOT crash. CHECK constraint
+in storage.rs:29-35 still permits Imports per CONTEXT.md ambiguity #1 lift
+to AliasDecl being a pre-W0 schema state.
+
+### Cross-coupling (revised)
+
+**G2 + G3 share infrastructure (revised):** They share the W0 storage layer
+(symbols unique index + notes table) but use separate FTS surfaces. G2 Topic
+mode drives BOTH symbols_fts (kind='ADR' filter) AND notes_fts (BM25-only).
+search.rs gets a `kind_filter` parameter, NOT a corpus abstraction.
+
+**G4 calls G2 + G3 internally (revised, explicit):** Per A-CI-3, server.rs
+internals are extracted into `handle_*_internal()` functions in W3 BEFORE
+the composite handler. The composite calls those internals directly.
+
+**G3's note vs G5's ADR (revised):** Both end up indexed in FTS, but
+- ADRs = Symbol rows with kind='ADR' (per A-CI-1=(b) cascade in
+  05-discuss-adr.md), text in symbols.body_text, indexed via symbols_fts
+- Notes = symbol_notes rows, text in note_text, indexed via notes_fts
+- Lifecycle: both append-only with supersede; ADRs use adr_metadata.superseded_by_symbol_id, notes use symbol_notes.supersedes_note_id
+
+This separation is preserved -- the amendment only changes the storage
+backend, not the lifecycle.
+
+### Amendment status
+
+After A-CI-1/2/3 + A-MC-1 land in W0/W1/W2/W3 PLANs, original CI/MC issues
+in 05-CCG-ROUND-2-FINDINGS.md are resolved. CI-4 (FTS5 contentless terminology)
+dissolves entirely under A-CI-1=(b) cascade -- ADR FTS reuses symbols_fts
+which is already external-content + triggers (storage.rs:22-28).
+
+---
 
 Storage key policy is already locked by drift probe (commit d5e5eb0): (path, name,
 kind) is the persistence identity (M5_fnk = 1.0); symbol_id (rowid) is the

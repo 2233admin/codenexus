@@ -1,17 +1,27 @@
 ---
 phase: 5
 title: "CCG Round 2 -- Adversarial Challenge of Discuss-Phase Outputs"
-status: ROUND-2 PARTIAL (Codex done; Gemini blocked by Windows infra bug)
+status: AMENDMENTS-LANDED 2026-05-03 ~15:00 UTC (Curry option (X) opinionated defaults applied; CI-1=(b), CI-2=(a), CI-3=(b), CI-4 dissolved; MC-1/MC-2/MC-3 addressed)
 authority: BETA-V1-SPEC sec 8 acceptance gate ("discuss-phase ran with at
    least 1 round of CCG; Codex + Claude triangulation; Gemini if
    infrastructure bug fixed")
-ran_at: 2026-05-03 ~13:30 UTC
-gate_status: PARTIALLY MET (Codex round complete; Gemini infra-blocked)
+ran_at: 2026-05-03 ~13:30 UTC (Codex challenge); ~15:00 UTC (Claude amendments per Curry option X)
+gate_status: PARTIALLY MET (Codex round complete + amendments landed; Gemini infra-blocked, deferred to codenexus-tooling sub-slice)
 parent_artifacts:
-  - 05-DISCUSS-SUMMARY.md (round 1 synthesis being challenged)
-  - 05-discuss-{strategic,api,adr,mcp}.md (advisor outputs being challenged)
-  - 7 x 05-W{0..6}-PLAN.md (drafted in parallel; PROVISIONAL until amendments
-    below land)
+  - 05-DISCUSS-SUMMARY.md (round 1 synthesis amended; round-3 amendment block at end)
+  - 05-discuss-api.md (§ Round-2 Amendment Block; A-CI-1/2/3 + A-MC-1)
+  - 05-discuss-adr.md (§ Round-2 Amendment Block; A-G5-CI-1 cascade, CI-4 dissolved)
+  - 05-discuss-{strategic,mcp}.md (unaffected)
+  - 7 x 05-W{0..6}-PLAN.md (each carries § Round-2 Amendment Block; status
+    updated from PROVISIONAL to AMENDED)
+amendment_decisions:
+  - CI-1: chose (b) Symbol kind='ADR' reuse (CON-2 cascade)
+  - CI-2: chose (a) unique index on symbols(path, name, kind)
+  - CI-3: chose (b) partial brief + warnings field + internal-fn extraction
+  - CI-4: dissolved under CI-1 cascade (ADR FTS rides symbols_fts)
+  - MC-1: Imports edge skip-with-warn in W0 helpers + W3 EdgeView builder
+  - MC-2: W0 explicitly invents minimal migration framework
+  - MC-3: dissolved under CI-1 cascade
 ---
 
 # CCG Round 2 Findings

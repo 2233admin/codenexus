@@ -2,7 +2,7 @@
 phase: 5
 gray_area: G5
 title: "ADR extraction harness scope (G5 resolution)"
-status: DISCUSS-DRAFT (round 1, single-author, awaits CCG)
+status: AMENDED 2026-05-03 per CCG round 2 (A-CI-1=(b)/CON-2 cascade applied; section 3 storage layout reversed; CI-4 dissolved)
 parent: 05-PRE-PLAN-NOTES.md G5 (line 101-107)
 authority_chain:
   - .planning/PROJECT.md line 108 (Architectural decision semantic indexing)
@@ -17,6 +17,135 @@ Opinionated single-author draft. Locks proposed defaults; flags choices
 needing CCG ratification before plan-phase. Sibling cluster G2
 (`query_constraints`) is the consumer of what this harness produces --
 G2 and G5 must agree on storage shape or both stall.
+
+---
+
+## Round-2 Amendment Block (2026-05-03, CCG round 2 cascade)
+
+Codex round-2 challenge surfaced **CI-1** (G2 corpus_scope LOC underestimated)
+and **CON-2** (separate adrs table dismissed Symbol kind='ADR' reuse too
+quickly). Cascade resolution: adopt CON-2 path. This block supersedes
+section 3 (Storage layout) and parts of sections 4/5 below. Original text
+retained for audit trail.
+
+### A-G5-CI-1 (cascade): Symbol kind='ADR' reuse, adr_metadata sidecar
+
+**Supersedes:** § 3.1 Decision (separate adrs table reversed) + § 3.2 SQL
+DDL (replaced) + § 3.3 Rejected (now reversed -- "separate adrs table" is
+the rejected path) + § 4.3 Incremental path (writes to symbols + adr_metadata)
++ § 5.1 Surfacing (revised SQL examples) + § 5.2 Ranking signals (column
+sources updated).
+
+**New decision:** ADRs are persisted as Symbol rows with `kind='ADR'`. ADR
+text lives in a new `symbols.body_text TEXT NULL` column (W0 ALTER TABLE).
+ADR-specific metadata (keyword, confidence, doc_version_sha, supersede chain)
+lives in a sidecar `adr_metadata` table joined by `symbol_id`. ADR FTS reuses
+the existing `symbols_fts` virtual table (external-content + triggers per
+storage.rs:22-28) by extending the indexed columns to include `body_text`.
+
+**Rationale (from CCG round 2):** Codex CI-1 showed the original "separate
+adrs table" path forced search.rs to grow a corpus-scope abstraction
+(100-200 LOC + new accessors + result-type abstraction). Reusing Symbol
+infrastructure cuts that work entirely -- search.rs gets a small `kind_filter`
+parameter (~30-50 LOC) instead of full corpus dispatch. CI-4 (FTS5 contentless
+terminology error) dissolves: symbols_fts is already external-content + triggers,
+so no new FTS mode needed. Net code savings: ~150 LOC + one terminology hazard
+removed.
+
+**New SQL DDL (W0):**
+
+```sql
+-- W0 migration: extend symbols schema
+ALTER TABLE symbols ADD COLUMN body_text TEXT;       -- populated for kind='ADR'
+                                                     -- NULL for code Symbols
+                                                     -- (V1.1+ may populate from docstrings)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_symbols_fnk
+  ON symbols (path, name, kind);                     -- also serves G3 notes FK target
+
+-- W0 migration: rebuild symbols_fts to include body_text in indexed columns
+DROP TABLE IF EXISTS symbols_fts;                    -- contentless, safe to drop+recreate
+CREATE VIRTUAL TABLE symbols_fts USING fts5(
+  name, kind, search_blob, body_text,                -- body_text NEW
+  content='symbols', content_rowid='id',
+  tokenize='unicode61'
+);
+-- recreate triggers symbols_ai/ad/au to mirror new column set
+-- (W0 plan spec; pattern matches existing storage.rs:22-28)
+
+-- W0: ADR sidecar (one-to-one with kind='ADR' Symbol rows)
+CREATE TABLE IF NOT EXISTS adr_metadata (
+  symbol_id INTEGER PRIMARY KEY REFERENCES symbols(id),
+  keyword TEXT NOT NULL,                             -- MUST_NOT|MUST|SHOULD_NOT|SHOULD|MAY|...
+  confidence REAL NOT NULL,                          -- 1.0 / 0.7 / 0.4 per § 2.2
+  source_line INTEGER NOT NULL,                      -- start line in source markdown
+  source_end_line INTEGER NOT NULL,
+  heading_anchor TEXT,                               -- nearest H2/H3 above paragraph
+  doc_version_sha TEXT NOT NULL,                     -- git blob sha of source path
+  extracted_at INTEGER NOT NULL,
+  superseded_by_symbol_id INTEGER REFERENCES symbols(id)
+);
+CREATE INDEX IF NOT EXISTS idx_adr_active
+  ON adr_metadata(superseded_by_symbol_id)
+  WHERE superseded_by_symbol_id IS NULL;
+CREATE INDEX IF NOT EXISTS idx_adr_keyword
+  ON adr_metadata(keyword, confidence DESC);
+
+-- W0: cross-link from ADR Symbols to code Symbols (V1.1+ populated lazily)
+CREATE TABLE IF NOT EXISTS adr_symbol_links (
+  adr_symbol_id   INTEGER NOT NULL REFERENCES symbols(id),
+  code_symbol_id  INTEGER NOT NULL REFERENCES symbols(id),
+  link_kind       TEXT NOT NULL,                     -- mention|topic_match|file_overlap
+  score           REAL NOT NULL,
+  PRIMARY KEY (adr_symbol_id, code_symbol_id, link_kind)
+);
+CREATE INDEX IF NOT EXISTS idx_adr_links_code
+  ON adr_symbol_links(code_symbol_id, score DESC);
+```
+
+**ADR Symbol row encoding:**
+- `path` = source markdown path (e.g. `docs/ARCHITECTURE.md`)
+- `name` = `{heading_anchor || "anon"}#{source_line}` -- stable across runs
+  given same heading + line; doc_version_sha sidecars catch drift
+- `kind` = `'ADR'`
+- `start_line` / `end_line` = paragraph span (mirrors existing Symbol shape)
+- `body_text` = full paragraph text (the FTS signal)
+- All other Symbol fields = NULL or empty (signature etc. unused for ADRs)
+
+**Re-extraction lifecycle:** Same append-only discipline as G3 notes. If
+extract_adrs sees a paragraph at the same (path, source_line) but with a
+new doc_version_sha + changed body_text, INSERT new Symbol row + new
+adr_metadata row, then SET old adr_metadata.superseded_by_symbol_id =
+new_symbol_id. Old rows stay intact. `idx_adr_active` filters to leaves.
+
+**Original § 3.3 reversal:** The points originally listed against "Symbol
+kind=ADR reuse" (~50-200 noisy rows, kind-IN exclusion clauses, path
+invariant breakage) are accepted-as-cost in exchange for the ~150 LOC and
+FTS5 mode complexity savings. Mitigations:
+- `WHERE kind != 'ADR'` predicate added at code-Symbol query sites; one-line
+  per query (search.rs:29 / search.rs:31 use kind_filter parameter; storage
+  accessors that should NOT return ADRs add explicit filter)
+- `path` invariant ("follow path -> compilable code") relaxed for kind='ADR'
+  rows only; documented in CONTEXT.md amendment (W0 deliverable)
+- Cytoscape rendering branch gets new node-type for kind='ADR' (V1.1+ UI work,
+  out of Phase 5 scope per BETA-V1-SPEC sec 6)
+
+### A-G5-CI-4 (dissolved)
+
+CI-4 (FTS5 "contentless" vs "external-content" terminology error) does NOT
+require amendment because the reuse cascade above eliminates the new ADR
+FTS table entirely. ADRs ride symbols_fts (existing external-content +
+triggers, terminology already correct).
+
+### Amendment status
+
+After A-G5-CI-1 cascade lands in W0 + W4 PLANs, the original CI-1 (G2
+corpus_scope LOC) and CON-2 (G5 reuse path) and CI-4 (FTS5 terminology) are
+all resolved. Plan-checker iter 1 should re-verify (a) symbols_fts trigger
+spec covers body_text inserts, (b) adr_metadata FK to symbols(id) survives
+ON DELETE policy, (c) `WHERE kind != 'ADR'` predicate applied at all
+code-Symbol query sites.
+
+---
 
 Motivating example, verbatim from PROJECT.md line 108: an agent editing
 retrieval code SHOULD encounter `ARCHITECTURE.md section 9.4` line 508

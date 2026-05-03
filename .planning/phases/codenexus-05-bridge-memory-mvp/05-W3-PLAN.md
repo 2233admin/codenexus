@@ -23,12 +23,137 @@ gates:
   - G-E   # File-scope target returns clear "deferred to V1.1" error per UQ-A5
 ---
 
-> **!! PROVISIONAL !!** This plan was authored 2026-05-03 in parallel with
-> CCG round 2 challenge. Codex surfaced 4 critical issues (CI-1 G2 LOC,
-> CI-2 G3 SQL FK, CI-3 G4 handler, CI-4 G5 FTS5) plus 3 missed constraints
-> that affect this slice. **Do NOT execute this plan as-is.** See
-> `.planning/phases/codenexus-05-bridge-memory-mvp/05-CCG-ROUND-2-FINDINGS.md`
-> for required amendments before plan-checker iter and execution.
+> **!! AMENDED 2026-05-03 per CCG round 2 !!** Round-2 amendment below
+> SUPERSEDES the original objective + plan_time_decisions for this slice.
+> Original sections retained as audit trail. See
+> `05-DISCUSS-SUMMARY.md § Round-3 Amendments LANDED`.
+
+## Round-2 Amendment Block (W3 -- CI-3 + MC-1)
+
+W3 was originally sized at ~80 LOC composite handler. Codex CI-3 surfaced
+two architectural prerequisites that grow it to ~240 LOC honest:
+
+### CI-3a: Internal-fn extraction prerequisite (W2 work bleeding into W3)
+
+Server.rs match arms (server.rs:100-197) are inline -- not callable as
+internal functions. Composite handler CANNOT call them without recursion
+through the A2A endpoint (anti-pattern). Therefore W3 first does:
+
+```rust
+// In server.rs (W3 prerequisite step):
+async fn handle_query_internal(...) -> Result<QueryResult, OpError> { ... }
+async fn handle_get_symbol_internal(...) -> Result<SymbolResult, OpError> { ... }
+async fn handle_list_callers_internal(...) -> Result<CallersResult, OpError> { ... }
+async fn handle_query_constraints_internal(...) -> Result<ConstraintsResult, OpError> { ... }  // W2
+async fn handle_list_notes_internal(...) -> Result<NotesResult, OpError> { ... }              // W2
+```
+
+Existing handle_* match arm bodies refactored to call the corresponding
+`_internal()` and just wrap the result in OperationResponse variants. Net
+LOC increase ~120 because we also need `OpError` enum + result struct
+definitions.
+
+This refactor SHOULD NOT change observable A2A behavior. Plan-checker
+verifies by running existing 04.5-03 + W1/W2 integration tests against
+refactored server.rs.
+
+### CI-3b: Partial-failure contract -- warnings field
+
+Composite handler returns `EditContextBrief` with new `warnings: Vec<String>`
+field. Sub-call failures are non-fatal:
+
+```rust
+pub struct EditContextBrief {
+    pub symbol: SymbolView,                    // REQUIRED; if get_symbol_internal fails -> overall TaskState::Failed
+    pub callers: Vec<CallerView>,              // empty + warning on failure
+    pub constraints: Vec<ConstraintHit>,       // empty + warning on failure
+    pub notes: Vec<NoteView>,                  // empty + warning on failure
+    pub edges_in: Vec<EdgeView>,               // partial + warning on per-edge issues (e.g. Imports)
+    pub edges_out: Vec<EdgeView>,
+    pub warnings: Vec<String>,                 // NEW per CI-3
+}
+```
+
+Only `get_symbol_internal` failure causes overall TaskState::Failed (no
+brief makes sense without the symbol body). Other sub-call failures get
+recorded in warnings. Examples:
+- "list_callers timeout: 250ms exceeded; partial result returned"
+- "query_constraints internal error: <reason>; constraints field empty"
+- "skipped Imports edge {edge_id}: legacy schema; lift to AliasDecl pending"
+
+### MC-1: Imports edges handling (mixed-schema DBs)
+
+EdgeView builders MUST detect Imports edges (via the new W0
+`Store::has_imports_edges()` helper as a one-time DB-open check, OR
+inline kind matching when constructing each EdgeView). On encountering
+an Imports edge:
+1. Skip the edge (do not include in edges_in/edges_out)
+2. Push warning: `"skipped Imports edge {edge_id}: lifted to AliasDecl
+   in CONTEXT.md; re-extract with Phase 4.5-03 to populate alias_decls"`
+3. Continue processing remaining edges
+
+NEVER crash; NEVER fail TaskState on Imports edges alone.
+
+### LOC re-sizing (CI-3 honest)
+
+| Component | LOC |
+|---|---|
+| Internal-fn extraction (W3 prerequisite) | ~120 |
+| GetEditContext request/response variants in a2a.rs | ~30 |
+| Composite handler (calls internals + builds EdgeView with warnings) | ~80 |
+| Imports edge handling (MC-1) | ~10 |
+| MCP wrap stubs in server/internal/mcpsrv/server.go (5 new tools) | ~80 |
+| Proxy methods in server/internal/proxy/a2a.go | ~60 |
+| Tests: composite happy-path | ~40 |
+| Tests: partial-failure (callers timeout, constraints fail, edges Imports) | ~60 |
+| **Total** | **~480 LOC** (significantly larger than original 80) |
+
+W3 is now the second-heaviest plan after W0. Consider splitting into
+W3a (Rust composite + internal-fn extraction) + W3b (Go MCP wrap +
+proxy) at executor discretion if context window pressures.
+
+### Removed plan_time_decisions
+
+- D-W3-01 "composite serial vs parallel" -- KEEP (still serial; futures::join_all
+  is V1.1+ optimization)
+- Original "~80 LOC composite handler" sizing -- REPLACE with above table
+
+### New plan_time_decisions
+
+- **D-W3-amended-01 (internal-fn signature uniformity):** All `handle_*_internal()`
+  return `Result<T, OpError>` with a single OpError enum (Timeout, NotFound,
+  StorageError, ValidationError, Internal). Composite handler matches on
+  OpError variant to decide warning text vs Failed.
+- **D-W3-amended-02 (warnings cardinality):** Vec<String> not Vec<Warning>
+  struct -- warning is human-readable diagnostic for the agent, not
+  programmatic dispatch. Keep simple.
+- **D-W3-amended-03 (Imports detection placement):** Inline match on edge
+  kind when building EdgeView, NOT a pre-flight DB-wide query. has_imports_edges()
+  is for diagnostic/logging only, not control flow.
+
+### W3 acceptance test additions
+
+- [ ] Internal-fn extraction: existing W1 (remember_symbol_note) regression
+      tests pass after server.rs refactor
+- [ ] get_edit_context happy path: returns brief with all 6 fields populated
+      + warnings = []
+- [ ] get_edit_context with list_callers timeout: returns brief with
+      callers=[] + warnings=["list_callers timeout: ..."]
+- [ ] get_edit_context with Imports edge present in DB: edges_in/out
+      contain valid edges, Imports skipped, warning recorded
+- [ ] get_edit_context with stale symbol_id: TaskState::Failed (NOT partial
+      brief; symbol body required)
+- [ ] caller_depth=3 returns callers + their callers + their callers (3-deep)
+
+### W3 unaffected items
+
+- File-scope deferral to V1.1 (UQ-A5) -- unchanged; File arm returns clear
+  "deferred to V1.1" error per original plan
+- Single-blob no-pagination policy -- unchanged
+- 5 MCP tool registrations -- unchanged in count; descriptions amended only
+  for the JSON shape of `EditContextBrief.warnings` field (W5 polishes prose)
+
+---
 
 
 <objective>

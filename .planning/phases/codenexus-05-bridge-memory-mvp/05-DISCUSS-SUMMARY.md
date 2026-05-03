@@ -21,15 +21,19 @@ blocks: 05-PLAN.md authoring (plan-phase) -- needs Curry decision on
 
 # Phase 5 Bridge -- Discuss-Phase Synthesis
 
-## Headline (locked decisions)
+## Headline (locked decisions, AMENDED 2026-05-03 per CCG round 2)
 
-| Gray area | Locked recommendation | Source |
-|-----------|----------------------|--------|
+Round-2 amendments superseded G2 / G3 / G4 / G5 specifics; original-row
+recommendations preserved at the end of this document for audit. Authoritative
+table below carries amended decisions inline:
+
+| Gray area | Locked recommendation (amended) | Source |
+|-----------|--------------------------------|--------|
 | **G1** memU integration mode | **Mode B**: self-contained SQLite + V1.1-ready JSONL export hook | 05-discuss-strategic |
-| **G2** query_constraints scope | 3-modality enum (`File`/`Symbol`/`Topic`); reuse search.rs::search via new `corpus_scope` parameter (~30 LOC); ranked by relevance x severity | 05-discuss-api |
-| **G3** remember_symbol_note schema | Minimal-plus-3: (path, name, kind, note, tags, confidence, source_session, supersedes); append-only supersede; rowid input + fnk persist; 2 ops ship (write + list_notes), no read_note(id) | 05-discuss-api |
-| **G4** get_edit_context format | Composite handler over G2/G3/get_symbol/list_callers; symbol-only target in V1.0 (file-scope V1.1+); single-blob no pagination; `caller_depth` 1..3 | 05-discuss-api |
-| **G5** ADR extraction harness | Default include `docs/**/*.md` + `.planning/*.md` (one-level) + `.planning/phases/**/*-PLAN.md` + `README.md`; RFC 2119 keyword scan PRIMARY + `## ADR` heading SECONDARY; separate `adrs` + `adr_symbol_links` tables (NOT Symbol kind=ADR); on-demand `extract_adrs(scope?)` auto-coupled to `index_repo`; FTS5 contentless mode | 05-discuss-adr |
+| **G2** query_constraints scope | 3-modality enum (`File`/`Symbol`/`Topic`); search.rs gains **`kind_filter` parameter** (NOT corpus_scope); Topic mode merges symbols_fts (kind='ADR') + dedicated **notes_fts** (BM25-only) via RRF in handler; ~150-220 LOC total (per A-CI-1) | 05-discuss-api § Round-2 Amendment Block |
+| **G3** remember_symbol_note schema | Minimal-plus-3 unchanged + **CI-2 (a) unique index on symbols(path,name,kind)** as FK target + supersede-fork prevention via unique index on supersedes_note_id; 2 ops ship (write + list_notes) | 05-discuss-api § Round-2 Amendment Block |
+| **G4** get_edit_context format | Composite handler with **internal-fn extraction prerequisite** (handle_*_internal in W3 BEFORE composite) + **`warnings: Vec<String>` partial-failure contract** + Imports edge skip-with-warn (MC-1); ~240 LOC honest, not 80; symbol-only V1.0; single-blob; caller_depth 1..3 | 05-discuss-api § Round-2 Amendment Block |
+| **G5** ADR extraction harness | Sources unchanged + RFC 2119 PRIMARY + `## ADR` SECONDARY unchanged; **storage flipped: ADRs are Symbol rows with kind='ADR' + adr_metadata sidecar + symbols.body_text column (W0 ALTER) + reuse symbols_fts** (NOT separate adrs table; CI-4 dissolved); on-demand extract_adrs auto-coupled to index_repo unchanged | 05-discuss-adr § Round-2 Amendment Block |
 | **G6** MCP tool surface | 5-criterion description quality bar; production-grade prose for all 3 ops authored verbatim; **V1.0 ships rigorous descriptions, not minimal MVP** (eval gate cannot pass with smelly descriptions); B2/B3/B3-min A/B harness sketched for W6 | 05-discuss-mcp |
 | **G7** V1.0 vs V1.1+ cut line | **V1.0 wide on op surface, narrow on integration**; deferred to V1.1+: shared PG, Obsidian wiki graph, IDE affordances, remote A2A, clustering, file-scope get_edit_context, A/B description variants, per-agent-model tuning | 05-discuss-strategic + 05-discuss-mcp |
 
@@ -58,10 +62,14 @@ blocks: 05-PLAN.md authoring (plan-phase) -- needs Curry decision on
    probe M5_fnk = 1.0 (commit d5e5eb0) is the load-bearing evidence.
    No conflicts surfaced.
 
-4. **search.rs needs a `corpus_scope` parameter** (G2's recommendation).
-   ~30-80 LOC change to thread the parameter through search() -> hybrid
-   scoring -> rank fusion. Plan-phase W2 work. No backwards-compatibility
-   concern (default = None = current behavior).
+4. **search.rs needs a `kind_filter` parameter** (per A-CI-1 cascade,
+   was `corpus_scope`). ~30-50 LOC change to add `kind_filter:
+   Option<Vec<String>>` to search() and filter both BM25 + vector results
+   to allowed Symbol kinds. Default None preserves existing behavior. Notes
+   live OUTSIDE this surface -- they get a dedicated `Store::search_notes_fts`
+   accessor (BM25-only via notes_fts, no shared search.rs path). Total notes
+   accessor + kind_filter + query_constraints handler ~150-220 LOC per
+   05-discuss-api § Round-2 Amendment Block A-CI-1.
 
 5. **CodeCompass (arxiv 2602.20048) + MCP smell paper (2602.14878) are
    load-bearing for G6.** 58% skip rate target -> 5%, 97.1% of 856 MCP
@@ -167,25 +175,61 @@ Claude triangulation; Gemini if infrastructure bug fixed)". Today's round
 Gemini independent challenge. Defer to next session OR fold into
 plan-checker iter 1 round.
 
-## Wave breakdown (proposed, finalize at plan-phase)
+## Wave breakdown (AMENDED 2026-05-03 per CCG round 2)
 
-Updated from PRE-PLAN-NOTES W0-W6 with discuss findings:
+Original wave breakdown preserved at end of file. Authoritative breakdown
+below carries amendments inline.
 
-- **W0**: Storage layer
-  - notes table (G3 SQL)
-  - adrs + adr_symbol_links + adrs_fts5 tables (G5 SQL)
-  - JSONL export hook scaffold (G1 Mode B)
+- **W0**: Storage layer (HEAVIEST -- absorbs MC-2 migration framework)
+  - **NEW: minimal migration framework** (schema_version table + Store::migrate())
+    -- MC-2 explicit, this slice INVENTS it
+  - **NEW: ALTER TABLE symbols ADD COLUMN body_text** (CI-1 cascade for ADR
+    text storage; populated for kind='ADR' rows, NULL for code Symbols)
+  - **NEW: rebuild symbols_fts** to include body_text in indexed columns +
+    triggers
+  - **NEW: CREATE UNIQUE INDEX idx_symbols_fnk ON symbols(path, name, kind)**
+    (CI-2; serves as FK target for symbol_notes + identity discipline)
+  - notes table = symbol_notes (G3 SQL amended) + FK to symbols(path, name,
+    kind) + idx_notes_no_double_supersede unique index for fork prevention
+  - **notes_fts** (external-content + triggers, mirrors symbols_fts pattern)
+    -- NOT constraints_fts (CI-1 cascade dropped that abstraction)
+  - **adr_metadata sidecar table** (one-to-one with kind='ADR' Symbol rows)
+    + adr_symbol_links table (V1.1+ populated lazily) -- NOT separate adrs
+    table (CI-1 cascade)
+  - **MC-1: pre-W0 Imports edges:** add Store::has_imports_edges() helper
+    (mirrors 04.5-03 pattern); flag on open if Imports rows present
+  - JSONL export hook scaffold (G1 Mode B) unchanged
 - **W1**: A2A ops -- write side
-  - remember_symbol_note (G3)
+  - remember_symbol_note (G3) + supersede unique-index discipline (CI-2 prep)
 - **W2**: A2A ops -- read side
-  - query_constraints (G2) + search.rs::corpus_scope extension
-  - list_notes (G3, exposed if UQ-A3 = 5 ops)
-- **W3**: A2A ops -- composite
-  - get_edit_context (G4 composite handler)
-- **W4**: ADR extraction harness
-  - extract_adrs op + tree-sitter-markdown integration (G5)
+  - **search.rs::search gains `kind_filter: Option<Vec<String>>`** (A-CI-1,
+    NOT corpus_scope) -- ~30-50 LOC parameter thread
+  - **NEW: Store::search_notes_fts(text, top)** accessor -- BM25-only,
+    notes_fts surface, ~30-50 LOC
+  - query_constraints handler with two-stream RRF merge (~80-120 LOC)
+    -- File / Symbol modes are SQL-only; Topic mode merges symbols_fts
+    (kind=ADR) + notes_fts results
+  - list_notes (G3, exposed per UQ-A3 = 5 ops)
+- **W3**: A2A ops -- composite (HEAVIER than original ~80 LOC)
+  - **PREREQUISITE: server.rs internal-fn extraction** (CI-3): refactor
+    handle_query / handle_get_symbol / handle_list_callers match arms into
+    `handle_*_internal()` functions returning typed structs (~120 LOC)
+  - get_edit_context composite handler (~80 LOC) calling internals + edges
+    in/out + warnings field (CI-3 partial-failure contract)
+  - **MC-1: edges_in/out builders skip Imports + push warning** (do not crash)
+  - Total: ~240 LOC honest, not 80
+- **W4**: ADR extraction harness (CI-1 cascade rewires storage targets)
+  - extract_adrs op + tree-sitter-markdown integration (G5 keywords + paragraph
+    granularity unchanged)
+  - **WRITES TO symbols (kind='ADR') + adr_metadata sidecar** (NOT separate
+    adrs table; CI-1 cascade)
+  - body_text column populated with paragraph text (W0 ALTER pre-req)
+  - Symbol rows get FTS indexing automatically via existing symbols_fts triggers
+  - adr_symbol_links populated empty in V1.0 (V1.1 lazy population from
+    text-mention heuristic)
 - **W5**: MCP tool surface
   - 5 tool descriptions (G6 prose) + first-run agent-affordance docs
+  - Description prose largely unchanged by amendments (wire format stable)
 - **W6**: Eval harness skeleton
   - 30-task curated set + B2/B3/B3-min runner (G6 sketch)
   - May actually live in EVAL-INSTANCES.md per BETA-V1-SPEC sec 8 line 215
@@ -287,3 +331,83 @@ are now PROVISIONAL pending amendments.
   fixed" was conditional; Codex-only meets the spirit but tri-model
   triangulation pending)
 - 4 critical amendments not yet landed -- plans NOT execute-ready
+
+---
+
+## Round-3 Amendments LANDED (2026-05-03 ~15:00 UTC, opinionated defaults)
+
+Curry approved option **(X) opinionated defaults** -- batch-amend 4 discuss +
+7 PLAN files with Claude's recommended resolutions:
+
+- **CI-1**: chose **(b) Symbol kind='ADR' reuse** (CON-2 cascade)
+- **CI-2**: chose **(a) unique index on symbols(path, name, kind)**
+- **CI-3**: chose **(b) partial brief + warnings field** + internal-fn
+  extraction prerequisite
+- **CI-4**: **dissolved** under CI-1=(b) cascade (ADR FTS reuses symbols_fts
+  which is already external-content + triggers)
+
+**MC-1 / MC-2 / MC-3** all addressed:
+- MC-1: Imports edge skip-with-warn in W0 helpers + W3 EdgeView builder
+- MC-2: W0 explicitly INVENTS minimal migration framework (schema_version
+  table + Store::migrate())
+- MC-3: dissolved under CI-1 cascade (kind_filter parameter, not corpus
+  abstraction)
+
+**Files amended (this commit batch):**
+- `05-discuss-api.md` § Round-2 Amendment Block (A-CI-1/2/3 + A-MC-1)
+- `05-discuss-adr.md` § Round-2 Amendment Block (A-G5-CI-1 cascade,
+  CI-4 dissolved)
+- `05-DISCUSS-SUMMARY.md` (this file -- locked-decisions table + cross-cutting
+  + wave breakdown all amended inline; original preserved at end)
+- `05-W0-PLAN.md` § Round-2 Amendment Block (heaviest -- migration framework
+  + body_text + adr_metadata + notes_fts)
+- `05-W1-PLAN.md` § Round-2 Amendment Block (CI-2 supersede unique index)
+- `05-W2-PLAN.md` § Round-2 Amendment Block (kind_filter not corpus_scope +
+  notes_fts accessor + RRF merge)
+- `05-W3-PLAN.md` § Round-2 Amendment Block (internal-fn extraction +
+  warnings + LOC re-sizing + Imports skip)
+- `05-W4-PLAN.md` § Round-2 Amendment Block (writes Symbol+adr_metadata not
+  adrs table)
+- W5 / W6 PLANs unchanged (MCP wire format + eval harness unaffected)
+- `05-CCG-ROUND-2-FINDINGS.md` status header updated to AMENDMENTS-LANDED
+
+**Acceptance gate (post-amendment):**
+- BETA-V1-SPEC sec 8 line 229-230: STILL PARTIAL on Gemini side (infra bug
+  not fixed; deferred to codenexus-tooling sub-slice). Codex amendments
+  landed; equivalent of round-3 challenge would require new run, deferred.
+- Plan-checker iter 1 can now run against amended PLAN files and is
+  expected to converge faster (hidden architectural costs surfaced + locked).
+
+**Next session entry (revised):**
+1. (Optional) Re-run Codex over amended PLAN files (CCG round 3) -- HIGH
+   value if next session has budget; LOW priority if Curry wants to
+   execute directly
+2. Plan-checker iter 0/0/0 against amended PLANs
+3. Phase 5 W0 execution entry (storage layer with migration framework)
+4. Open: Curry MAY want to also confirm ADR Symbol naming convention
+   (`{heading_anchor}#{source_line}`) before W4 execution
+
+---
+
+## Original (pre-amendment) headline + wave breakdown -- AUDIT TRAIL
+
+Preserved verbatim for the record. The amended versions above are
+authoritative; the originals here are historical only and SHOULD NOT be
+used for plan-checker or execution.
+
+### Original locked-decisions table (round 1 + round-2 round-1, pre-amendment)
+
+| Gray area | Original recommendation | Source |
+|-----------|------------------------|--------|
+| **G2** query_constraints scope | 3-modality enum; reuse search.rs::search via new `corpus_scope` parameter (~30 LOC); ranked relevance x severity | 05-discuss-api round 1 |
+| **G3** remember_symbol_note schema | Minimal-plus-3 (no FK target spec) | 05-discuss-api round 1 |
+| **G4** get_edit_context format | Composite handler; ~80 LOC; symbol-only V1.0 | 05-discuss-api round 1 |
+| **G5** ADR extraction harness | Separate `adrs` + `adr_symbol_links` tables (NOT Symbol kind=ADR); FTS5 contentless mode | 05-discuss-adr round 1 |
+
+### Original wave breakdown (round 1, pre-amendment)
+
+- **W0**: Storage layer -- notes table (G3 SQL), adrs + adr_symbol_links +
+  adrs_fts5 tables (G5 SQL), JSONL export hook scaffold (G1 Mode B)
+- **W2**: query_constraints (G2) + search.rs::corpus_scope extension; list_notes
+- **W3**: get_edit_context (G4 composite handler, ~80 LOC)
+- **W4**: extract_adrs op + tree-sitter-markdown (writes separate adrs table)

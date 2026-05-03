@@ -20,12 +20,53 @@ gates:
   - G-D   # JSONL side-effect: every successful write appends one NDJSON line
 ---
 
-> **!! PROVISIONAL !!** This plan was authored 2026-05-03 in parallel with
-> CCG round 2 challenge. Codex surfaced 4 critical issues (CI-1 G2 LOC,
-> CI-2 G3 SQL FK, CI-3 G4 handler, CI-4 G5 FTS5) plus 3 missed constraints
-> that affect this slice. **Do NOT execute this plan as-is.** See
-> `.planning/phases/codenexus-05-bridge-memory-mvp/05-CCG-ROUND-2-FINDINGS.md`
-> for required amendments before plan-checker iter and execution.
+> **!! AMENDED 2026-05-03 per CCG round 2 !!** Round-2 amendment below
+> SUPERSEDES specifics in the original plan_time_decisions for this slice.
+> See `05-DISCUSS-SUMMARY.md § Round-3 Amendments LANDED` for cross-doc
+> context.
+
+## Round-2 Amendment Block (W1 -- light; CI-2 supersede semantics)
+
+W1 inherits W0's amended schema (per `05-W0-PLAN.md § Round-2 Amendment
+Block`). Two W1-specific amendments:
+
+1. **Supersede via unique-index DB layer (CI-2 follow-on).** W0 creates
+   `idx_notes_no_double_supersede ON symbol_notes(supersedes_note_id)
+   WHERE supersedes_note_id IS NOT NULL`. W1 handler relies on this
+   constraint -- second concurrent supersede on the same note row fails
+   with SQLITE_CONSTRAINT_UNIQUE. Handler maps the error to a clear
+   `OperationResponse::Failed { reason: "note already superseded by
+   {existing_id}" }` for the caller. NO application-level lock needed;
+   NO multi-step BEGIN/COMMIT needed for the write path.
+
+2. **Supersede write is a single INSERT.** Per A-CI-2 amendment in
+   05-discuss-api.md: supersede = INSERT new row with
+   `supersedes_note_id = old_id`. Old row is NEVER mutated. The unique
+   index above is the only fork-prevention mechanism.
+
+Pre-write resolution remains: caller passes `symbol_id` (rowid); server
+calls `Store::symbol_by_id(id)` -> (path, name, kind); writes those + payload
+into `symbol_notes`. If `symbol_by_id` returns None, reject (no orphan
+write; matches G3 lock).
+
+### W1 acceptance test additions
+
+- [ ] Insert note A on symbol X. Insert note B with supersedes=A. Verify
+      idx_notes_no_double_supersede allows it.
+- [ ] Attempt second supersede C with supersedes=A. Verify SQLITE_CONSTRAINT
+      raised; handler returns Failed with the expected reason string.
+- [ ] Insert note with stale symbol_id (no row). Verify Failed; verify
+      symbol_notes table contains zero rows after the failed call.
+
+### W1 unaffected items (still authoritative below)
+
+- JSONL export hook wiring (G1 Mode B) -- unchanged
+- minimal-plus-3 schema (note_text/tags/confidence/source_session/supersedes/
+  created_at) -- unchanged in payload shape; FK targets the W0 unique index
+  (this is the CI-2 cascade and lives in W0, not W1)
+- A2A op shape (RememberSymbolNote with rowid input) -- unchanged
+
+---
 
 
 <objective>

@@ -23,12 +23,185 @@ gates:
  - G-C  # schema migration loud-error: pre-W0 DB triggers clear "schema not migrated" message
 ---
 
-> **!! PROVISIONAL !!** This plan was authored 2026-05-03 in parallel with
-> CCG round 2 challenge. Codex surfaced 4 critical issues (CI-1 G2 LOC,
-> CI-2 G3 SQL FK, CI-3 G4 handler, CI-4 G5 FTS5) plus 3 missed constraints
-> that affect this slice. **Do NOT execute this plan as-is.** See
-> `.planning/phases/codenexus-05-bridge-memory-mvp/05-CCG-ROUND-2-FINDINGS.md`
-> for required amendments before plan-checker iter and execution.
+> **!! AMENDED 2026-05-03 per CCG round 2 !!** Round-2 amendments below
+> SUPERSEDE the original objective + plan_time_decisions for this slice.
+> Round-1 sections retained as audit trail. Plan-checker should run against
+> the amended Round-2 Amendment Block + treat original sections as
+> historical-only. See `05-CCG-ROUND-2-FINDINGS.md` and
+> `05-DISCUSS-SUMMARY.md § Round-3 Amendments LANDED` for cross-doc context.
+
+## Round-2 Amendment Block (W0 -- HEAVIEST, absorbs CI-1/CI-2/CI-4 + MC-1/MC-2)
+
+W0 is the heaviest amended slice -- it owns the architectural cascade from
+CCG round 2. Original W0 separated `adrs` table from `symbol_notes` and added
+two new FTS virtual tables (`constraints_fts` + `adrs_fts`). Amended W0:
+
+1. **Migration framework (MC-2):** This slice EXPLICITLY INVENTS the minimal
+   migration system. New table `schema_version (version INTEGER PRIMARY KEY,
+   applied_at TEXT)` + `Store::migrate(&mut Connection)` checking version on
+   open and applying ordered migrations idempotently. NOT a hidden side-effect
+   anymore -- migration discipline is itself a deliverable. Future phases
+   inherit this framework rather than reinventing.
+
+2. **Symbol kind='ADR' reuse (CI-1=(b) cascade):** Drop separate `adrs` table.
+   Drop `adrs_fts` virtual table. ADRs become Symbol rows with `kind='ADR'`.
+   Add `body_text TEXT NULL` column to symbols (W0 ALTER). Rebuild
+   `symbols_fts` to include body_text in indexed columns + recreate triggers
+   for AI/AD/AU. ADR-specific metadata moves to a new sidecar
+   `adr_metadata` (one-to-one FK on symbol_id). NEW `adr_symbol_links` table
+   stays (V1.1 lazy population).
+
+3. **Unique index on symbols(path, name, kind) (CI-2 = (a)):** Add
+   `CREATE UNIQUE INDEX idx_symbols_fnk ON symbols(path, name, kind)` as
+   the FK target for symbol_notes. NOT a separate `symbols_fnk` identity
+   table.
+
+4. **notes_fts (replaces constraints_fts):** Single notes-only FTS surface
+   (BM25-only, external-content + triggers mirroring symbols_fts pattern).
+   No constraints corpus abstraction. ADR FTS rides symbols_fts (CI-1
+   cascade); CI-4 (FTS5 terminology error) DISSOLVES because no new
+   contentless mode is introduced.
+
+5. **Imports edges helper (MC-1):** Add `Store::has_imports_edges()` helper
+   mirroring 04.5-03's `has_alias_decls` pattern. W0 ships the detector;
+   W3 uses it to log+skip Imports during edges_in/out construction.
+
+6. **Supersede fork prevention (CI-2 follow-on):** Add unique index
+   `idx_notes_no_double_supersede ON symbol_notes(supersedes_note_id)
+   WHERE supersedes_note_id IS NOT NULL` to prevent concurrent-supersede
+   fork at DB layer. Avoids application-level lock complexity.
+
+### Amended SQL DDL (authoritative for W0 executor)
+
+```sql
+-- 1. Migration version table (MC-2: invents minimal framework)
+CREATE TABLE IF NOT EXISTS schema_version (
+    version INTEGER PRIMARY KEY,
+    applied_at TEXT NOT NULL
+);
+-- Store::migrate() applies ordered migrations; current Phase 5 W0 = version 1
+
+-- 2. Symbol schema extension (CI-1 cascade for ADR text storage)
+ALTER TABLE symbols ADD COLUMN body_text TEXT;   -- populated for kind='ADR'
+                                                 -- NULL for code Symbols
+                                                 -- (V1.1+ may populate from docstrings)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_symbols_fnk
+  ON symbols (path, name, kind);                 -- CI-2: FK target
+
+-- 3. Rebuild symbols_fts to include body_text
+DROP TABLE IF EXISTS symbols_fts;                -- contentless safe to drop+recreate
+CREATE VIRTUAL TABLE symbols_fts USING fts5(
+  name, kind, search_blob, body_text,            -- body_text NEW
+  content='symbols', content_rowid='id',
+  tokenize='unicode61'
+);
+-- Recreate triggers symbols_ai/ad/au with body_text in column list
+-- (executor mirrors existing pattern at storage.rs:22-28)
+
+-- 4. ADR sidecar (CI-1 cascade; one-to-one with kind='ADR' Symbol rows)
+CREATE TABLE IF NOT EXISTS adr_metadata (
+  symbol_id INTEGER PRIMARY KEY REFERENCES symbols(id),
+  keyword TEXT NOT NULL,
+  confidence REAL NOT NULL,
+  source_line INTEGER NOT NULL,
+  source_end_line INTEGER NOT NULL,
+  heading_anchor TEXT,
+  doc_version_sha TEXT NOT NULL,
+  extracted_at INTEGER NOT NULL,
+  superseded_by_symbol_id INTEGER REFERENCES symbols(id)
+);
+CREATE INDEX IF NOT EXISTS idx_adr_active
+  ON adr_metadata(superseded_by_symbol_id)
+  WHERE superseded_by_symbol_id IS NULL;
+CREATE INDEX IF NOT EXISTS idx_adr_keyword
+  ON adr_metadata(keyword, confidence DESC);
+
+-- 5. ADR cross-link (V1.1+ lazy populate)
+CREATE TABLE IF NOT EXISTS adr_symbol_links (
+  adr_symbol_id   INTEGER NOT NULL REFERENCES symbols(id),
+  code_symbol_id  INTEGER NOT NULL REFERENCES symbols(id),
+  link_kind       TEXT NOT NULL,
+  score           REAL NOT NULL,
+  PRIMARY KEY (adr_symbol_id, code_symbol_id, link_kind)
+);
+CREATE INDEX IF NOT EXISTS idx_adr_links_code
+  ON adr_symbol_links(code_symbol_id, score DESC);
+
+-- 6. Notes table (CI-2 FK + supersede fork prevention)
+CREATE TABLE IF NOT EXISTS symbol_notes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    path TEXT NOT NULL,
+    name TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    note_text TEXT NOT NULL,
+    tags TEXT NOT NULL DEFAULT '[]',
+    confidence REAL NOT NULL,
+    source_session TEXT NOT NULL,
+    supersedes_note_id INTEGER REFERENCES symbol_notes(id),
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (path, name, kind) REFERENCES symbols(path, name, kind)
+);
+CREATE INDEX IF NOT EXISTS idx_notes_fnk
+  ON symbol_notes(path, name, kind);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_notes_no_double_supersede
+  ON symbol_notes(supersedes_note_id)
+  WHERE supersedes_note_id IS NOT NULL;
+
+-- 7. notes_fts (BM25-only via external-content + triggers)
+CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
+    note_text, tags, content='symbol_notes', content_rowid='id'
+);
+-- triggers symbol_notes_ai/ad/au mirror existing symbols_fts pattern
+```
+
+### Amended Rust API additions (storage.rs)
+
+- `Store::migrate(&mut Connection) -> Result<()>` -- new; applies ordered
+  migrations bumping schema_version
+- `Store::has_imports_edges(&self) -> Result<bool>` -- MC-1; mirrors
+  has_alias_decls pattern for mixed-schema DB detection
+- `Store::insert_symbol_note(&self, fnk_resolved_from_rowid, payload) -> Result<i64>`
+  -- supersede fork prevention via unique index (DB-layer)
+- `Store::list_notes_for_symbol(&self, path, name, kind, include_history)
+  -> Result<Vec<NoteRow>>`
+- `Store::insert_adr_symbol(&self, source_path, heading_anchor, source_line,
+  body_text) -> Result<i64>` -- inserts symbols row with kind='ADR' + returns id
+- `Store::insert_adr_metadata(&self, symbol_id, AdrMeta) -> Result<()>`
+- `Store::list_adrs_for_path(&self, source_path) -> Result<Vec<AdrSymbol>>`
+- `Store::list_adr_links_for_symbol(&self, code_symbol_id) -> Result<Vec<AdrLink>>`
+- (Notes FTS accessor `Store::search_notes_fts(text, top)` is W2 deliverable,
+  not W0; types/JSON struct can be defined in W0 but the accessor lives in W2)
+
+### Cleanup vs original W0 plan
+
+- **REMOVE:** `adrs` table DDL (everywhere it appears in original sections
+  below)
+- **REMOVE:** `adrs_fts` virtual table DDL
+- **REMOVE:** `constraints_fts` virtual table DDL (replaced by `notes_fts`;
+  ADR FTS now rides symbols_fts)
+- **REMOVE:** D-W0-02 "FTS5 mode contentless" plan-time-decision (CI-4
+  dissolved; ADR FTS uses existing external-content + triggers)
+- **KEEP:** D-W0-01 (jsonl_export module placement), D-W0-03+ as-is unless
+  they reference the removed tables (executor reconciles)
+- **UPDATE:** types.rs additions: rename `Adr` -> `AdrMetadata`; add
+  `body_text: Option<String>` to existing Symbol struct OR introduce
+  `AdrSymbol` view-struct over Symbol (executor decides; recommend `AdrSymbol`
+  view to keep parser::Symbol stable)
+
+### Amendment status
+
+After W0 executor implements the above, plan-checker should verify:
+- [ ] `Store::migrate()` is the sole entry point for schema mutation; no other
+      module touches CREATE/ALTER
+- [ ] `idx_symbols_fnk` is unique (CI-2 acceptance)
+- [ ] symbols_fts triggers cover body_text in INSERT/UPDATE/DELETE paths
+- [ ] adr_metadata FK to symbols(id) ON DELETE policy is documented (recommend
+      RESTRICT to preserve ADR audit trail)
+- [ ] notes_fts triggers populate on symbol_notes INSERT (read-back tested)
+- [ ] has_imports_edges() returns true on a pre-W0 DB containing legacy
+      Imports rows (MC-1 acceptance test)
+
+---
 
 
 <objective>
