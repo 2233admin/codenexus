@@ -130,15 +130,20 @@ Plans:
 Plans:
 - [ ] 04.5-01: Workspace promotion (cargo workspace + sub-crate split)
 - [ ] 04.5-02: Lift sentrux metrics module + A2A query_metrics op
-- [ ] 04.5-03: Lift lang_extractors framework, replace parser.rs
+- [ ] 04.5-03: Lift lang_extractors framework, replace parser.rs **(DRIFT-PROBE-DEMOTED 2026-05-03 to QUALITY IMPROVEMENT; no longer Phase 5 precondition; W0 shipped, W1-W5 ship parallel with Phase 5 -- see `.planning/probes/runs/2026-05-03-drift-evidence.md`)**
 - [ ] 04.5-04: Lift DSM + evo metrics, gix overlay scaffolding
 - [ ] 04.5-05: Rules DSL design decision (a/b/c) + lift
 - [ ] 04.5-06: NOTICE + license audit + SPDX headers
 - [ ] 04.5-07: Multi-language framework activation (supersedes 04-09)
 
+### Phase 04.6: Code Embedder Re-Evaluation (STUB, INSERTED 2026-05-03)
+**Goal**: Decide whether Qwen3-Embedding-0.6B (current ARCHITECTURE.md §9.8 pin) should swap to Qwen3-Embedding-8B (verified +5.27pp MTEB-Code) or 2026-Q1/Q2 alternative (Microsoft Harrier-oss-v1, Voyage-code-3, etc).
+**Depends on**: Phase 04.5-03 drift probe (DONE 2026-05-03, demoted)
+**Plans**: SPEC stub at `.planning/phases/codenexus-04.6-embedder-evaluation/04.6-SPEC.md`. 1-2 weeks budget; outcome = HOLD / SOFT LIFT / SWAP / INCONCLUSIVE per encoded decision rule.
+
 ### Phase 5: Bridge
 **Goal**: Connect CodeNexus to obsidian-llm-wiki vault layer; produce three-way viz (code ↔ vault ↔ memU memory); resolve memU integration question (self-contained vs shared PG)
-**Depends on**: Phase 4
+**Depends on**: Phase 4 first slice (shipped 2026-04-28). 04.5-03 NO LONGER A PRECONDITION (demoted 2026-05-03 by drift probe). PLAN.md authoring is the immediate next-session task per BETA-V1-SPEC Section 8 + W5-W6 compressed timeline.
 **Requirements**: TBD
 **Success Criteria** (what must be TRUE):
   1. Markdown wiki-link graph extracted from Obsidian vault and stored in CodeNexus graph

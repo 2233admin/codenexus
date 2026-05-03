@@ -39,8 +39,16 @@ vendor/
 .codenexus/        # runtime state (port lockfile, cache)
 *.db
 *.db-journal
+*.db.r[0-9]
+*.db.r[0-9][0-9]
+*.db.preprobe.bak
+*.db.partial[0-9]*.bak
+*.db.ollama.bak
 *.sqlite
 *.sqlite-journal
+
+# Drift probe artifacts (per .planning/probes/runs/2026-05-03-drift-evidence.md)
+experiments/poc-retrieval/eval/drift_runs/
 
 # REQ-08 embedded Rust binary (built artifact, do NOT commit; .gitkeep stays tracked)
 server/internal/supervisor/bin/codenexus-core

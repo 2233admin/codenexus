@@ -1,0 +1,191 @@
+{
+  "probe_version": "1",
+  "ran_at": "2026-05-03T00:08:44.703578+00:00",
+  "ran_against_commit": "041e9c1d7249e3c03db52f7d550c287a23c16673",
+  "indexer_runtime_total_min": 65.7,
+  "corpora": {
+    "poc": {
+      "runs": [
+        "poc.db.r1",
+        "poc.db.r2",
+        "poc.db.r3",
+        "poc.db.r4",
+        "poc.db.r5"
+      ],
+      "pairs": [
+        {
+          "from": "r1",
+          "to": "r2",
+          "M1_jaccard_fnk": 1.0,
+          "M2_rowid_stable_among_matched": 1.0,
+          "M3_edge_resolution_stable": 1.0,
+          "M4_t3_t4_pinned_pass": false,
+          "M5_attachment": {
+            "rowid_only": 1.0,
+            "fnk": 1.0,
+            "fnk_with_path_fallback": 1.0
+          },
+          "M6_count_delta": 0
+        },
+        {
+          "from": "r2",
+          "to": "r3",
+          "M1_jaccard_fnk": 1.0,
+          "M2_rowid_stable_among_matched": 1.0,
+          "M3_edge_resolution_stable": 1.0,
+          "M4_t3_t4_pinned_pass": false,
+          "M5_attachment": {
+            "rowid_only": 1.0,
+            "fnk": 1.0,
+            "fnk_with_path_fallback": 1.0
+          },
+          "M6_count_delta": 0
+        },
+        {
+          "from": "r3",
+          "to": "r4",
+          "M1_jaccard_fnk": 1.0,
+          "M2_rowid_stable_among_matched": 1.0,
+          "M3_edge_resolution_stable": 1.0,
+          "M4_t3_t4_pinned_pass": false,
+          "M5_attachment": {
+            "rowid_only": 1.0,
+            "fnk": 1.0,
+            "fnk_with_path_fallback": 1.0
+          },
+          "M6_count_delta": 0
+        },
+        {
+          "from": "r4",
+          "to": "r5",
+          "M1_jaccard_fnk": 1.0,
+          "M2_rowid_stable_among_matched": 1.0,
+          "M3_edge_resolution_stable": 1.0,
+          "M4_t3_t4_pinned_pass": false,
+          "M5_attachment": {
+            "rowid_only": 1.0,
+            "fnk": 1.0,
+            "fnk_with_path_fallback": 1.0
+          },
+          "M6_count_delta": 0
+        },
+        {
+          "from": "r1",
+          "to": "r5",
+          "M1_jaccard_fnk": 1.0,
+          "M2_rowid_stable_among_matched": 1.0,
+          "M3_edge_resolution_stable": 1.0,
+          "M4_t3_t4_pinned_pass": false,
+          "M5_attachment": {
+            "rowid_only": 1.0,
+            "fnk": 1.0,
+            "fnk_with_path_fallback": 1.0
+          },
+          "M6_count_delta": 0
+        }
+      ],
+      "summary": {
+        "M1_min": 1.0,
+        "M3_min": 1.0,
+        "M5_fnk_min": 1.0,
+        "M5_rowid_min": 1.0,
+        "M6_max_abs": 0
+      }
+    },
+    "fsc": {
+      "runs": [
+        "fsc.db.r1",
+        "fsc.db.r2",
+        "fsc.db.r3",
+        "fsc.db.r4",
+        "fsc.db.r5"
+      ],
+      "pairs": [
+        {
+          "from": "r1",
+          "to": "r2",
+          "M1_jaccard_fnk": 1.0,
+          "M2_rowid_stable_among_matched": 1.0,
+          "M3_edge_resolution_stable": 1.0,
+          "M4_t3_t4_pinned_pass": false,
+          "M5_attachment": {
+            "rowid_only": 1.0,
+            "fnk": 1.0,
+            "fnk_with_path_fallback": 1.0
+          },
+          "M6_count_delta": 0
+        },
+        {
+          "from": "r2",
+          "to": "r3",
+          "M1_jaccard_fnk": 1.0,
+          "M2_rowid_stable_among_matched": 1.0,
+          "M3_edge_resolution_stable": 1.0,
+          "M4_t3_t4_pinned_pass": false,
+          "M5_attachment": {
+            "rowid_only": 1.0,
+            "fnk": 1.0,
+            "fnk_with_path_fallback": 1.0
+          },
+          "M6_count_delta": 0
+        },
+        {
+          "from": "r3",
+          "to": "r4",
+          "M1_jaccard_fnk": 1.0,
+          "M2_rowid_stable_among_matched": 1.0,
+          "M3_edge_resolution_stable": 1.0,
+          "M4_t3_t4_pinned_pass": false,
+          "M5_attachment": {
+            "rowid_only": 1.0,
+            "fnk": 1.0,
+            "fnk_with_path_fallback": 1.0
+          },
+          "M6_count_delta": 0
+        },
+        {
+          "from": "r4",
+          "to": "r5",
+          "M1_jaccard_fnk": 1.0,
+          "M2_rowid_stable_among_matched": 1.0,
+          "M3_edge_resolution_stable": 1.0,
+          "M4_t3_t4_pinned_pass": false,
+          "M5_attachment": {
+            "rowid_only": 1.0,
+            "fnk": 1.0,
+            "fnk_with_path_fallback": 1.0
+          },
+          "M6_count_delta": 0
+        },
+        {
+          "from": "r1",
+          "to": "r5",
+          "M1_jaccard_fnk": 1.0,
+          "M2_rowid_stable_among_matched": 1.0,
+          "M3_edge_resolution_stable": 1.0,
+          "M4_t3_t4_pinned_pass": false,
+          "M5_attachment": {
+            "rowid_only": 1.0,
+            "fnk": 1.0,
+            "fnk_with_path_fallback": 1.0
+          },
+          "M6_count_delta": 0
+        }
+      ],
+      "summary": {
+        "M1_min": 1.0,
+        "M3_min": 1.0,
+        "M5_fnk_min": 1.0,
+        "M5_rowid_min": 1.0,
+        "M6_max_abs": 0
+      }
+    }
+  },
+  "decision": "04.5-03 demotes to QUALITY IMPROVEMENT",
+  "decision_evidence": "M5_fnk_min=1.0 >= 0.99, M3_min=1.0 >= 0.99, M6_max_abs=0 == 0. Indexer is deterministic enough that fnk-keyed memU attachment would survive re-index without 04.5-03 sentrux adaptation.",
+  "next_actions": [
+    "Update STATE.md and ROADMAP.md to reflect that 04.5-03 is no longer gating Phase 5 memory MVP",
+    "Re-evaluate Codex 6-week cadence: Phase 5 memory MVP can start in parallel with 04.5-03, not sequentially after",
+    "EVAL-CONTRACT v1.1 amendment proposal becomes higher priority"
+  ]
+}
