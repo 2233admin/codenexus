@@ -244,3 +244,46 @@ Updated from PRE-PLAN-NOTES W0-W6 with discuss findings:
    decisions baked in
 4. **plan-checker iter to 0/0/0** -- BETA-V1-SPEC sec 8 acceptance gate
 5. **Phase 5 W0 execution entry** -- storage layer slice
+
+---
+
+## Round-2 update (2026-05-03 ~13:30 UTC, post-CCG)
+
+**CCG round 2 PARTIAL** (Codex done; Gemini blocked by Windows infra bug
+in gemini-plugin-cc transport.mjs:57). Full findings at
+`05-CCG-ROUND-2-FINDINGS.md`. Headline: **4 CRITICAL ISSUES** in round-1
+discuss decisions surfaced by Codex; 7 PLAN.md files authored in parallel
+are now PROVISIONAL pending amendments.
+
+**Critical issues (block plan-phase execution):**
+- CI-1: G2 `corpus_scope` LOC underestimated (30 -> 100-200+); search.rs
+  is symbol-shaped throughout, true refactor is search-result-type
+  abstraction
+- CI-2: G3 notes table FK references hypothetical `symbols_fnk` table;
+  must choose unique-index-on-symbols-fnk OR new identity-table approach
+- CI-3: G4 `get_edit_context` is NOT 80 LOC; needs internal-fn extraction
+  prerequisite + locked partial-failure contract
+- CI-4: G5 FTS5 terminology error ("contentless" written, "external-content
+  with triggers" actually meant)
+
+**Plus 3 missed constraints:**
+- MC-1: Imports edges still permitted by CHECK constraint -- W0/W3 must
+  handle mixed-schema DBs
+- MC-2: NO migration framework exists; W0 invents it
+- MC-3: search result type symbol-shaped (ties to CI-1)
+
+**Updated next session entry:**
+
+1a. **Amend 4 discuss decisions per CI-1/2/3/4** (~2-3 hr)
+1b. **Amend 7 PLAN.md files to inherit amendments** (~1-2 hr)
+2.  **Re-run Codex challenge over amended PLAN.md** (CCG round 3, partial)
+3.  **Plan-checker iter to 0/0/0** -- BETA-V1-SPEC sec 8 acceptance gate
+4.  **Gemini infra fix** (separate codenexus-tooling sub-slice, NOT Phase 5)
+5.  **Phase 5 W0 execution entry** -- storage layer slice with migration
+    framework + chosen FK approach
+
+**Acceptance gate status:**
+- BETA-V1-SPEC sec 8 line 229-230: PARTIAL ("Gemini if infrastructure bug
+  fixed" was conditional; Codex-only meets the spirit but tri-model
+  triangulation pending)
+- 4 critical amendments not yet landed -- plans NOT execute-ready
