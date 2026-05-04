@@ -1,0 +1,285 @@
+{
+  "project": "D:/projects/obsidian-llm-wiki",
+  "timestamp": "2026-04-29T04:39:34",
+  "file_count": 56,
+  "edge_count": 68,
+  "aggregates": {
+    "cycles": 0,
+    "max_depth": 4,
+    "max_level_raw": 5,
+    "longest_chain_edges": 5,
+    "modularity_q": 0.3493,
+    "gini_out_degree": 0.6917,
+    "equality_proxy": 0.3083,
+    "scc_count": 56,
+    "median_out": 1,
+    "module_count": 12
+  },
+  "diagnostics": {
+    "modularity_culprits": [
+      {
+        "file": "mcp-server/src/index.ts",
+        "score": 38.105,
+        "cross_out": 11,
+        "out": 12,
+        "module": "mcp-server/src"
+      },
+      {
+        "file": "mcp-server/src/core/operations.ts",
+        "score": 19.799,
+        "cross_out": 7,
+        "out": 8,
+        "module": "mcp-server/src/core"
+      },
+      {
+        "file": "mcp-server/src/connector/connector.ts",
+        "score": 6.708,
+        "cross_out": 3,
+        "out": 5,
+        "module": "mcp-server/src/connector"
+      },
+      {
+        "file": "mcp-server/tests/vaultbrain.test.ts",
+        "score": 5.196,
+        "cross_out": 3,
+        "out": 3,
+        "module": "mcp-server/tests"
+      },
+      {
+        "file": "mcp-server/src/unified-query.test.ts",
+        "score": 3.464,
+        "cross_out": 2,
+        "out": 3,
+        "module": "mcp-server/src"
+      },
+      {
+        "file": "mcp-server/src/unified-query.ts",
+        "score": 3.464,
+        "cross_out": 2,
+        "out": 3,
+        "module": "mcp-server/src"
+      },
+      {
+        "file": "mcp-server/src/scripts/generate-tools-doc.ts",
+        "score": 2.828,
+        "cross_out": 2,
+        "out": 2,
+        "module": "mcp-server/src/scripts"
+      },
+      {
+        "file": "mcp-server/src/adapters/vaultbrain/index.ts",
+        "score": 2.0,
+        "cross_out": 1,
+        "out": 4,
+        "module": "mcp-server/src/adapters/vaultbrain"
+      },
+      {
+        "file": "mcp-server/src/rrf.test.ts",
+        "score": 1.414,
+        "cross_out": 1,
+        "out": 2,
+        "module": "mcp-server/src"
+      },
+      {
+        "file": "mcp-server/src/rrf.ts",
+        "score": 1.0,
+        "cross_out": 1,
+        "out": 1,
+        "module": "mcp-server/src"
+      }
+    ],
+    "depth_culprits": [
+      {
+        "file": "mcp-server/src/ai-output.test.ts",
+        "level": 5,
+        "blast": 0,
+        "out": 1
+      },
+      {
+        "file": "mcp-server/src/scripts/generate-tools-doc.test.ts",
+        "level": 5,
+        "blast": 0,
+        "out": 1
+      },
+      {
+        "file": "mcp-server/src/index.ts",
+        "level": 4,
+        "blast": 1,
+        "out": 12
+      },
+      {
+        "file": "mcp-server/src/scripts/generate-tools-doc.ts",
+        "level": 4,
+        "blast": 1,
+        "out": 2
+      },
+      {
+        "file": "mcp-server/src/connector/connector.ts",
+        "level": 4,
+        "blast": 0,
+        "out": 5
+      },
+      {
+        "file": "mcp-server/src/core/operations.ts",
+        "level": 3,
+        "blast": 5,
+        "out": 8
+      },
+      {
+        "file": "mcp-server/src/unified-query.test.ts",
+        "level": 3,
+        "blast": 0,
+        "out": 3
+      },
+      {
+        "file": "mcp-server/src/recipes/recipes.test.ts",
+        "level": 3,
+        "blast": 0,
+        "out": 3
+      },
+      {
+        "file": "mcp-server/tests/vaultbrain.test.ts",
+        "level": 3,
+        "blast": 0,
+        "out": 3
+      },
+      {
+        "file": "mcp-server/src/unified-query.ts",
+        "level": 2,
+        "blast": 7,
+        "out": 3
+      }
+    ],
+    "blast_culprits": [
+      {
+        "file": "mcp-server/src/adapters/interface.ts",
+        "blast": 22,
+        "in": 13,
+        "out": 0
+      },
+      {
+        "file": "mcp-server/src/rrf.ts",
+        "blast": 9,
+        "in": 2,
+        "out": 1
+      },
+      {
+        "file": "mcp-server/src/adapters/vaultbrain/engine.ts",
+        "blast": 9,
+        "in": 3,
+        "out": 0
+      },
+      {
+        "file": "mcp-server/src/adapters/vaultbrain/schema.ts",
+        "blast": 9,
+        "in": 1,
+        "out": 0
+      },
+      {
+        "file": "mcp-server/src/recipes/_types.ts",
+        "blast": 9,
+        "in": 3,
+        "out": 0
+      },
+      {
+        "file": "mcp-server/src/adapters/registry.ts",
+        "blast": 8,
+        "in": 4,
+        "out": 1
+      },
+      {
+        "file": "mcp-server/src/adapters/vaultbrain/ingest.ts",
+        "blast": 8,
+        "in": 2,
+        "out": 0
+      },
+      {
+        "file": "mcp-server/src/adapters/vaultbrain/pglite-engine.ts",
+        "blast": 8,
+        "in": 1,
+        "out": 2
+      },
+      {
+        "file": "mcp-server/src/recipes/_framework.ts",
+        "blast": 8,
+        "in": 3,
+        "out": 1
+      },
+      {
+        "file": "mcp-server/src/compile-trigger.ts",
+        "blast": 7,
+        "in": 3,
+        "out": 0
+      }
+    ],
+    "equality_culprits": [
+      {
+        "file": "mcp-server/src/index.ts",
+        "out": 12,
+        "deviation": 11
+      },
+      {
+        "file": "mcp-server/src/core/operations.ts",
+        "out": 8,
+        "deviation": 7
+      },
+      {
+        "file": "mcp-server/src/connector/connector.ts",
+        "out": 5,
+        "deviation": 4
+      },
+      {
+        "file": "mcp-server/src/adapters/vaultbrain/index.ts",
+        "out": 4,
+        "deviation": 3
+      },
+      {
+        "file": "mcp-server/src/unified-query.test.ts",
+        "out": 3,
+        "deviation": 2
+      },
+      {
+        "file": "mcp-server/src/unified-query.ts",
+        "out": 3,
+        "deviation": 2
+      },
+      {
+        "file": "mcp-server/src/recipes/recipes.test.ts",
+        "out": 3,
+        "deviation": 2
+      },
+      {
+        "file": "mcp-server/tests/vaultbrain.test.ts",
+        "out": 3,
+        "deviation": 2
+      },
+      {
+        "file": "mcp-server/bundle.js",
+        "out": 0,
+        "deviation": 1
+      },
+      {
+        "file": "mcp-server/_probe_memu.mjs",
+        "out": 0,
+        "deviation": 1
+      }
+    ]
+  },
+  "comparison_to_sentrux": {
+    "sentrux_quality_signal": 0.6872,
+    "sentrux_acyclicity_raw": 0,
+    "sentrux_max_depth": 4,
+    "sentrux_modularity_q": 0.4307,
+    "sentrux_equality_raw": 0.5642,
+    "our_cycles": 0,
+    "our_max_depth": 4,
+    "our_modularity_q": 0.3493,
+    "our_gini_out_degree": 0.6917,
+    "delta_notes": [
+      "acyclicity match: ours=0 sentrux=0 -> MATCH",
+      "max_depth match: ours=4 sentrux=4 -> MATCH",
+      "modularity_q delta: ours=0.3493 sentrux=0.4307 delta=0.0814 -> WITHIN_BAND (likely due to module-boundary definition differences)",
+      "equality not directly comparable: sentrux=0.5642 (function CC), ours=0.3083 (1-Gini(out_degree) proxy)"
+    ]
+  }
+}

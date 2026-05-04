@@ -1,0 +1,1 @@
+{"above_diagonal":0,"below_diagonal":77,"clusters":[],"density":290,"edge_count":77,"interpretation":"Clean layering: all dependencies flow downward","level_breaks":5,"propagation_cost":720,"same_level":0,"size":52}

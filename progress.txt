@@ -1792,3 +1792,9 @@ Total session-pair count for 04.5-03 prep+W0 arc: 10 commits
 e0fab3b W0 schema -> 627cfec G-E migration check -> 1fbbfc6 W0 SUMMARY).
 
 Next session: pick (a)/(b)/(c)/(d). Default (a) drift probe per rule 36.
+
+---
+2026-05-04 dogfood pass (no plan work):
+  - Built core (1m24s) + go build, exposed Go supervisor bug (spawn doesn't pass 'serve' arg) + Rust parser limitation (parsed 0 symbols on this repo).
+  - Both real dev work for next plan cycle. Pre-MVP status confirmed.
+  - Memory: project_full_check_pass_2026_05_04.md has full diagnosis + repro steps.
