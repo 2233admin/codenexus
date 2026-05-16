@@ -1,0 +1,19 @@
+{
+  "last_sync_commit": "76a41dd14cdbcd5dd0299e8d83b95cb24ad743c3",
+  "docs_enabled": false,
+  "phase_timings": {
+    "traverse": 12.52,
+    "co_change": 11.7,
+    "parse": 2.42,
+    "git": 15.05,
+    "graph.imports": 0.01,
+    "graph.type_refs": 0.0,
+    "graph.heritage": 0.0,
+    "graph.calls": 0.0,
+    "graph.metrics": 0.67,
+    "graph.communities": 0.02,
+    "dead_code": 0.15,
+    "decisions": 140.19,
+    "graph.flows": 0.01
+  }
+}
