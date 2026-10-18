@@ -43,6 +43,15 @@ Phase: 4 of 6 (Parity) — **first slice 8 of 9 runtime gates PASS 2026-04-28 (W
 Plan: 04-00 (Cargo bin rename) + 04-01 v2 (R1 redesign + R2.c + R3) + 04-02 v2 (R4 + R5 + fault injection) + 04-03 (E2E + EVAL_NO_REGRESSION + closure) + 04-04 followup (cache-first fix in `embedder.rs::snapshot_dir` lifts 3 deferred gates to PASS) + 04-05 (preseed-hf-cache.sh + r1c_probe.sh + offline-bootstrap doc + README + PROJECT.md line 98 reframe; lifts R1.c from DEFERRED to PASS via file-level sha256 probe) + 04-06 (server.rs IndexRepo handler deferred-clear fix; preserves pre-existing data when all embeds fail; R4.b probe now non-destructive)
 Status: First slice runtime 8 of 9 gates PASS. EVAL_NO_REGRESSION + R1.d offline-mode + R5.b synthetic-fail Query + R4.b synthetic-fail A2A IndexRepo + R1.c reload + FIRSTRUN-UX-PRE-SEED + FIRSTRUN-UX-DOC-LINK + IndexRepo-non-destructive-on-failure all PASS. E2E 1b/4/5/6 cluster demoted to P3 Linux/macOS smoke regression markers (cannot be exercised on Windows where fresh-download path is broken; pre-seed bypasses entirely). Phase 4 group 2 (multi-language tree-sitter) unblocked.
 
+## SUPERSEDED 2026-10-18 — read this before "Next Session Order" (#23)
+
+主人决定 CodeNexus 改用 CodeGraph（colbymchenry/codegraph）作为解析和符号图引擎。下方 "Next Session Order" 里与 sentrux lift 有关的条目**全部停止，不要恢复**：
+- Phase 04.5-02b（evo/dsm/rules lift、`query_metrics`）：结构治理由 code-intel-pipeline 的 `structure.sentrux` 负责。
+- Phase 04.5-03 / 04.5-07（lang_extractors、多语言 plugin.toml）：与 CodeGraph 的 tree-sitter 抽取重叠。
+- Phase 04.5-04/05/06：随之停止。NOTICE 中已有的 sentrux 归属保留。
+
+新的下一步：CodeNexus 只做 Git 叠加层（blame、热点、co-change）和语义检索，并以 CodeGraph 的符号/关系结果为输入。见 `.claude/rules/architecture-dependencies.md` 与 issue #23。
+
 ## Next Session Order (post-CCG ROUND-2 AMENDMENTS LANDED, 2026-05-03 evening)
 
 Recommended sequence:
