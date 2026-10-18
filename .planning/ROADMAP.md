@@ -112,7 +112,9 @@ Plans:
 Plans:
 - [ ] TBD (run /gsd-plan-phase 04.1 to break down)
 
-### Phase 04.5: Sentrux Adaptation Layer (INSERTED)
+### Phase 04.5: Sentrux Adaptation Layer (INSERTED — SUPERSEDED 2026-10-18, #23)
+
+> **Superseded.** CodeNexus now uses CodeGraph as its parsing/symbol-graph engine; structural governance (metrics/evo/dsm/rules) belongs to code-intel-pipeline `structure.sentrux`. Do not execute the slices below. Kept for history only.
 
 **Goal**: Lift `github.com/2233admin/sentrux` MIT modules (metrics layer / lang_extractors framework / DSM+evo metrics) into CodeNexus. Promote `experiments/poc-retrieval/` from single-crate to Cargo workspace (resolves PROJECT.md "single binary, single crate" Out-of-Scope pre-authorization). Supersedes `codenexus-04-parity/04-09-SPEC.md`'s inline-match Go-entry plan — the rebased multi-language activation lands here as 04.5-07.
 **Depends on:** Phase 4 first slice (shipped 2026-04-28). NOT on Phase 04.1; runtime sequencing decision — Phase 04.1's graph clustering will need to re-evaluate against the new lang_extractors-produced symbol set if 04.1 lands first, so 04.5-before-04.1 ordering is recommended.
